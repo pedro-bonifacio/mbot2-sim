@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>mBot 2 — Simulador</title>
+  <link rel="stylesheet" href="/src/styles.css" />
+</head>
+<body>
+  <header id="topbar">
+    <h1>Simulador mBot 2</h1>
+    <div id="controls">
+      <button id="btn-run">▶ Executar</button>
+      <button id="btn-stop">■ Parar</button>
+      <button id="btn-reset">↻ Reiniciar</button>
+      <button id="btn-center">🔍 Centrar</button>
+      <button id="btn-save">Guardar</button>
+      <button id="btn-load">Carregar</button>
+      <button id="btn-new">Novo</button>
+      <input type="file" id="file-input-load" accept=".xml" style="display:none" />
+      <label for="map-select" id="map-select-label">Mapa:</label>
+      <select id="map-select" title="Selecionar mapa"></select>
+      <select id="toolbox-mode">
+        <option value="beginner">Principiante</option>
+        <option value="expert">Avançado</option>
+      </select>
+    </div>
+  </header>
+  <main>
+    <div id="blockly-area"></div>
+    <div id="sim-area">
+      <div id="canvas-wrapper">
+        <canvas id="sim-canvas" width="1600" height="980"></canvas>
+      </div>
+      <div class="screen-console-row">
+        <canvas id="display-canvas" width="256" height="256"></canvas>
+        <div id="console-panel"></div>
+      </div>
+      <div id="button-row-wrapper">
+        <span class="button-row-label">Controlador:</span>
+        <div id="button-row"></div>
+      </div>
+    </div>
+  </main>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

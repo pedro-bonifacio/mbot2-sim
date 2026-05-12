@@ -1,0 +1,28 @@
+{
+  "name": "mbot2-sim",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Browser-based simulator for Makeblock mBot 2 with an Open Roberta Lab-compatible block editor in PT-PT",
+  "license": "MIT",
+  "keywords": [
+    "mbot2",
+    "cyberpi",
+    "open-roberta",
+    "blockly",
+    "robotics-education",
+    "simulator"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "blockly": "^11.1.1",
+    "js-interpreter": "^4.0.0"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0"
+  }
+}
