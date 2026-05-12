@@ -31,8 +31,7 @@ export async function initMapSelector() {
     select.appendChild(opt);
   }
 
-  // Default: 'default' map if present, otherwise first alphabetically
-  const defaultEntry = _catalogue.find(m => m.name === 'default') ?? _catalogue[0];
+  const defaultEntry = _catalogue[0];
   select.value = defaultEntry.name;
 
   await _loadMap(defaultEntry);
