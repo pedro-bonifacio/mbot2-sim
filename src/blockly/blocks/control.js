@@ -1,36 +1,115 @@
 import * as Blockly from 'blockly';
 import { loops } from 'blockly/blocks';
+import { makePlusMinusMutator } from './_plusMinusMutator.js';
 
 // Register robControls_loopForever as a loop type so that controls_flow_statements
 // (break/continue) does not show a "must be inside a loop" warning when nested here.
 loops.loopTypes.add('robControls_loopForever');
 
+// ── +/− mutators (Open Roberta-style on-block buttons) ──────────────────────
+// Each block keeps its own `extraCount_` (dynamic arms beyond the base inputs).
+// Shared serialisation, plus_/minus_ handlers, and save-and-restore rebuild
+// live in `_plusMinusMutator.js`; here we just describe each block's arm shape.
+
+// robControls_if / robControls_ifElse share IFn/DOn dynamic arms. Names match
+// Blockly's stock `controls_if` JS generator so codegen needs no changes.
+const ROB_IF_MUTATOR = makePlusMinusMutator({
+  mutationAttr: 'elseif',
+  addExtraArm(block, n) {
+    block.appendValueInput('IF' + n)
+      .setCheck('Boolean')
+      .appendField(Blockly.Msg.CONTROLS_IF_MSG_ELSEIF);
+    block.appendStatementInput('DO' + n)
+      .appendField(Blockly.Msg.CONTROLS_IF_MSG_THEN);
+  },
+  extraArmInputs(n) { return ['IF' + n, 'DO' + n]; },
+});
+
+const ROB_IFELSE_MUTATOR = makePlusMinusMutator({
+  mutationAttr: 'elseif',
+  addExtraArm(block, n) {
+    block.appendValueInput('IF' + n)
+      .setCheck('Boolean')
+      .appendField(Blockly.Msg.CONTROLS_IF_MSG_ELSEIF);
+    block.appendStatementInput('DO' + n)
+      .appendField(Blockly.Msg.CONTROLS_IF_MSG_THEN);
+  },
+  extraArmInputs(n) { return ['IF' + n, 'DO' + n]; },
+  hasTrailing: true,
+  addTrailing(block) {
+    block.appendStatementInput('ELSE')
+      .appendField(Blockly.Msg.CONTROLS_IF_MSG_ELSE);
+  },
+  trailingInputs: ['ELSE'],
+});
+
+// robControls_wait_for — Boolean conditions OR'd together; +/− adds/removes
+// extra WAITn inputs. Each extra arm is labelled "ou" (PT-PT "or") to match
+// Open Roberta's "wait until A or B or …" rendering.
+const ROB_WAIT_FOR_MUTATOR = makePlusMinusMutator({
+  mutationAttr: 'wait',
+  addExtraArm(block, n) {
+    block.appendValueInput('WAIT' + n)
+      .setCheck('Boolean')
+      .appendField('ou');
+  },
+  extraArmInputs(n) { return ['WAIT' + n]; },
+});
+
+// robText_join — variable-arity text concatenation. The block has two base
+// inputs (ADD0, ADD1) added in init(); +/− adds/removes ADD2, ADD3, … which is
+// why firstExtraIndex is 2. Codegen iterates ADDn dynamically so it picks up
+// every input automatically.
+const ROB_TEXT_JOIN_MUTATOR = makePlusMinusMutator({
+  mutationAttr: 'items',
+  firstExtraIndex: 2,
+  addExtraArm(block, n) {
+    block.appendValueInput('ADD' + n);
+  },
+  extraArmInputs(n) { return ['ADD' + n]; },
+});
+
 export function registerControlBlocks() {
 
   // ── Decision ────────────────────────────────────────────────────────────────
 
+  // robControls_if — "if … do …" with +/− buttons to add/remove else-if arms.
+  // No trailing 'else' branch (matches Open Roberta's `robControls_if` docs).
   Blockly.Blocks['robControls_if'] = {
+    ...ROB_IF_MUTATOR,
     init() {
-      this.appendValueInput('IF0').setCheck('Boolean').appendField('se');
-      this.appendStatementInput('DO0').appendField('então fazer');
+      this.appendValueInput('IF0')
+        .setCheck('Boolean')
+        .appendField(Blockly.Msg.CONTROLS_IF_MSG_IF);
+      this.appendStatementInput('DO0')
+        .appendField(Blockly.Msg.CONTROLS_IF_MSG_THEN);
       this.setPreviousStatement(true);
       this.setNextStatement(true);
       this.setColour('120');
       this.setTooltip('Executar ações se uma condição for verdadeira.');
       this.setHelpUrl('');
+      // BUTTONS row + any persisted elseif arms are added here.
+      this.updateShape_();
     },
   };
 
+  // robControls_ifElse — "if … do … (else-if …)* … else …". The trailing else
+  // input is permanent for this variant; +/− insert/remove else-if arms only.
   Blockly.Blocks['robControls_ifElse'] = {
+    ...ROB_IFELSE_MUTATOR,
     init() {
-      this.appendValueInput('IF0').setCheck('Boolean').appendField('se');
-      this.appendStatementInput('DO0').appendField('então fazer');
-      this.appendStatementInput('ELSE').appendField('senão');
+      this.appendValueInput('IF0')
+        .setCheck('Boolean')
+        .appendField(Blockly.Msg.CONTROLS_IF_MSG_IF);
+      this.appendStatementInput('DO0')
+        .appendField(Blockly.Msg.CONTROLS_IF_MSG_THEN);
       this.setPreviousStatement(true);
       this.setNextStatement(true);
       this.setColour('120');
       this.setTooltip('Executar ações se uma condição for verdadeira, senão executar outras.');
       this.setHelpUrl('');
+      // ELSE input + BUTTONS row + any persisted elseif arms are added here.
+      this.updateShape_();
     },
   };
 
@@ -112,17 +191,19 @@ export function registerControlBlocks() {
     },
   };
 
+  // robControls_wait_for — "wait until [cond]" with +/− to OR more conditions.
+  // Extra arms labelled "ou" (PT-PT "or"). Codegen ORs all WAIT* together.
   Blockly.Blocks['robControls_wait_for'] = {
+    ...ROB_WAIT_FOR_MUTATOR,
     init() {
-      this.appendDummyInput().appendField('esperar até');
-      this.appendValueInput('WAIT0').setCheck('Boolean');
-      this.setInputsInline(true);
+      this.appendValueInput('WAIT0').setCheck('Boolean').appendField('esperar até');
       this.setPreviousStatement(true);
       this.setNextStatement(true);
       this.setColour('120');
       this.setTooltip('Esperar até uma condição ser verdadeira.');
       this.setHelpUrl('');
-      // TODO Phase 4 / future: mutator support for multi-condition wait_for
+      // BUTTONS row + any persisted extra WAITn arms are added here.
+      this.updateShape_();
     },
   };
 
@@ -146,17 +227,19 @@ export function registerControlBlocks() {
 
   // ── Custom Text ─────────────────────────────────────────────────────────────
 
+  // robText_join — concatenate values; +/− adds/removes input slots beyond
+  // the two base inputs (ADD0, ADD1). Codegen iterates ADD* dynamically.
   Blockly.Blocks['robText_join'] = {
+    ...ROB_TEXT_JOIN_MUTATOR,
     init() {
-      this.appendDummyInput().appendField('juntar');
-      this.appendValueInput('ADD0');
+      this.appendValueInput('ADD0').appendField('juntar');
       this.appendValueInput('ADD1');
-      this.setInputsInline(true);
       this.setOutput(true, 'String');
       this.setColour('160');
-      this.setTooltip('Juntar dois textos num só.');
+      this.setTooltip('Juntar textos num só.');
       this.setHelpUrl('');
-      // TODO Phase 4 / future: mutator support for more than 2 inputs
+      // BUTTONS row + any persisted extra ADDn arms are added here.
+      this.updateShape_();
     },
   };
 

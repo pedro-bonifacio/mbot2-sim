@@ -40,11 +40,17 @@ export function registerControlCodegen() {
     return `robotAPI.wait_ms(${ms});\n`;
   };
 
-  // robControls_wait_for: busy-loop until condition — relies on step-budget yielding
-  // The empty-body while spins for up to 1000 steps per frame, then yields; the sim
-  // advances one frame, sensors update, and the condition is re-evaluated next frame.
+  // robControls_wait_for: busy-loop until ANY condition is true. Iterates all
+  // WAITn inputs (the +/− mutator can add WAIT1, WAIT2, …) and ORs them.
+  // The empty-body while spins for up to 1000 steps per frame, then yields; the
+  // sim advances one frame, sensors update, and the condition is re-evaluated
+  // next frame.
   javascriptGenerator.forBlock['robControls_wait_for'] = function (block) {
-    const cond = javascriptGenerator.valueToCode(block, 'WAIT0', Order.NONE) || 'false';
+    const conds = [];
+    for (let i = 0; block.getInput('WAIT' + i); i++) {
+      conds.push(javascriptGenerator.valueToCode(block, 'WAIT' + i, Order.LOGICAL_OR) || 'false');
+    }
+    const cond = conds.length ? conds.join(' || ') : 'false';
     return `while (!(${cond})) {}\n`;
   };
 }

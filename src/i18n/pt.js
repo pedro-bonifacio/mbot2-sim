@@ -2,7 +2,7 @@
 // Keys here take precedence over the official Blockly PT translations.
 export const ptMessages = {
   CONTROLS_IF_MSG_IF: 'se',
-  CONTROLS_IF_MSG_THEN: 'então',
+  CONTROLS_IF_MSG_THEN: 'então fazer',
   CONTROLS_IF_MSG_ELSE: 'senão',
   CONTROLS_IF_MSG_ELSEIF: 'senão se',
   CONTROLS_REPEAT_TITLE: 'repetir %1 vezes',
