@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.js';
 import { generateCode } from '../codegen/index.js';
 import { createInterpreter, stepInterpreter, destroyInterpreter, isInterpreterPaused } from './interpreter.js';
 import { RunState, getRunState, setRunState, asyncTicket } from './runState.js';
@@ -6,6 +7,7 @@ import { robot, resetMotors, ROBOT_CONSTANTS } from '../sim/robot.js';
 import { resetTickCache, resetSensors, getQuadRGBProbeData } from '../sim/sensors.js';
 import { isMagentaCollision } from '../sim/map.js';
 import { robotAPI } from '../sim/robotAPI.js';
+import { getEndOnCollision } from '../sim/settings.js';
 
 const STEP_BUDGET_PER_FRAME = 1000;
 
@@ -16,14 +18,14 @@ export function run(workspace) {
 
   clearConsole();
 
-  const jsCode = generateCode(workspace);
-  console.log('--- Generated JS ---\n' + jsCode + '\n--- End Generated JS ---');
-
   try {
+    const jsCode = generateCode(workspace);
+    console.log('--- Generated JS ---\n' + jsCode + '\n--- End Generated JS ---');
     createInterpreter(jsCode);
   } catch (err) {
+    clearExecution();
     console.error('[runLoop] Interpreter init error:', err);
-    appendConsoleMessage('Erro ao iniciar o programa: ' + err.message, 'error');
+    appendConsoleMessage(t('PROGRAM_INIT_ERROR', { error: err.message }), 'error');
     setRunState(RunState.ERRORED);
     return;
   }
@@ -36,8 +38,15 @@ export function run(workspace) {
 
 export function stop() {
   const state = getRunState();
+  // Reset also calls stop after successful completion, when a tone may still play.
+  clearExecution();
   if (state === RunState.IDLE || state === RunState.STOPPED) return;
 
+  setRunState(RunState.STOPPED);
+  appendConsoleMessage(t('PROGRAM_STOPPED'), 'warn');
+}
+
+function clearExecution(stopAudio = true) {
   if (_rafId !== null) {
     cancelAnimationFrame(_rafId);
     _rafId = null;
@@ -49,14 +58,22 @@ export function stop() {
   asyncTicket.resolveCondition = null;
   asyncTicket.callback = null;
   resetMotors();
-
-  setRunState(RunState.STOPPED);
-  appendConsoleMessage('Programa interrompido.', 'warn');
+  if (stopAudio) robotAPI.audio_stop();
 }
 
 function _tick() {
   _rafId = null;
+  try {
+    advanceInterpreter();
+  } catch (err) {
+    clearExecution();
+    console.error('[runLoop] Runtime error:', err);
+    appendConsoleMessage(t('PROGRAM_RUNTIME_ERROR', { error: err.message }), 'error');
+    setRunState(RunState.ERRORED);
+  }
+}
 
+function advanceInterpreter() {
   if (getRunState() !== RunState.RUNNING && getRunState() !== RunState.PAUSED_ASYNC) return;
 
   // Clear per-tick sensor cache so sensors compute once per frame, not per loop iteration
@@ -67,14 +84,10 @@ function _tick() {
   window.simState.quadRGBProbes = getQuadRGBProbeData();
 
   // Magenta collision → halt the program cleanly (not an error, an expected obstacle hit)
-  if (isMagentaCollision(robot.x, robot.y, ROBOT_CONSTANTS.BODY_RADIUS_CM)) {
-    resetMotors();
-    asyncTicket.pending = false;
-    asyncTicket.resolveCondition = null;
-    asyncTicket.callback = null;
-    destroyInterpreter();
+  if (getEndOnCollision() && (robot.collided || isMagentaCollision(robot.x, robot.y, ROBOT_CONSTANTS.BODY_RADIUS_CM))) {
+    clearExecution();
     setRunState(RunState.STOPPED);
-    appendConsoleMessage('Colisão detectada.', 'error');
+    appendConsoleMessage(t('PROGRAM_COLLISION'), 'error');
     return;
   }
 
@@ -90,9 +103,8 @@ function _tick() {
       // Ticket resolved but no resume callback registered — interpreter cannot unpause.
       // Stop rather than loop forever in PAUSED_ASYNC with nothing to resolve it.
       console.error('[runLoop] asyncTicket resolved with null callback');
-      appendConsoleMessage('Erro interno: operação assíncrona sem retorno.', 'error');
-      destroyInterpreter();
-      resetMotors();
+      appendConsoleMessage(t('PROGRAM_ASYNC_ERROR'), 'error');
+      clearExecution();
       setRunState(RunState.ERRORED);
       return;
     }
@@ -110,26 +122,17 @@ function _tick() {
     setRunState(RunState.RUNNING);
   }
 
-  try {
-    for (let i = 0; i < STEP_BUDGET_PER_FRAME; i++) {
-      if (!stepInterpreter()) {
-        resetMotors(); // safety net: zero motors even if program had no explicit stop block
-        setRunState(RunState.IDLE);
-        appendConsoleMessage('Programa terminado.', 'info');
-        destroyInterpreter();
-        return;
-      }
-      if (isInterpreterPaused()) {
-        setRunState(RunState.PAUSED_ASYNC);
-        break;
-      }
+  for (let i = 0; i < STEP_BUDGET_PER_FRAME; i++) {
+    if (!stepInterpreter()) {
+      clearExecution(false); // Let fire-and-forget tones finish after normal completion.
+      setRunState(RunState.IDLE);
+      appendConsoleMessage(t('PROGRAM_FINISHED'), 'info');
+      return;
     }
-  } catch (err) {
-    console.error('[runLoop] Runtime error:', err);
-    appendConsoleMessage('Erro de execução: ' + err.message, 'error');
-    setRunState(RunState.ERRORED);
-    destroyInterpreter();
-    return;
+    if (isInterpreterPaused()) {
+      setRunState(RunState.PAUSED_ASYNC);
+      break;
+    }
   }
 
   const current = getRunState();
