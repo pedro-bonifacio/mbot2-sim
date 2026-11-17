@@ -7,20 +7,18 @@ Last reviewed: 2026-11-17 (end of day)
 
 ---
 
-## ▶ Where we left off (2026-11-17, end of second session)
+## ▶ Where we left off (2026-11-17, end of third session)
 
 **State:** everything is on `main` (local only, not pushed); `npm run check` passes.
 Done this session (details in `CHANGELOG.md → Unreleased`):
-- **Exportar para Open Roberta** — checked byte for byte against a real export, all 224
-  Open Roberta block shapes, and round trips through Open Roberta's server.
-- **Collision** uses the real 17.5 × 13 cm footprint (corners count while turning, map
-  edge counts); the outline turns red after a crash.
-- **Fixed 1/60 s ticks in the browser** — same result at any frame rate (a wall follower
-  used to crash at 30 fps only); sim tests check 30 fps and uneven frames.
-- **Seeded random numbers** — runs replayable (`--seed`, `__dev.state().seed`).
-- **Level engine, first version** — YAML levels in `levels/`, referee, variants, ★/★★,
-  `npm run levels:check`, level panel; 3 sample levels (01-01, 04-01, 05-01).
-- `spawning_area.png` moved out of the map menu to `docs/map-templates/`.
+- **Level rules** ([0013](decisions/0013-when-a-level-run-is-judged.md)) — wall always fails, early
+  fail 5 s after stopping with a goal unmet, per-level `settle` / `stall`, variant 1 first.
+- **Progress saved** — stars and one program per level in localStorage;
+  **Guardar progresso** / **Abrir progresso** file (`src/levels/progress.js`).
+- **★ Níveis** level selector — worlds, stars, free maps; a level opens with its toolbox.
+- `docs/LEVEL_AUTHORING.md`; `npm run levels:mat` printable PDF mats.
+- Earlier sessions: Open Roberta export, real-footprint collision, fixed ticks, seeded
+  random, level engine v1 (see CHANGELOG).
 
 **Start the next session with:**
 
@@ -52,7 +50,8 @@ Done this session (details in `CHANGELOG.md → Unreleased`):
    (done: each level keeps its own program and stars; **Guardar progresso** / **Abrir progresso**);
    ~~level selector~~ (done: **★ Níveis**); ~~`docs/LEVEL_AUTHORING.md`~~ (done; optional
    `/new-level` skill still open); ~~`levels:mat` printable mats~~ (done);
-   PNG `background` in levels.
+   PNG `background` in levels — **ask the teacher first** whether hand-drawn backgrounds are
+   still wanted (lines/arcs/patches cover most maps; it makes level loading async).
 3. Then content: evaluation levels (Phase D), World 1–4 levels.
 
 **How we test** (decided 2026-11-17: the assistant tests itself; the teacher only checks looks):
