@@ -30,8 +30,8 @@ you are looking at tells you how much to trust it and how to change it.
 ## Reference
 
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) — pipeline, async ticketing, sensors, coordinate systems.
-- [`LEVEL_FORMAT.md`](LEVEL_FORMAT.md) — level data format *(draft until the level engine ships)*.
-- [`MAP_AUTHORING.md`](MAP_AUTHORING.md) — painting map PNGs, reserved colours, spawn markers.
+- [`LEVEL_FORMAT.md`](LEVEL_FORMAT.md) — level file reference (YAML in `levels/`, goals, variants, `levels:check`).
+- [`MAP_AUTHORING.md`](MAP_AUTHORING.md) — painting map PNGs (free maps), reserved colours, spawn markers; stamp in [`map-templates/`](map-templates/).
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — setup, code style, adding a block.
 - [`DEPLOYMENT.md`](DEPLOYMENT.md) — hosting and map-update workflow.
 - [`HISTORY.md`](HISTORY.md) — original Phase 0–8 plan (archived, not maintained).
