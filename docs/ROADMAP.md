@@ -7,6 +7,38 @@ Last reviewed: 2026-11-17
 
 ---
 
+## ▶ Where we left off (2026-11-17)
+
+**State:** branch `or-fidelity` (not merged, not pushed). Phase A fidelity work is done:
+blocks are generated from the live Open Roberta spec, `npm run check` passes (0 problems),
+and a real Open Roberta export imports and runs. See `CHANGELOG.md → Unreleased`.
+
+**Start the next session with:**
+
+1. **Teacher:** `npm run dev` and click through both toolboxes. The block *rendering*
+   has not been checked in a browser yet (only headless): +/− buttons on if/wait/text
+   join/lists, colour picker, note dropdown, start block, greyed-out loose blocks,
+   loading `reference_openroberta/export-samples/openroberta/01-simples.xml`.
+   Then merge `or-fidelity` into `main` if it looks right.
+2. **Next build task:** Open Roberta-style typed variables, functions and lists
+   (Phase A item below). Specs for `robControls_start` (declare mutation),
+   `robGlobalVariables_declare`, `robLocalVariables_declare`, `variables_get/set`
+   (datatype mutation) and `robProcedures_*` are already extracted in
+   `reference_openroberta/live/or-mbot2-dynamic.json` (`other.*` and `sources`).
+3. **Then:** "Exportar para Open Roberta", validated through Open Roberta's server
+   (how-to in `reference_openroberta/live/README.md`).
+4. **Teacher, with a robot in class:** `VERIFY_ON_ROBOT.md` (9 small checks).
+
+**How we work with Open Roberta Lab:** the assistant drives lab.open-roberta.org in a
+background browser tab (mBot 2, PT) to extract block data and to ask the server for the
+MicroPython a program compiles to. Keep server requests few; see
+[decision 0011](decisions/0011-live-open-roberta-as-fidelity-oracle.md).
+
+**Waiting on decisions:** narrative framing ([0007](decisions/0007-narrative-framing.md));
+one shared evaluation mat vs. one per level.
+
+---
+
 ## Phase A — Foundations (fidelity, determinism, Open Roberta export)
 
 Prerequisite for any evaluated level ([0003](decisions/0003-core-levels-use-real-robot-capabilities-only.md), [0004](decisions/0004-deterministic-simulation.md), [0008](decisions/0008-evaluation-on-physical-robot.md)).
