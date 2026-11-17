@@ -1,7 +1,8 @@
 import { resetSim, isPaused, pauseSim, resumeSim, resetCamera } from '../sim/canvas.js';
 import { appendConsoleMessage } from './console.js';
 import { setToolboxMode, getWorkspace } from '../blockly/index.js';
-import { run as runProgram, stop as stopProgram } from '../runtime/runLoop.js';
+import { run as runProgram, stop as stopProgram, setSpeed, getSpeed } from '../runtime/runLoop.js';
+import { ptMessages as MSG } from '../i18n/pt.js';
 import { RunState, getRunState, onRunStateChange } from '../runtime/runState.js';
 import { saveProgram, loadProgramFromFile, newProgram, exportToOpenRoberta, exportProgressFile, importProgressFile } from './programIO.js';
 
@@ -53,6 +54,9 @@ export function initControls() {
 
   btnNew.addEventListener('click', () => newProgram());
 
+  initFileMenu();
+  initSpeed();
+
   const progressInput = document.getElementById('file-input-progress');
   document.getElementById('btn-progress-export').addEventListener('click', () => exportProgressFile());
   document.getElementById('btn-progress-import').addEventListener('click', () => progressInput.click());
@@ -84,4 +88,48 @@ export function initControls() {
 
   btnStop.disabled = true;
   console.log('[controls] initialised');
+}
+
+const SPEEDS = [1, 2, 4];
+const SPEED_KEY = 'mbot2sim:speed';   // remembered on this computer (a convenience)
+
+/** "×1 / ×2 / ×4": fast-forward. Results never change with speed (decision 0004). */
+function initSpeed() {
+  const btn = document.getElementById('btn-speed');
+  if (!btn) return;
+  const show = () => {
+    const x = getSpeed();
+    btn.textContent = `×${x}`;
+    btn.title = MSG.SPEED_TITLE.replace('%1', x);
+    btn.classList.toggle('fast', x > 1);
+  };
+  let saved = 1;
+  try { saved = Number(localStorage.getItem(SPEED_KEY)) || 1; } catch (e) {}
+  setSpeed(SPEEDS.includes(saved) ? saved : 1);
+  show();
+  btn.addEventListener('click', () => {
+    const next = SPEEDS[(SPEEDS.indexOf(getSpeed()) + 1) % SPEEDS.length];
+    setSpeed(next);
+    try { localStorage.setItem(SPEED_KEY, String(next)); } catch (e) {}
+    show();
+  });
+}
+
+/** "Ficheiro ▾": opens on click, closes on a choice, Escape or a click elsewhere. */
+function initFileMenu() {
+  const menu = document.getElementById('file-menu');
+  if (!menu) return;
+  const btn = menu.querySelector('#btn-file');
+  const items = menu.querySelector('.menu-items');
+  const setOpen = (open) => {
+    items.hidden = !open;
+    btn.setAttribute('aria-expanded', String(open));
+    if (open) items.querySelector('button')?.focus();
+  };
+  btn.addEventListener('click', () => setOpen(items.hidden));
+  items.addEventListener('click', (e) => { if (e.target.closest('button')) setOpen(false); });
+  document.addEventListener('click', (e) => { if (!menu.contains(e.target)) setOpen(false); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !items.hidden) { setOpen(false); btn.focus(); }
+  });
 }

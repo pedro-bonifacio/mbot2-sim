@@ -76,7 +76,7 @@ Code generation target is **JavaScript**, executed via **JS-Interpreter**. The p
 ## 8. Sim Loop
 
 - **Fixed tick of 1/60 s simulated time** ([decision 0004](docs/decisions/0004-deterministic-simulation.md)). Each tick = `tickProgram()` then `physicsTick()` (`src/runtime/simTick.js`), in that order, in the browser and the headless runner alike. Never step physics or the clock with a frame's real `dt`.
-- One `requestAnimationFrame` loop (`canvas.js`): it hands the frame's time, capped at `1/30 s` to absorb tab-suspend lag, to `runLoop.advanceFrame`, which runs the whole ticks it covers, then draws. A slow computer draws fewer frames (and runs slower than real time below 30 fps); it never changes the result. `npm run sim:test` checks this at 30 fps and with uneven frames.
+- One `requestAnimationFrame` loop (`canvas.js`): it hands the frame's time, capped at `1/30 s` to absorb tab-suspend lag, to `runLoop.advanceFrame`, which runs the whole ticks it covers, then draws. A slow computer draws fewer frames (and runs slower than real time below 30 fps); it never changes the result. Fast-forward (×2/×4, `runLoop.setSpeed`) multiplies the capped frame time, so it only runs more whole ticks per frame. `npm run sim:test` checks this at 30 fps, with uneven frames and at ×4.
 - Sensor reads are synchronous against current sim state (no I/O latency simulated).
 
 ## 9. Reserved Map Colours (DO NOT USE for sensor zones)

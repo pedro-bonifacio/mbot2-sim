@@ -11,25 +11,38 @@
   <header id="topbar">
     <h1>Simulador mBot 2</h1>
     <div id="controls">
-      <button id="btn-run">▶ Executar</button>
-      <button id="btn-stop">■ Parar</button>
-      <button id="btn-reset">↻ Reiniciar</button>
-      <button id="btn-center">🔍 Centrar</button>
-      <button id="btn-save">Guardar</button>
-      <button id="btn-load">Carregar</button>
-      <button id="btn-export-or" title="Guarda um ficheiro para importar no Open Roberta Lab (mBot 2)">Exportar para Open Roberta</button>
-      <button id="btn-new">Novo</button>
-      <button id="btn-progress-export" title="Guarda as estrelas e os programas de todos os níveis num ficheiro, para levar para outro computador">Guardar progresso</button>
-      <button id="btn-progress-import" title="Abre um ficheiro de progresso guardado noutro computador">Abrir progresso</button>
-      <input type="file" id="file-input-load" accept=".xml" style="display:none" />
-      <input type="file" id="file-input-progress" accept=".json,application/json" style="display:none" />
-      <button id="btn-levels">★ Níveis</button>
-      <label for="map-select" id="map-select-label">Nível / mapa:</label>
-      <select id="map-select" title="Selecionar mapa"></select>
-      <select id="toolbox-mode">
-        <option value="beginner">Principiante</option>
-        <option value="expert">Avançado</option>
-      </select>
+      <div class="group">
+        <button id="btn-run" class="primary">▶ Executar</button>
+        <button id="btn-stop">■ Parar</button>
+        <button id="btn-reset">↻ Reiniciar</button>
+        <button id="btn-speed" title="Velocidade da simulação (o resultado é sempre o mesmo)">×1</button>
+        <button id="btn-center" title="Centrar a vista no mapa">🔍 Centrar</button>
+      </div>
+      <div class="group">
+        <button id="btn-levels">★ Níveis</button>
+        <span id="current-map"></span>
+      </div>
+      <div class="group">
+        <div class="menu" id="file-menu">
+          <button id="btn-file" aria-haspopup="true" aria-expanded="false">Ficheiro ▾</button>
+          <div class="menu-items" role="menu" hidden>
+            <button id="btn-new" role="menuitem">Novo programa</button>
+            <button id="btn-load" role="menuitem">Abrir programa…</button>
+            <button id="btn-save" role="menuitem">Guardar programa…</button>
+            <hr />
+            <button id="btn-export-or" role="menuitem" title="Guarda um ficheiro para importar no Open Roberta Lab (mBot 2)">Exportar para Open Roberta…</button>
+            <hr />
+            <button id="btn-progress-export" role="menuitem" title="Guarda as estrelas e os programas de todos os níveis num ficheiro, para levar para outro computador">Guardar progresso…</button>
+            <button id="btn-progress-import" role="menuitem" title="Abre um ficheiro de progresso guardado noutro computador">Abrir progresso…</button>
+          </div>
+        </div>
+        <select id="toolbox-mode" title="Blocos disponíveis">
+          <option value="beginner">Principiante</option>
+          <option value="expert">Avançado</option>
+        </select>
+      </div>
+      <input type="file" id="file-input-load" accept=".xml" hidden />
+      <input type="file" id="file-input-progress" accept=".json,application/json" hidden />
     </div>
   </header>
   <dialog id="level-selector"></dialog>

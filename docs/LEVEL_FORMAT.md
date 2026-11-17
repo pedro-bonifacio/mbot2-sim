@@ -132,7 +132,7 @@ copy the code (DevTools console prints it on **Executar**) to be sure it is bloc
 
 ## In the browser
 
-Levels appear in **★ Níveis** (by world, with the student's stars) and the **Nível / mapa** menu (`?level=04-01` opens one directly). A level opens with its `toolbox`. The
+Levels appear in **★ Níveis** (by world, with the student's stars, plus the free maps; `?level=04-01` opens one directly). A level opens with its `toolbox`. The
 Vite plugin (`vite.config.js`) validates each file and strips `solution` and
 `antiSolutions`, so answers never reach the page. Dev hooks: `__dev.level(id)`,
 `__dev.variant()`, `__dev.checkAll()`, `__dev.state().level`.

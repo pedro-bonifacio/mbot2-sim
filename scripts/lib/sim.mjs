@@ -61,9 +61,10 @@ export function simulate({ program, map = 'default.png', ...opts }) {
  * Runs a program through the browser's own run loop (src/runtime/runLoop.js) with
  * synthetic animation frames: frameS(i) is frame i's length in seconds (capped at
  * 1/30 s, as canvas.js does). Key presses follow simulated time. Used to check that
- * the browser gives the same result as runHeadless at any frame rate (decision 0004).
+ * the browser gives the same result as runHeadless at any frame rate and any
+ * fast-forward `speed` (decision 0004).
  */
-export async function simulateBrowser({ program, map = 'default.png', maxSeconds = 60, keys = [], frameS, seed = 1 }) {
+export async function simulateBrowser({ program, map = 'default.png', maxSeconds = 60, keys = [], frameS, seed = 1, speed = 1 }) {
   globalThis.window ??= globalThis;
   globalThis.Image ??= class { set src(v) {} };
   const { runCode, advanceFrame, stop } = await imp('src/runtime/runLoop.js');
@@ -76,6 +77,9 @@ export async function simulateBrowser({ program, map = 'default.png', maxSeconds
   const { setPressed } = await imp('src/ui/buttons.js');
   const { resetDisplay, getDisplayState } = await imp('src/ui/display.js');
   const { resetLeds } = await imp('src/sim/leds.js');
+  const { ptMessages: MSG } = await imp('src/i18n/pt.js');
+  const { setSpeed } = await imp('src/runtime/runLoop.js');
+  setSpeed(speed);
 
   const m = loadMap(map);
   setMapData({ imageData: m.imageData, width: m.width, height: m.height,
@@ -99,10 +103,11 @@ export async function simulateBrowser({ program, map = 'default.png', maxSeconds
     const timedOut = active();
     if (timedOut) stop();
     const status = timedOut ? 'timeout'
-      : { 'Programa terminado.': 'finished', 'Colisão detectada.': 'collision' }[last] || 'error';
+      : { [MSG.RUN_FINISHED]: 'finished', [MSG.RUN_COLLISION]: 'collision' }[last] || 'error';
     const display = getDisplayState().text.map((d) => (d.col ? `${d.row}:${d.col} ${d.text}` : `${d.row} ${d.text}`));
     return { status, time: simNow() / 1000, pose: relativePose(m), display };
   } finally {
+    setSpeed(1);
     setConsoleSink(null);
     console.error = devError;
     for (const k of keys) setPressed(k.key, false);
