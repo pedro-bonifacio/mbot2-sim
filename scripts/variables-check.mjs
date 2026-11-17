@@ -164,8 +164,8 @@ const flyoutText = (items) => items.map((el) => {
 // finite ones run against a robotAPI stub that records calls.
 {
   const expectations = {
-    'teste-1-variaveis.xml': { warnings: 0, calls: ['drive_for(30,20)', 'turn_for(30,90)', 'display_text(mBot volta 1,0,0)',
-      'drive_for(30,10)', 'turn_for(30,90)', 'display_text(mBot volta 2,0,0)', 'drive_for(30,30)', 'turn_for(30,90)',
+    'teste-1-variaveis.xml': { warnings: 0, calls: ['drive_for(30,30)', 'turn_for(30,90)', 'display_text(mBot volta 1,0,0)',
+      'drive_for(30,20)', 'turn_for(30,90)', 'display_text(mBot volta 2,0,0)', 'drive_for(30,10)', 'turn_for(30,90)',
       'display_text(mBot volta 3,0,0)', 'display_text(terminou: true,0,1)'] },
     'teste-2-funcao.xml': { warnings: 0, calls: [...Array(4).fill(['drive_for(30,20)', 'turn_for(30,90)']).flat(),
       ...Array(4).fill(['drive_for(30,40)', 'turn_for(30,90)']).flat(), 'display_text(Feito,0,0)'] },

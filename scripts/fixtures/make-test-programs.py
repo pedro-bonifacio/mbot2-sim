@@ -89,8 +89,8 @@ def program(comment, *instances):
 files = {
  'teste-1-variaveis.xml': program(
    'Typed globals: drives each distance in the list, counting laps on the display. '
-   'Expected: drives 20, 10, 30 cm turning right 90 after each; display "mBot volta 1..3", then "terminou: true" on row 1.',
-   (40, 40, start([('distancias', 'Array_Number', numlist([20, 10, 30])), ('nome', 'String', txt('mBot')),
+   'Expected (map default.png): drives 30, 20, 10 cm turning right 90 after each; display "mBot volta 1..3", then "terminou: true" on row 1.',
+   (40, 40, start([('distancias', 'Array_Number', numlist([30, 20, 10])), ('nome', 'String', txt('mBot')),
                    ('voltas', 'Number', num(0)), ('terminou', 'Boolean', boolean('FALSE'))])
       + foreach('d', get('distancias', 'Array_Number'),
                 drive(num(30), get('d', 'Number')) + turn(num(30), num(90)) + change('voltas', 1)
