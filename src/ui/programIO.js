@@ -2,12 +2,19 @@ import * as Blockly from 'blockly';
 import { getWorkspace } from '../blockly/index.js';
 import { RunState, getRunState, onRunStateChange } from '../runtime/runState.js';
 import { stop as stopProgram } from '../runtime/runLoop.js';
-import { warn as consoleWarn } from './console.js';
+import { warn as consoleWarn, appendConsoleMessage } from './console.js';
+import { ptMessages as MSG } from '../i18n/pt.js';
 import { ensureStartBlock } from '../blockly/startBlock.js';
-import { isOpenRobertaXml, openRobertaToBlocklyDom } from '../blockly/orFormat.js';
+import {
+  isOpenRobertaXml, openRobertaToBlocklyDom, blocklyDomToOpenRoberta, openRobertaFilename,
+} from '../blockly/orFormat.js';
 
 const STORAGE_KEY = 'mbot2sim:lastProgram:v2';  // v2: Open Roberta block format (decision 0011)
 const DEBOUNCE_MS = 500;
+const NAME_KEY = 'mbot2sim:studentName';   // remembered on this computer only (decision 0002)
+// Level id for the file name. Until the level engine exists every program is
+// a sandbox ("Livre") program.
+const SANDBOX_LEVEL_ID = 'livre';
 
 let _debounceTimer = null;
 let _autoSaveEnabled = true;
@@ -96,6 +103,40 @@ export function saveProgram() {
   a.download = _buildFilename();
   a.click();
   URL.revokeObjectURL(url);
+}
+
+function _download(text, filename) {
+  const blob = new Blob([text], { type: 'application/xml' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/** The program in Open Roberta's export format (mBot 2 configuration included). */
+export function exportOpenRobertaText() {
+  const ws = getWorkspace();
+  return blocklyDomToOpenRoberta(Blockly.Xml.workspaceToDom(ws));
+}
+
+/**
+ * "Exportar para Open Roberta": asks for the student's name (remembered locally)
+ * and downloads `<Nome>_<levelId>.xml`, ready for "Importar programa" in Open
+ * Roberta Lab (decision 0008).
+ */
+export function exportToOpenRoberta(levelId = SANDBOX_LEVEL_ID) {
+  const ws = getWorkspace();
+  if (!ws) return;
+  let saved = '';
+  try { saved = localStorage.getItem(NAME_KEY) || ''; } catch (e) {}
+  const name = window.prompt(MSG.PROGRAM_EXPORT_OR_NAME, saved);
+  if (name === null) return;                       // cancelled
+  try { localStorage.setItem(NAME_KEY, name.trim()); } catch (e) {}
+  const filename = openRobertaFilename(name, levelId);
+  _download(exportOpenRobertaText(), filename);
+  appendConsoleMessage(MSG.PROGRAM_EXPORT_OR_DONE.replace('%1', filename));
 }
 
 export function loadProgramFromFile(file) {

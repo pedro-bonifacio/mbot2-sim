@@ -353,6 +353,15 @@ Variables follow Open Roberta, not Blockly's variable model. A variable exists b
 
 `_varScope.syncWorkspace` is the one change listener that keeps this consistent: reference types, out-of-scope warnings, call arguments (`robProcedures_call*` mirror their definition's parameters and return type), the shape of "se … retorna …", and free names for pasted blocks. It's idempotent. `npm run or:variables` (`scripts/variables-check.mjs`) imports an Open Roberta-format program, runs it, and drives +/−/rename/type changes headlessly. It also checks the browser test programs `scripts/fixtures/teste-*.xml` (load them with **Carregar**).
 
+## Open Roberta files (Carregar / Exportar para Open Roberta)
+
+The workspace is plain Blockly XML internally (`<next>` chains, hidden ports as fields). `src/blockly/orFormat.js` converts at the edges, both ways:
+
+- **Import** (`openRobertaToBlocklyDom`): sibling blocks → `<next>` chains, `<repetitions>` lifted, `<hide>` dropped.
+- **Export** (`blocklyDomToOpenRoberta`): the reverse, written exactly as Open Roberta Lab writes it: `<export>` with the program `<block_set robottype="mbot2">` and the default mBot 2 `<config>` (`OR.configuration`); one `<instance>` per stack; mutation, fields, hidden port field, `<hide>`, then inputs; inputs wrapped in `<repetitions>` for `robControls_if`/`ifElse`/`wait_for`/`wait` and `robProcedures_defreturn` when they carry a mutation; `intask="false"` for loose stacks; empty elements as `<x></x>`. `<hide>` comes from the block spec, except for the generic `robSensors_getSample`, which hides its port only for the robot's built-in sensors (`_S`, `_J`, `_L`, `_G`, `_A`).
+
+`npm run or:export` (`scripts/export-check.mjs`) checks that a real Open Roberta export comes back byte for byte, that every block serialisation in the live catalogue exports identically, and that the files in `scripts/fixtures/from-openroberta/` (what Open Roberta's server stored after importing the sim's exports) hold the same programs and behave the same back in the sim. In the browser, `__dev.exportOR()` returns the export text.
+
 ---
 
 ## Coordinate systems

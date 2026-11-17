@@ -76,4 +76,6 @@ export const ptMessages = {
   PROGRAM_LOAD_ERROR: 'Ficheiro inválido ou corrompido.',
   PROGRAM_NEW_CONFIRM: 'Apagar programa atual? Isto não pode ser desfeito.',
   PROGRAM_UNSUPPORTED_BLOCKS: 'Aviso: Alguns blocos do ficheiro não são suportados e foram ignorados.',
+  PROGRAM_EXPORT_OR_NAME: 'O teu nome (fica no nome do ficheiro):',
+  PROGRAM_EXPORT_OR_DONE: 'Exportado: %1. No Open Roberta Lab, escolhe «Importar programa» e abre este ficheiro.',
 };

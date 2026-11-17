@@ -3,7 +3,7 @@ import { appendConsoleMessage } from './console.js';
 import { setToolboxMode, getWorkspace } from '../blockly/index.js';
 import { run as runProgram, stop as stopProgram } from '../runtime/runLoop.js';
 import { RunState, getRunState, onRunStateChange } from '../runtime/runState.js';
-import { saveProgram, loadProgramFromFile, newProgram } from './programIO.js';
+import { saveProgram, loadProgramFromFile, newProgram, exportToOpenRoberta } from './programIO.js';
 
 export function initControls() {
   const btnRun    = document.getElementById('btn-run');
@@ -38,6 +38,8 @@ export function initControls() {
   });
 
   btnSave.addEventListener('click', () => saveProgram());
+
+  document.getElementById('btn-export-or').addEventListener('click', () => exportToOpenRoberta());
 
   btnLoad.addEventListener('click', () => fileInput.click());
 
