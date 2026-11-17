@@ -38,8 +38,7 @@ finished when `npm run levels:check <id>` says `ok`.
    seed, the variants don't enforce the concept: widen the range or add a parameter.
 9. **Check:** `npm run levels:check <id> --verbose` prints every seed's verdict and time.
    `npm run check` before committing.
-10. **Print the mat** for class: `npm run levels:mat <id>` → `levels/_mats/` (see LEVEL_FORMAT.md).
-11. **Play it** in the browser (`?level=<id>`; editing the YAML hot-reloads the level) and
+10. **Play it** in the browser (`?level=<id>`; editing the YAML hot-reloads the level) and
     add the program you used to `scripts/fixtures/levels/<id>-<what>.xml` if it is a useful
     test for the teacher.
 

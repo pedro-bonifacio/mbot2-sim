@@ -13,7 +13,6 @@
 - On-block +/− buttons show a pointer cursor and hover highlight, with a larger tap area.
 - Waits, tones and the timer sensor use the simulated clock (advances with physics), not the computer's clock.
 ### Added
-- `npm run levels:mat`: printable mats for each level (real-size PDF for a print shop, or tiled on A4/A3 with an assembly page and a scale bar). Variant positions are light numbered marks, so one mat serves every variant.
 - **★ Níveis**: a window listing every level by world with its stars, and the free maps; any level can be opened in any order. A level opens with its toolbox (Principiante / Avançado).
 - **Progress is saved**: every level keeps its own program and its stars (★ / ★★) in this browser; free maps share one program. **Guardar progresso** downloads all of it as a file and **Abrir progresso** brings it back on another computer (stars are added, never lost). **Exportar para Open Roberta** names the file after the level.
 - Level rules: touching a wall always fails the run; a robot that stops with the goal unmet fails after 5 s instead of waiting for the time limit; levels can change both timings (`settle`, `stall`).

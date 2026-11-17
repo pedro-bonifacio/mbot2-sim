@@ -127,14 +127,6 @@ The student sees the first seed first; **Outra variante** cycles through the see
 7. `levels/_previews/<id>.png`: seed 1, zones (blue), the solution's path (red), the
    robot at start (cyan) and end (red). `--verbose` prints every seed's verdict.
 
-`npm run levels:mat [id] [--paper a3]` writes printable mats to `levels/_mats/` (vector
-PDF, real scale): `<id>-real.pdf`, one arena-sized page for a print shop, and
-`<id>-a4.pdf`, an assembly page then the mat tiled on A4 with a 10 cm scale bar per
-sheet. Floor items print in colour; walls as grey "put an object here" areas; things
-that move between variants as light numbered marks (dashed outlines, or end ticks
-for lines) so one mat serves every variant. Every mark is a light colour the sensor
-reads as white (the script refuses darker ones).
-
 Solutions are the ES5 the code generator writes; build the program in the editor and
 copy the code (DevTools console prints it on **Executar**) to be sure it is block-expressible.
 

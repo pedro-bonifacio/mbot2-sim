@@ -31,13 +31,14 @@ Decisions: [0001](decisions/0001-self-directed-progression-no-locks.md),
 
 ## 3. Before evaluation day (teacher, once)
 
-10. 🛠 `npm run levels:mat <id>` → print the mat at real scale (tiled A4/A3), tape it,
-    gather the physical obstacles.
+10. Build the chosen evaluation maps by hand from the level's preview
+    (`levels/_previews/<id>.png`, sizes in the YAML): coloured cardboard for zones and
+    patches, black tape for lines, boxes for walls and obstacles.
 11. 🛠 Teacher sheet per level: setup, variant marks, explanation questions, rubric.
 
 ## 4. Evaluation day (teacher, per student)
 
-12. Sort files by level (the filename does it), so each mat is set up once.
+12. Sort files by level (the filename does it), so each map is set up once.
 13. Open Roberta Lab (mBot 2) → *Importar programa* → transfer to the robot as usual.
 14. Robot on the start mark, set a variant (e.g. box on mark 3), run. Retries allowed
     at the teacher's discretion.

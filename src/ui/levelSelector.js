@@ -1,4 +1,4 @@
-import { listLevels, getLevelState } from '../levels/session.js';
+import { listLevels, getLevelState, onLevelChange } from '../levels/session.js';
 import { getStars } from '../levels/progress.js';
 import { listFreeMaps, openFromSelector, getActiveMapName } from './mapSelector.js';
 import { ptMessages as MSG } from '../i18n/pt.js';
@@ -16,6 +16,10 @@ export function initLevelSelector() {
   const btn = document.getElementById('btn-levels');
   if (!dialog || !btn) return;
   btn.textContent = MSG.LEVEL_SELECTOR_BUTTON;
+  // Tab title names the open level, so several open tabs can be told apart.
+  onLevelChange((st) => {
+    document.title = st.level ? `${st.level.id} ${st.level.title} · ${MSG.APP_TITLE}` : MSG.APP_TITLE;
+  });
   btn.addEventListener('click', openLevelSelector);
   dialog.addEventListener('click', async (e) => {
     if (e.target === dialog) return dialog.close();             // click on the backdrop

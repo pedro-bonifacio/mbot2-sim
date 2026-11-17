@@ -76,6 +76,7 @@ export const ptMessages = {
   PROGRAM_LOAD_ERROR: 'Ficheiro inválido ou corrompido.',
   PROGRAM_NEW_CONFIRM: 'Apagar programa atual? Isto não pode ser desfeito.',
   PROGRAM_UNSUPPORTED_BLOCKS: 'Aviso: Alguns blocos do ficheiro não são suportados e foram ignorados.',
+  APP_TITLE: 'Simulador mBot 2',
   LEVEL_MENU_LEVELS: 'Níveis',
   LEVEL_SELECTOR_BUTTON: '★ Níveis',
   LEVEL_SELECTOR_TITLE: 'Níveis',
