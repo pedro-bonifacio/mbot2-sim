@@ -6,6 +6,8 @@ Ground truth extracted from the running Open Roberta Lab (mBot 2, PT), per
 | File | What | How it's produced |
 |------|------|-------------------|
 | `or-mbot2-catalogue.json` | Every toolbox block with fields, dropdown options, defaults, hidden fields, PT labels, and OR's own XML serialisation; variable/procedure/start blocks; default configuration; all PT `Blockly.Msg` strings | `scripts/or-extract-catalogue.browser.js` run in lab.open-roberta.org |
+| `or-mbot2-dynamic.json` | Dynamic shapes: every sensor mode, every generic-sensor type, list/if/wait mutations, variable/function blocks, and Open Roberta's block source code | browser extraction (see git history of this file's commit) |
+| `or-mbot2-semantics.json` | MicroPython Open Roberta generates for each block on the mBot 2 — the reference for sim **behaviour** | server `/projectWorkflow/source`, one block per program |
 | `fidelity-report.md` | Sim vs. Open Roberta, block by block | `npm run or:check > reference_openroberta/live/fidelity-report.md` |
 
 ## Refreshing
@@ -13,7 +15,8 @@ Ground truth extracted from the running Open Roberta Lab (mBot 2, PT), per
 1. Open <https://lab.open-roberta.org/?loadSystem=mbot2>, switch language to Português.
 2. Run `scripts/or-extract-catalogue.browser.js` in the DevTools console (or let the
    assistant do it via browser automation).
-3. Replace `or-mbot2-catalogue.json`, run `npm run or:check`, commit both files.
+3. Replace `or-mbot2-catalogue.json`, run `npm run or:specs` (regenerates
+   `src/blockly/generated/orSpecs.js`), then `npm run check`, and commit.
 
 ## Server-side validation
 

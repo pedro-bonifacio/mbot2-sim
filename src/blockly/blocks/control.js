@@ -1,277 +1,169 @@
 import * as Blockly from 'blockly';
-import { loops } from 'blockly/blocks';
+import { defineOrBlocks, orSpec, orMsg, initFromSpec } from './_orFactory.js';
 import { makePlusMinusMutator } from './_plusMinusMutator.js';
 
-// Register robControls_loopForever as a loop type so that controls_flow_statements
-// (break/continue) does not show a "must be inside a loop" warning when nested here.
-loops.loopTypes.add('robControls_loopForever');
+// TOOLBOX_CONTROL (Controlo): decisions, loops, waits — plus the program start block.
+// Plain blocks come straight from the Open Roberta spec; dynamic ones (+/− arms,
+// typed loops) reproduce Open Roberta's mutation format exactly.
 
-// ── +/− mutators (Open Roberta-style on-block buttons) ──────────────────────
-// Each block keeps its own `extraCount_` (dynamic arms beyond the base inputs).
-// Shared serialisation, plus_/minus_ handlers, and save-and-restore rebuild
-// live in `_plusMinusMutator.js`; here we just describe each block's arm shape.
+const PLAIN_TYPES = [
+  'robControls_loopForever', 'controls_repeat_ext', 'controls_whileUntil',
+  'controls_flow_statements', 'robControls_wait', 'robControls_wait_time',
+];
 
-// robControls_if / robControls_ifElse share IFn/DOn dynamic arms. Names match
-// Blockly's stock `controls_if` JS generator so codegen needs no changes.
-const ROB_IF_MUTATOR = makePlusMinusMutator({
-  mutationAttr: 'elseif',
-  addExtraArm(block, n) {
-    block.appendValueInput('IF' + n)
-      .setCheck('Boolean')
-      .appendField(Blockly.Msg.CONTROLS_IF_MSG_ELSEIF);
-    block.appendStatementInput('DO' + n)
-      .appendField(Blockly.Msg.CONTROLS_IF_MSG_THEN);
-  },
-  extraArmInputs(n) { return ['IF' + n, 'DO' + n]; },
-});
+// ── if / if-else ──────────────────────────────────────────────────────────────
+// Open Roberta mutation: <mutation elseif="n" else="1"/>. Arms: IFn (Boolean) + DOn.
 
-const ROB_IFELSE_MUTATOR = makePlusMinusMutator({
-  mutationAttr: 'elseif',
-  addExtraArm(block, n) {
-    block.appendValueInput('IF' + n)
-      .setCheck('Boolean')
-      .appendField(Blockly.Msg.CONTROLS_IF_MSG_ELSEIF);
-    block.appendStatementInput('DO' + n)
-      .appendField(Blockly.Msg.CONTROLS_IF_MSG_THEN);
-  },
-  extraArmInputs(n) { return ['IF' + n, 'DO' + n]; },
-  hasTrailing: true,
-  addTrailing(block) {
-    block.appendStatementInput('ELSE')
-      .appendField(Blockly.Msg.CONTROLS_IF_MSG_ELSE);
-  },
-  trailingInputs: ['ELSE'],
-});
+function addElseIfArm(block, n) {
+  block.appendValueInput('IF' + n).setCheck('Boolean').appendField(orMsg('CONTROLS_IF_MSG_ELSEIF', 'senão se'));
+  block.appendStatementInput('DO' + n).appendField(orMsg('CONTROLS_IF_MSG_THEN', 'então'));
+}
 
-// robControls_wait_for — Boolean conditions OR'd together; +/− adds/removes
-// extra WAITn inputs. Each extra arm is labelled "ou" (PT-PT "or") to match
-// Open Roberta's "wait until A or B or …" rendering.
-const ROB_WAIT_FOR_MUTATOR = makePlusMinusMutator({
-  mutationAttr: 'wait',
-  addExtraArm(block, n) {
-    block.appendValueInput('WAIT' + n)
-      .setCheck('Boolean')
-      .appendField('ou');
-  },
-  extraArmInputs(n) { return ['WAIT' + n]; },
-});
+function ifMutator(withElse) {
+  return makePlusMinusMutator({
+    mutationAttr: 'elseif',
+    addExtraArm: addElseIfArm,
+    extraArmInputs: (n) => ['IF' + n, 'DO' + n],
+    hasTrailing: withElse,
+    addTrailing: withElse
+      ? (block) => block.appendStatementInput('ELSE').appendField(orMsg('CONTROLS_IF_MSG_ELSE', 'senão'))
+      : null,
+    trailingInputs: withElse ? ['ELSE'] : [],
+    toAttrs: (count) => {
+      const a = {};
+      if (count) a.elseif = count;
+      if (withElse) a.else = 1;
+      return a;
+    },
+    fromDom: (el) => parseInt(el.getAttribute('elseif'), 10) || 0,
+  });
+}
 
-// robText_join — variable-arity text concatenation. The block has two base
-// inputs (ADD0, ADD1) added in init(); +/− adds/removes ADD2, ADD3, … which is
-// why firstExtraIndex is 2. Codegen iterates ADDn dynamically so it picks up
-// every input automatically.
-const ROB_TEXT_JOIN_MUTATOR = makePlusMinusMutator({
-  mutationAttr: 'items',
-  firstExtraIndex: 2,
-  addExtraArm(block, n) {
-    block.appendValueInput('ADD' + n);
-  },
-  extraArmInputs(n) { return ['ADD' + n]; },
-});
-
-export function registerControlBlocks() {
-
-  // ── Decision ────────────────────────────────────────────────────────────────
-
-  // robControls_if — "if … do …" with +/− buttons to add/remove else-if arms.
-  // No trailing 'else' branch (matches Open Roberta's `robControls_if` docs).
-  Blockly.Blocks['robControls_if'] = {
-    ...ROB_IF_MUTATOR,
+function defineIf(type, withElse) {
+  const spec = orSpec(type);
+  // Base inputs (IF0, DO0) from the spec; ELSE is rebuilt by the mutator.
+  const base = { ...spec, inputs: spec.inputs.filter(i => i.name !== 'ELSE') };
+  Blockly.Blocks[type] = {
+    ...ifMutator(withElse),
     init() {
-      this.appendValueInput('IF0')
-        .setCheck('Boolean')
-        .appendField(Blockly.Msg.CONTROLS_IF_MSG_IF);
-      this.appendStatementInput('DO0')
-        .appendField(Blockly.Msg.CONTROLS_IF_MSG_THEN);
-      this.setPreviousStatement(true);
-      this.setNextStatement(true);
-      this.setColour('120');
-      this.setTooltip('Executar ações se uma condição for verdadeira.');
-      this.setHelpUrl('');
-      // BUTTONS row + any persisted elseif arms are added here.
+      initFromSpec(this, base);
       this.updateShape_();
-    },
-  };
-
-  // robControls_ifElse — "if … do … (else-if …)* … else …". The trailing else
-  // input is permanent for this variant; +/− insert/remove else-if arms only.
-  Blockly.Blocks['robControls_ifElse'] = {
-    ...ROB_IFELSE_MUTATOR,
-    init() {
-      this.appendValueInput('IF0')
-        .setCheck('Boolean')
-        .appendField(Blockly.Msg.CONTROLS_IF_MSG_IF);
-      this.appendStatementInput('DO0')
-        .appendField(Blockly.Msg.CONTROLS_IF_MSG_THEN);
-      this.setPreviousStatement(true);
-      this.setNextStatement(true);
-      this.setColour('120');
-      this.setTooltip('Executar ações se uma condição for verdadeira, senão executar outras.');
-      this.setHelpUrl('');
-      // ELSE input + BUTTONS row + any persisted elseif arms are added here.
-      this.updateShape_();
-    },
-  };
-
-  // ── Loop ────────────────────────────────────────────────────────────────────
-
-  Blockly.Blocks['robControls_loopForever'] = {
-    init() {
-      this.appendStatementInput('DO').appendField('repetir para sempre fazer');
-      this.setPreviousStatement(true);
-      this.setNextStatement(true);
-      this.setColour('120');
-      this.setTooltip('Repetir as ações indefinidamente.');
-      this.setHelpUrl('');
-    },
-  };
-
-  Blockly.Blocks['robControls_for'] = {
-    init() {
-      this.appendDummyInput()
-        .appendField('contar com')
-        .appendField(new Blockly.FieldVariable('i'), 'VAR')
-        .appendField('de');
-      this.appendValueInput('FROM').setCheck('Number');
-      this.appendDummyInput().appendField('até');
-      this.appendValueInput('TO').setCheck('Number');
-      this.appendDummyInput().appendField('em incrementos de');
-      this.appendValueInput('BY').setCheck('Number');
-      this.appendStatementInput('DO').appendField('fazer');
-      this.setInputsInline(true);
-      this.setPreviousStatement(true);
-      this.setNextStatement(true);
-      this.setColour('120');
-      this.setTooltip('Contar com uma variável de um valor até outro, em incrementos.');
-      this.setHelpUrl('');
-    },
-  };
-
-  Blockly.Blocks['robControls_forEach'] = {
-    init() {
-      this.appendDummyInput()
-        .appendField('para cada item')
-        .appendField(new Blockly.FieldVariable('i'), 'VAR')
-        .appendField('na lista');
-      this.appendValueInput('LIST').setCheck('Array');
-      this.appendStatementInput('DO').appendField('fazer');
-      this.setInputsInline(true);
-      this.setPreviousStatement(true);
-      this.setNextStatement(true);
-      this.setColour('120');
-      this.setTooltip('Iterar sobre cada item de uma lista.');
-      this.setHelpUrl('');
-    },
-  };
-
-  // ── Wait ────────────────────────────────────────────────────────────────────
-
-  Blockly.Blocks['robControls_wait'] = {
-    init() {
-      this.appendDummyInput().appendField('esperar');
-      this.setPreviousStatement(true);
-      this.setNextStatement(true);
-      this.setColour('120');
-      this.setTooltip('Ceder o controlo ao simulador por um ciclo.');
-      this.setHelpUrl('');
-    },
-  };
-
-  Blockly.Blocks['robControls_wait_time'] = {
-    init() {
-      this.appendDummyInput().appendField('esperar');
-      this.appendValueInput('WAIT').setCheck('Number');
-      this.appendDummyInput().appendField('ms');
-      this.setInputsInline(true);
-      this.setPreviousStatement(true);
-      this.setNextStatement(true);
-      this.setColour('120');
-      this.setTooltip('Esperar um determinado número de milissegundos.');
-      this.setHelpUrl('');
-    },
-  };
-
-  // robControls_wait_for — "wait until [cond]" with +/− to OR more conditions.
-  // Extra arms labelled "ou" (PT-PT "or"). Codegen ORs all WAIT* together.
-  Blockly.Blocks['robControls_wait_for'] = {
-    ...ROB_WAIT_FOR_MUTATOR,
-    init() {
-      this.appendValueInput('WAIT0').setCheck('Boolean').appendField('esperar até');
-      this.setPreviousStatement(true);
-      this.setNextStatement(true);
-      this.setColour('120');
-      this.setTooltip('Esperar até uma condição ser verdadeira.');
-      this.setHelpUrl('');
-      // BUTTONS row + any persisted extra WAITn arms are added here.
-      this.updateShape_();
-    },
-  };
-
-  // ── Custom Math ─────────────────────────────────────────────────────────────
-
-  Blockly.Blocks['robMath_change'] = {
-    init() {
-      this.appendDummyInput()
-        .appendField('aumentar')
-        .appendField(new Blockly.FieldVariable('i'), 'VAR')
-        .appendField('em');
-      this.appendValueInput('DELTA').setCheck('Number');
-      this.setInputsInline(true);
-      this.setPreviousStatement(true);
-      this.setNextStatement(true);
-      this.setColour('230');
-      this.setTooltip('Incrementar o valor de uma variável.');
-      this.setHelpUrl('');
-    },
-  };
-
-  // ── Custom Text ─────────────────────────────────────────────────────────────
-
-  // robText_join — concatenate values; +/− adds/removes input slots beyond
-  // the two base inputs (ADD0, ADD1). Codegen iterates ADD* dynamically.
-  Blockly.Blocks['robText_join'] = {
-    ...ROB_TEXT_JOIN_MUTATOR,
-    init() {
-      this.appendValueInput('ADD0').appendField('juntar');
-      this.appendValueInput('ADD1');
-      this.setOutput(true, 'String');
-      this.setColour('160');
-      this.setTooltip('Juntar textos num só.');
-      this.setHelpUrl('');
-      // BUTTONS row + any persisted extra ADDn arms are added here.
-      this.updateShape_();
-    },
-  };
-
-  Blockly.Blocks['robText_append'] = {
-    init() {
-      this.appendDummyInput().appendField('acrescentar texto');
-      this.appendValueInput('TEXT').setCheck('String');
-      this.appendDummyInput()
-        .appendField('à variável')
-        .appendField(new Blockly.FieldVariable('texto'), 'VAR');
-      this.setInputsInline(true);
-      this.setPreviousStatement(true);
-      this.setNextStatement(true);
-      this.setColour('160');
-      this.setTooltip('Acrescentar texto a uma variável de texto.');
-      this.setHelpUrl('');
-    },
-  };
-
-  // ── Comment ─────────────────────────────────────────────────────────────────
-
-  Blockly.Blocks['text_comment'] = {
-    init() {
-      // FieldMultilineInput is not available in Blockly 11; using FieldTextInput (single-line)
-      this.appendDummyInput()
-        .appendField('//')
-        .appendField(new Blockly.FieldTextInput(''), 'COMMENT');
-      this.setPreviousStatement(true);
-      this.setNextStatement(true);
-      this.setColour('290');
-      this.setTooltip('Comentário — não executado.');
-      this.setHelpUrl('');
     },
   };
 }
+
+// ── wait until … (or …) ──────────────────────────────────────────────────────
+// Open Roberta mutation: <mutation wait="n"/>. With n ≥ 1 every condition gets its own
+// statement input: WAIT0 DO0, WAIT1 DO1, … ("espera até … ou …").
+
+function defineWaitFor() {
+  const spec = orSpec('robControls_wait_for');
+  Blockly.Blocks['robControls_wait_for'] = {
+    ...makePlusMinusMutator({
+      mutationAttr: 'wait',
+      addExtraArm(block, n) {
+        if (n === 1 && !block.getInput('DO0')) {
+          block.appendStatementInput('DO0').appendField(orMsg('CONTROLS_REPEAT_INPUT_DO', 'faça'));
+        }
+        block.appendValueInput('WAIT' + n).setCheck('Boolean').appendField(orMsg('WAIT_OR', 'ou'));
+        block.appendStatementInput('DO' + n).appendField(orMsg('CONTROLS_REPEAT_INPUT_DO', 'faça'));
+      },
+      extraArmInputs: (n) => (n === 1 ? ['DO0', 'WAIT1', 'DO1'] : ['WAIT' + n, 'DO' + n]),
+    }),
+    init() {
+      initFromSpec(this, spec);
+      this.updateShape_();
+    },
+  };
+}
+
+// ── count with j from … to … by … ────────────────────────────────────────────
+// Open Roberta's PT message for this block lists the TO input twice (a translation
+// bug that renders an extra empty socket). We keep the single, correct TO input.
+// Intentional exception in scripts/or-fidelity-check.mjs.
+
+function defineFor() {
+  const spec = orSpec('robControls_for');
+  const seen = new Set();
+  const inputs = spec.inputs.filter((i) => {
+    if (!i.name) return true;
+    if (seen.has(i.name)) return false;
+    seen.add(i.name);
+    return true;
+  });
+  Blockly.Blocks['robControls_for'] = {
+    init() {
+      initFromSpec(this, { ...spec, inputs });
+    },
+  };
+}
+
+// ── for each item in list (typed) ────────────────────────────────────────────
+// Open Roberta mutation: <mutation list_type="Number"/>; LIST accepts Array_<type>.
+
+function defineForEach() {
+  const spec = orSpec('robControls_forEach');
+  Blockly.Blocks['robControls_forEach'] = {
+    init() {
+      const block = this;
+      initFromSpec(this, spec, {
+        TYPE(newValue) { block.updateType_(newValue); return newValue; },
+      });
+      // Like Open Roberta, LIST accepts any list type until a type is chosen/loaded.
+      this.listType_ = this.getFieldValue('TYPE');
+    },
+    updateType_(t) {
+      this.listType_ = t;
+      const inp = this.getInput('LIST');
+      if (inp) inp.setCheck('Array_' + t);
+    },
+    mutationToDom() {
+      const el = Blockly.utils.xml.createElement('mutation');
+      el.setAttribute('list_type', this.listType_);
+      return el;
+    },
+    domToMutation(el) {
+      const t = el.getAttribute('list_type');
+      if (t) this.updateType_(t);
+    },
+    saveExtraState() { return { list_type: this.listType_ }; },
+    loadExtraState(s) { if (s && s.list_type) this.updateType_(s.list_type); },
+  };
+}
+
+// ── Program start ────────────────────────────────────────────────────────────
+// Open Roberta: every program hangs under one non-deletable start block
+// ("iniciar"). Only blocks connected to it run. Global variable declarations
+// (<mutation declare="true"/>) are added together with the variable system.
+
+function defineStart() {
+  const spec = orSpec('robControls_start');
+  Blockly.Blocks['robControls_start'] = {
+    init() {
+      initFromSpec(this, spec);
+      this.setDeletable(false);
+      this.declare_ = false;
+    },
+    mutationToDom() {
+      const el = Blockly.utils.xml.createElement('mutation');
+      el.setAttribute('declare', String(!!this.declare_));
+      return el;
+    },
+    domToMutation(el) {
+      this.declare_ = el.getAttribute('declare') === 'true';
+    },
+    saveExtraState() { return { declare: !!this.declare_ }; },
+    loadExtraState(s) { this.declare_ = !!(s && s.declare); },
+  };
+}
+
+export function registerControlBlocks() {
+  defineOrBlocks(PLAIN_TYPES);
+  defineIf('robControls_if', false);
+  defineIf('robControls_ifElse', true);
+  defineWaitFor();
+  defineFor();
+  defineForEach();
+  defineStart();
+}
+

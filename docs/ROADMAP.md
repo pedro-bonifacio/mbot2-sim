@@ -11,20 +11,20 @@ Last reviewed: 2026-11-17
 
 Prerequisite for any evaluated level ([0003](decisions/0003-core-levels-use-real-robot-capabilities-only.md), [0004](decisions/0004-deterministic-simulation.md), [0008](decisions/0008-evaluation-on-physical-robot.md)).
 
-- [x] Sample programs built in the sim: `reference_openroberta/export-samples/sim/`
-- [x] Live Open Roberta catalogue extracted + `npm run or:check` ([0011](decisions/0011-live-open-roberta-as-fidelity-oracle.md))
-- [ ] **Fidelity sync:** fix blocks/codegen/robotAPI until `or:check` reports 0 (200 problems on 2026-11-17). Clean break: no saved programs in the old format exist, so no migration
+- [x] Live Open Roberta catalogue + semantics extracted; `npm run check` ([0011](decisions/0011-live-open-roberta-as-fidelity-oracle.md))
+- [x] **Fidelity sync:** blocks generated from the Open Roberta spec (`or:check`: 0 problems, was 200); codegen + robotAPI follow Open Roberta's generated MicroPython
+- [x] Program start block; only connected blocks run, loose stacks disabled (OR behaviour)
+- [x] Encoders signed, EM2 mirrored as on the robot
+- [x] HUD shows what each quad RGB probe reports (L2 L1 R1 R2)
+- [x] Open Open Roberta exports in the sim (**Carregar**) — tested with a real export
+- [ ] **Teacher:** run the checks in [`VERIFY_ON_ROBOT.md`](VERIFY_ON_ROBOT.md) with a real mBot 2
+- [ ] OR-style typed variables (declared on the start block), functions (`robProcedures_*`), lists inside variable declarations. The expert toolbox still offers Blockly's stock variables/functions, which Open Roberta can't import
+- [ ] **"Exportar para Open Roberta"**: `<export>`/`<block_set>` wrapper, sibling blocks, `<hide>` tags, embedded mBot 2 configuration, filename `<Nome>_<levelId>.xml`; validated by Open Roberta's server (source generation)
 - [ ] Confirm Open Roberta licence before reusing any of its code
-- [ ] **"Exportar para Open Roberta"**: OR `<export>`/`<block_set>` wrapper, `robControls_start`, embedded mBot 2 configuration, filename `<Nome>_<levelId>.xml`; round-trip tested by importing into OR Lab
-- [ ] OR-style global variables (declared in the start block) instead of stock Blockly variables. Needed for export.
-- [ ] Program start block; only connected blocks run, loose stacks disabled (OR behaviour)
 - [ ] Fixed-timestep physics + single simulated clock (`wait_ms`, timer sensor, tones, time limits)
 - [ ] Seeded PRNG utility for all randomness
 - [ ] Collision uses the oriented 17.5 × 13 cm footprint (`kinematics.js` uses a point, `runLoop.js` a 4.5 cm circle)
-- [ ] HUD colour readout samples the quad-RGB probes, not the robot centre (`canvas.js`)
-- [ ] Encoders signed (decrease when reversing); `kinematics.js` uses `Math.abs`
 - [ ] Headless runner: program + level + seed → result, no rendering
-- [ ] Verify quad-RGB probe spacing / forward offset against real hardware
 
 ## Phase B — QoL tier 1 (debugging & learning)
 

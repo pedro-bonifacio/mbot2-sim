@@ -2,10 +2,16 @@ import { robot, resetRobot, ROBOT_CONSTANTS } from './robot.js';
 import { step } from './kinematics.js';
 import { PX_PER_CM, worldToScreen } from './world.js';
 import { DISPLAY_SCALE, ROBOT_LENGTH_PX, ROBOT_WIDTH_PX } from './constants.js';
-import { drawMap, hasMap, getMapSizeCm, getColorNameAt } from './map.js';
+import { drawMap, hasMap, getMapSizeCm } from './map.js';
 import { ledState, resetLeds } from './leds.js';
 import { resetDisplay } from '../ui/display.js';
-import { getQuadRGBWorldPositions, getQuadRGBProbeData, getUltrasonicConeRays, resetTickCache } from './sensors.js';
+import { getQuadRGBWorldPositions, getQuadRGBProbeData, getUltrasonicConeRays, resetTickCache, sensorQuadRGB } from './sensors.js';
+
+// PT-PT names for the 8 colours the quad RGB sensor can report (HUD only).
+const COLOUR_NAMES = {
+  '#cc0000': 'vermelho', '#ffff00': 'amarelo', '#33cc00': 'verde', '#33ffff': 'ciano',
+  '#3366ff': 'azul', '#cc33cc': 'roxo', '#ffffff': 'branco', '#000000': 'preto',
+};
 
 let ctx    = null;
 let canvas = null;
@@ -235,14 +241,17 @@ function draw() {
 
   // Semi-transparent background behind HUD text
   ctx.fillStyle = 'rgba(0,0,0,0.45)';
-  ctx.fillRect(0, 0, Math.round(310 / cssScale), hudY0 + hudLine * lineCount + Math.round(6 / cssScale));
+  ctx.fillRect(0, 0, Math.round(420 / cssScale), hudY0 + hudLine * lineCount + Math.round(6 / cssScale));
 
   ctx.fillStyle = '#eee';
   ctx.font = `${hudFont}px monospace`;
   ctx.fillText(`x:${robot.x.toFixed(1)}cm  y:${robot.y.toFixed(1)}cm  θ:${(robot.theta * 180 / Math.PI).toFixed(1)}\xB0`, hudX, hudY0);
   ctx.fillText(`vL:${robot.vL} vR:${robot.vR} RPM`, hudX, hudY0 + hudLine);
   ctx.fillText(`dist:${robot.totalDistanceCm.toFixed(1)}cm`, hudX, hudY0 + hudLine * 2);
-  ctx.fillText(`color: ${getColorNameAt(robot.x, robot.y)}`, hudX, hudY0 + hudLine * 3);
+  // What the quad RGB sensor reports for each probe, left to right (L2 L1 R1 R2).
+  const probeColours = ['L2', 'L1', 'R1', 'R2']
+    .map(slot => `${slot}:${COLOUR_NAMES[sensorQuadRGB('COLOUR', slot)] || '?'}`).join(' ');
+  ctx.fillText(probeColours, hudX, hudY0 + hudLine * 3);
   if (paused) {
     ctx.fillStyle = '#f87171';
     ctx.fillText('PAUSADO', hudX, hudY0 + hudLine * 4);

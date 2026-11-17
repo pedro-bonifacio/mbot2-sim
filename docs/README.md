@@ -25,6 +25,7 @@ you are looking at tells you how much to trust it and how to change it.
 - [`ROADMAP.md`](ROADMAP.md) — phased work plan, QoL backlog, known issues.
 - [`CURRICULUM.md`](CURRICULUM.md) — pedagogical principles and the world/level structure.
 - [`WORKFLOW.md`](WORKFLOW.md) — classroom workflow, from learning to evaluation on the mat.
+- [`VERIFY_ON_ROBOT.md`](VERIFY_ON_ROBOT.md) — sim assumptions only the physical robot can confirm, with test programs.
 
 ## Reference
 

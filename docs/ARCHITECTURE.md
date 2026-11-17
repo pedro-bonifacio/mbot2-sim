@@ -102,18 +102,18 @@ src/
 
 When a user drags a block and clicks Run, this is the complete path:
 
-1. **Block definition** (`src/blockly/blocks/*.js`)
-   Registers a Blockly block type with `Blockly.common.defineBlocks()`. Sets the visual shape (inputs, dropdowns, default values), colour, and tooltip. Block type IDs must match Open Roberta exactly (e.g. `robActions_motorDiff_on_for`).
+1. **Block definition** (`src/blockly/blocks/*.js`, one file per Open Roberta category)
+   Blocks are generated from the live Open Roberta spec (`src/blockly/generated/orSpecs.js`, built by `npm run or:specs` from `reference_openroberta/live/`, decision 0011). `blocks/_orFactory.js` turns a spec into a Blockly definition: inputs, labels, dropdowns, hidden fields (`ACTORPORT`…), colour, connection checks, and sensor `<mutation mode>` behaviour. Category files add hand-written behaviour only for Open Roberta's dynamic blocks (if/else-if +/−, wait-until arms, typed lists, generic sensor block). `npm run or:check` proves the result matches Open Roberta field for field.
 
-2. **Toolbox JSON** (`src/blockly/toolboxes/beginner.js` / `expert.js`)
-   References the block by type ID inside a category tree. Mirrors the structure of the Open Roberta XML files in `reference_openroberta/`.
+2. **Toolbox** (`src/blockly/toolboxes/index.js`)
+   Built directly from Open Roberta's mBot 2 toolbox XML (beginner/expert), with PT category names. Every program hangs under the non-deletable start block (`src/blockly/startBlock.js`); loose blocks are disabled and don't run.
 
 3. **Workspace → JS string** (`src/codegen/`)
-   `generateCode(workspace)` (from `src/codegen/index.js`) calls Blockly's `javascriptGenerator.workspaceToCode(workspace)`. Each block type has a registered generator function (e.g. `javascriptGenerator.forBlock['robActions_motorDiff_on_for']`) that emits a JS fragment like:
+   `generateCode(workspace)` generates only the chain under the start block (plus function definitions). Each block type has a generator (`javascriptGenerator.forBlock[type]`) emitting ES5 such as:
    ```js
-   robotAPI.drive_for('FORWARD', 30, 50, callback_0);
+   robotAPI.drive_for("FOREWARD", 30, 50);
    ```
-   Async blocks use `createJsAsyncWrapper` (from `builtin.js`) to emit the JS-Interpreter async calling convention.
+   Async robot calls are plain calls in the generated code; `src/runtime/sandbox.js` wraps the robotAPI methods marked `_async` with JS-Interpreter's async calling convention. Semantics follow the MicroPython Open Roberta generates for the robot (`reference_openroberta/live/or-mbot2-semantics.json`).
 
 4. **JS-Interpreter execution** (`src/runtime/`)
    `src/runtime/runLoop.js` creates a new `Interpreter` instance with the generated code string, then drives it with up to `STEP_BUDGET_PER_FRAME = 1000` `step()` calls per RAF frame.
@@ -305,25 +305,7 @@ At runtime, `src/sim/mapCatalogue.js` fetches `/maps/catalogue.json` and populat
 
 ## Codegen registry
 
-`src/codegen/index.js` is the entry point for code generation:
-
-```js
-import './builtin.js';      // applies before domain registrations
-import './stubs.js';        // prevents "no generator" warnings for unregistered blocks
-import { registerActionCodegen }       from './action.js';
-import { registerSensorCodegen }       from './sensor.js';
-import { registerControlCodegen }      from './control.js';
-import { registerExprCodegen }         from './expr.js';
-import { registerCommunicationCodegen } from './communication.js';
-
-registerActionCodegen();
-registerSensorCodegen();
-registerControlCodegen();
-registerExprCodegen();
-registerCommunicationCodegen();
-```
-
-Each `register*` function calls `javascriptGenerator.forBlock['block_type_id'] = (block) => { ... }` for every block it owns.
+`src/codegen/index.js` registers the domain modules (`action.js`, `sensor.js`, `control.js`, `expr.js`, `communication.js`) and exports `generateCode`. Stock Blockly generators are reused where Open Roberta uses the same field/input names (logic, most math). `npm run or:codegen` generates and parses code for every toolbox block and imports the Open Roberta export samples.
 
 ### Adding a new block's codegen
 
@@ -335,7 +317,7 @@ Each `register*` function calls `javascriptGenerator.forBlock['block_type_id'] =
      return `robotAPI.my_method(${val});\n`;
    };
    ```
-3. For async blocks, wrap with the async convention — see any existing `drive_for` or `turn_for` codegen entry as a template.
+3. For async behaviour, add the method to `robotAPI.js` and include its name in the `_async` list at the bottom of that file.
 
 The generated code runs inside JS-Interpreter under ES5 semantics — do not emit `let`, `const`, arrow functions, template literals, or any ES6+ syntax.
 

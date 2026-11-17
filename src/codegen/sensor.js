@@ -1,141 +1,57 @@
 import { javascriptGenerator, Order } from 'blockly/javascript';
 
+// Codegen for TOOLBOX_SENSOR blocks. Field values are Open Roberta's (ports U, Q,
+// R/L, A/B; probes L1, L2, R1, R2; axes X/Y/Z; timers 1–5).
+// Semantics: reference_openroberta/live/or-mbot2-semantics.json.
+
+const f = (block, name) => JSON.stringify(block.getFieldValue(name));
+const call = (code) => [code, Order.FUNCTION_CALL];
+
+// Shared by the dedicated sensor blocks and the generic robSensors_getSample.
+// mode/port/slot are JS string literals.
+function sensorCall(kind, mode, port, slot) {
+  switch (kind) {
+    case 'ULTRASONIC':    return `robotAPI.ultrasonic()`;
+    case 'QUADRGB':       return `robotAPI.quadrgb(${mode}, ${slot})`;
+    case 'LINE':          return `robotAPI.line()`;
+    case 'SOUND':         return `robotAPI.sound()`;
+    case 'JOYSTICK':      return `robotAPI.joystick(${slot})`;
+    case 'KEY':           return `robotAPI.key(${port})`;
+    case 'LIGHT':         return `robotAPI.light()`;
+    case 'GYRO':          return `robotAPI.gyro(${slot})`;
+    case 'ACCELEROMETER': return `robotAPI.accel(${slot})`;
+    case 'TIMER':         return `robotAPI.timer(${port})`;
+    case 'ENCODER':       return `robotAPI.encoder(${port}, ${mode})`;
+    default: throw new Error('unknown sensor kind ' + kind);
+  }
+}
+
 export function registerSensorCodegen() {
+  const G = javascriptGenerator.forBlock;
 
-  // ── Ultrasonic ──────────────────────────────────────────────────────────────
+  G['robSensors_ultrasonic_getSample'] = () => call(sensorCall('ULTRASONIC'));
+  G['robSensors_quadrgb_getSample'] = (b) => call(sensorCall('QUADRGB', f(b, 'MODE'), null, f(b, 'SLOT')));
+  G['robSensors_line_getSample'] = () => call(sensorCall('LINE'));
+  G['robSensors_sound_getSample'] = () => call(sensorCall('SOUND'));
+  G['robSensors_sound_record'] = (b) => `robotAPI.sound_record(${f(b, 'MODE')});\n`;
+  G['robSensors_joystickKeys_getSample'] = (b) => call(sensorCall('JOYSTICK', null, null, f(b, 'SLOT')));
+  G['robSensors_key_getSample'] = (b) => call(sensorCall('KEY', null, f(b, 'SENSORPORT')));
+  G['robSensors_light_getSample'] = () => call(sensorCall('LIGHT'));
+  G['robSensors_gyro_getSample'] = (b) => call(sensorCall('GYRO', null, null, f(b, 'SLOT')));
+  G['robSensors_gyro_reset_axis'] = (b) => `robotAPI.gyro_reset(${f(b, 'SLOT')});\n`;
+  G['robSensors_accelerometer_getSample'] = (b) => call(sensorCall('ACCELEROMETER', null, null, f(b, 'SLOT')));
+  G['robSensors_timer_getSample'] = (b) => call(sensorCall('TIMER', null, f(b, 'SENSORPORT')));
+  G['robSensors_timer_reset'] = (b) => `robotAPI.timer_reset(${f(b, 'SENSORPORT')});\n`;
+  G['robSensors_encoder_getSample'] = (b) => call(sensorCall('ENCODER', f(b, 'MODE'), f(b, 'SENSORPORT')));
+  G['robSensors_encoder_reset'] = (b) => `robotAPI.encoder_reset(${f(b, 'SENSORPORT')});\n`;
 
-  javascriptGenerator.forBlock['robSensors_ultrasonic_getSample'] = function (_block) {
-    return [`robotAPI.ultrasonic()`, Order.FUNCTION_CALL];
-  };
-
-  // ── QuadRGB ─────────────────────────────────────────────────────────────────
-
-  // SENSORPORT: which sensor ('1'), SLOT: probe 1..4, MODE: COLOUR|LIGHT|RGB
-  javascriptGenerator.forBlock['robSensors_quadrgb_getSample'] = function (block) {
-    const mode   = block.getFieldValue('MODE')       || 'COLOUR';
-    const sensor = block.getFieldValue('SENSORPORT') || '1';
-    const probe  = block.getFieldValue('SLOT')       || '1';
-    return [`robotAPI.quadRGB(${JSON.stringify(mode)}, ${JSON.stringify(sensor)}, ${JSON.stringify(probe)})`, Order.FUNCTION_CALL];
-  };
-
-  // ── Line sensor ─────────────────────────────────────────────────────────────
-
-  // ⚠ MODE codes (L/R/ALL/CODE) not verified from XML — chosen to match block def.
-  javascriptGenerator.forBlock['robSensors_line_getSample'] = function (block) {
-    const mode = block.getFieldValue('MODE');
-    return [`robotAPI.line(${JSON.stringify(mode)})`, Order.FUNCTION_CALL];
-  };
-
-  // ── Sound / Microphone ──────────────────────────────────────────────────────
-
-  javascriptGenerator.forBlock['robSensors_sound_getSample'] = function (_block) {
-    return [`robotAPI.sound()`, Order.FUNCTION_CALL];
-  };
-
-  // Statement: start/stop sound recording
-  javascriptGenerator.forBlock['robSensors_sound_record'] = function (block) {
-    const cmd      = block.getFieldValue('CMD');
-    const duration = javascriptGenerator.valueToCode(block, 'DURATION', Order.NONE) || '0';
-    return `robotAPI.sound_record(${JSON.stringify(cmd)}, ${duration});\n`;
-  };
-
-  // ── Joystick / Keys ─────────────────────────────────────────────────────────
-
-  // DIRECTION field: UP | DOWN | LEFT | RIGHT | MIDDLE
-  javascriptGenerator.forBlock['robSensors_joystickKeys_getSample'] = function (block) {
-    const dir = block.getFieldValue('DIRECTION');
-    return [`robotAPI.joystick(${JSON.stringify(dir)})`, Order.FUNCTION_CALL];
-  };
-
-  // KEY field: A | B
-  javascriptGenerator.forBlock['robSensors_key_getSample'] = function (block) {
-    const key = block.getFieldValue('KEY');
-    return [`robotAPI.key(${JSON.stringify(key)})`, Order.FUNCTION_CALL];
-  };
-
-  // ── Ambient light ───────────────────────────────────────────────────────────
-
-  javascriptGenerator.forBlock['robSensors_light_getSample'] = function (_block) {
-    return [`robotAPI.light()`, Order.FUNCTION_CALL];
-  };
-
-  // ── Gyroscope ───────────────────────────────────────────────────────────────
-
-  // ⚠ SLOT field verified as ANGLE | RATE in block def (guessed — OR may use MODE).
-  // AXIS field: X | Y | Z
-  javascriptGenerator.forBlock['robSensors_gyro_getSample'] = function (block) {
-    const slot = block.getFieldValue('SLOT'); // ANGLE or RATE
-    const axis = block.getFieldValue('AXIS'); // X, Y, Z
-    return [`robotAPI.gyro(${JSON.stringify(slot)}, ${JSON.stringify(axis)})`, Order.FUNCTION_CALL];
-  };
-
-  // Statement: reset gyro accumulator for an axis
-  // AXIS field: ALL | X | Y | Z
-  javascriptGenerator.forBlock['robSensors_gyro_reset_axis'] = function (block) {
-    const axis = block.getFieldValue('AXIS');
-    return `robotAPI.gyro_reset(${JSON.stringify(axis)});\n`;
-  };
-
-  // ── Accelerometer ───────────────────────────────────────────────────────────
-
-  // AXIS field: X | Y | Z
-  javascriptGenerator.forBlock['robSensors_accelerometer_getSample'] = function (block) {
-    const axis = block.getFieldValue('AXIS');
-    return [`robotAPI.accel(${JSON.stringify(axis)})`, Order.FUNCTION_CALL];
-  };
-
-  // ── Timer ───────────────────────────────────────────────────────────────────
-
-  // SENSORPORT field: '1' | '2'
-  javascriptGenerator.forBlock['robSensors_timer_getSample'] = function (block) {
-    const slot = block.getFieldValue('SENSORPORT');
-    return [`robotAPI.timer(${JSON.stringify(slot)})`, Order.FUNCTION_CALL];
-  };
-
-  // Statement: reset timer slot
-  javascriptGenerator.forBlock['robSensors_timer_reset'] = function (block) {
-    const slot = block.getFieldValue('SENSORPORT');
-    return `robotAPI.timer_reset(${JSON.stringify(slot)});\n`;
-  };
-
-  // ── Encoder ─────────────────────────────────────────────────────────────────
-
-  // ⚠ MODE codes (ROTATION/DEGREE/DISTANCE) not verified from XML — chosen to match block def.
-  // MOTORPORT field: EM1 | EM2
-  // MODE field: ROTATION | DEGREE | DISTANCE
-  javascriptGenerator.forBlock['robSensors_encoder_getSample'] = function (block) {
-    const port = block.getFieldValue('MOTORPORT');
-    const mode = block.getFieldValue('MODE');
-    return [`robotAPI.encoder(${JSON.stringify(port)}, ${JSON.stringify(mode)})`, Order.FUNCTION_CALL];
-  };
-
-  // Statement: zero encoder for a motor port
-  javascriptGenerator.forBlock['robSensors_encoder_reset'] = function (block) {
-    const port = block.getFieldValue('MOTORPORT');
-    return `robotAPI.encoder_reset(${JSON.stringify(port)});\n`;
-  };
-
-  // ── Generic dispatcher (robSensors_getSample) ────────────────────────────────
-  // Used inside "wait until" blocks. Dispatches on SENSORTYPE + SENSORMODE.
-
-  javascriptGenerator.forBlock['robSensors_getSample'] = function (block) {
-    const type = block.getFieldValue('SENSORTYPE');
-    const mode = block.getFieldValue('SENSORMODE');
-    let code;
-    switch (type) {
-      case 'ULTRASONIC': code = `robotAPI.ultrasonic()`;                             break;
-      case 'QUADRGB':    code = `robotAPI.quadrgb(${JSON.stringify(mode)})`;         break;
-      case 'KEY':        code = `robotAPI.key('A')`;                                 break;
-      case 'JOYSTICK':   code = `robotAPI.joystick('UP')`;                           break;
-      case 'LIGHT':      code = `robotAPI.light()`;                                  break;
-      case 'GYRO':       code = `robotAPI.gyro('ANGLE', 'Z')`;                       break;
-      case 'ACCEL':      code = `robotAPI.accel('Z')`;                               break;
-      case 'TIMER':      code = `robotAPI.timer('1')`;                               break;
-      case 'ENCODER':    code = `robotAPI.encoder('EM1', 'DEGREE')`;                 break;
-      case 'LINE':       code = `robotAPI.line('CODE')`;                             break;
-      case 'SOUND':      code = `robotAPI.sound()`;                                  break;
-      default:           code = `0`;                                                  break;
-    }
-    return [code, Order.FUNCTION_CALL];
+  // Generic sensor block (inside "espera até"): SENSORTYPE = <KIND>_<MODE>.
+  G['robSensors_getSample'] = (b) => {
+    const type = b.getFieldValue('SENSORTYPE');
+    const [kind, mode] = type.split(/_(.+)/);
+    const port = b.getField('SENSORPORT') ? f(b, 'SENSORPORT') : 'null';
+    const slot = b.getField('SLOT') ? f(b, 'SLOT') : 'null';
+    const k = kind === 'QUADRGB' && mode === 'LINE' ? 'LINE' : kind;
+    return call(sensorCall(k, JSON.stringify(mode), port, slot));
   };
 }

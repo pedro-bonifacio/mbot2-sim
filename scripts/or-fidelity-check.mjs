@@ -1,10 +1,16 @@
 #!/usr/bin/env node
-// Compares the sim's Blockly blocks and toolboxes against the live Open Roberta Lab
-// catalogue (reference_openroberta/live/or-mbot2-catalogue.json, extracted from
-// lab.open-roberta.org with the mBot 2 robot and PT language selected).
+// Checks the sim's blocks against the live Open Roberta Lab catalogue (decision 0011).
+//
+// For every block in Open Roberta's mBot 2 toolboxes (beginner + expert):
+//   1. load Open Roberta's own toolbox XML for it into the sim's block definitions,
+//   2. compare shape: inputs, checks, fields, dropdown options, defaults, labels,
+//      connections, colour,
+//   3. compare serialisation: the field values and <mutation> attributes the sim
+//      writes vs. the XML Open Roberta writes (this is what export depends on).
+// Sensor mode variants and the generic sensor block's variants are checked too.
 //
 // Usage:  node scripts/or-fidelity-check.mjs [--json]
-// Output: a Markdown report on stdout (or JSON with --json). Exit code 1 if mismatches.
+// Exit code 1 if any non-excepted problem remains.
 
 import * as Blockly from 'blockly';
 import fs from 'fs';
@@ -12,138 +18,194 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const CATALOGUE = path.join(ROOT, 'reference_openroberta/live/or-mbot2-catalogue.json');
-const cat = JSON.parse(fs.readFileSync(CATALOGUE, 'utf8'));
+const LIVE = path.join(ROOT, 'reference_openroberta/live');
+const cat = JSON.parse(fs.readFileSync(path.join(LIVE, 'or-mbot2-catalogue.json'), 'utf8'));
+const dyn = JSON.parse(fs.readFileSync(path.join(LIVE, 'or-mbot2-dynamic.json'), 'utf8'));
 
-// ── Load the sim's block definitions headlessly ─────────────────────────────
-const reg = [
-  ['blockly/blocks/action.js', 'registerActionBlocks'],
-  ['blockly/blocks/sensor.js', 'registerSensorBlocks'],
-  ['blockly/blocks/control.js', 'registerControlBlocks'],
-  ['blockly/blocks/list.js', 'registerListBlocks'],
-  ['blockly/blocks/colour.js', 'registerColourBlocks'],
-  ['blockly/blocks/communication.js', 'registerCommunicationBlocks'],
+const { registerAllBlocks } = await import(path.join(ROOT, 'src/blockly/index.js'));
+const { OR } = await import(path.join(ROOT, 'src/blockly/generated/orSpecs.js'));
+registerAllBlocks();
+
+// Intentional differences, each with a reason. Keyed "type: problem-prefix".
+const EXCEPTIONS = [
+  ['robControls_for', 'inputs differ',
+    'OR\'s PT translation lists the TO input twice (renders an empty socket); the sim keeps one TO.'],
+  ['robControls_for', 'labels differ',
+    'Follows from the duplicate TO input above.'],
 ];
-for (const [f, fn] of reg) (await import(path.join(ROOT, 'src', f)))[fn]();
-const { beginnerToolbox } = await import(path.join(ROOT, 'src/blockly/toolboxes/beginner.js'));
-const { expertToolbox } = await import(path.join(ROOT, 'src/blockly/toolboxes/expert.js'));
+const isExcepted = (type, problem) =>
+  EXCEPTIONS.some(([t, prefix]) => (t === type || t === '*') && problem.startsWith(prefix));
 
 const ws = new Blockly.Workspace();
+const IGNORE_LABEL_FIELDS = new Set(['SENSORTITLE', 'UNIT', 'TITLE_FOREVER', 'RPM', 'SPACE', 'GET', 'WITH']);
 
-// Fields that OR hides from the user (ACTORPORT etc.) or uses as labels/units.
-const IGNORE_FIELDS = new Set(['SENSORTITLE', 'UNIT']);
-
-function orFields(entry) {
-  const out = {};
-  for (const inp of entry.shape) for (const f of inp.fields) {
-    if (!f.name || IGNORE_FIELDS.has(f.name)) continue;
-    out[f.name] = { value: f.value, options: f.options ? f.options.map(o => o[1]) : null, visible: f.visible };
-  }
-  return out;
-}
-function orInputs(entry) {
-  return entry.shape.filter(i => i.name && i.type !== 5).map(i => i.name);
+function load(xml) {
+  // <hide> is Open Roberta's own tag for hidden-field values; Blockly ignores it.
+  const dom = Blockly.utils.xml.textToDom(xml.replace(/ xmlns="[^"]*"/g, '').replace(/<hide [^>]*><\/hide>|<hide [^>]*\/>/g, ''));
+  return Blockly.Xml.domToBlock(dom, ws);
 }
 
-function simDescribe(type) {
-  if (!Blockly.Blocks[type]) return null;
-  let b;
-  try { b = ws.newBlock(type); } catch (e) { return { error: String(e) }; }
-  const fields = {};
+function describeSim(block) {
   const inputs = [];
-  for (const inp of b.inputList) {
-    if (inp.name && inp.type !== 5) inputs.push(inp.name);
+  for (const inp of block.inputList) {
+    if (inp.name === 'BUTTONS') continue; // +/− buttons (OR uses mutator icons)
+    const fields = [];
     for (const f of inp.fieldRow) {
-      if (!f.name || IGNORE_FIELDS.has(f.name)) continue;
-      let options = null;
-      if (f instanceof Blockly.FieldDropdown) {
-        try { options = f.getOptions(false).map(o => o[1]); } catch { options = null; }
-      }
-      fields[f.name] = { value: f.getValue(), options };
+      const isDrop = f instanceof Blockly.FieldDropdown;
+      fields.push({
+        name: f.name || null,
+        value: f.getValue(),
+        text: f.getText(),
+        visible: f.isVisible(),
+        options: isDrop ? f.getOptions(false).map(o => o[1]) : null,
+      });
     }
+    inputs.push({ name: inp.name || null, type: inp.type, check: inp.connection ? inp.connection.getCheck() : null, fields });
   }
-  b.dispose();
-  return { fields, inputs };
+  return {
+    inputs,
+    output: block.outputConnection ? (block.outputConnection.getCheck() || null) : false,
+    prev: !!block.previousConnection,
+    next: !!block.nextConnection,
+    colour: block.getColour(),
+  };
 }
 
-function simToolboxTypes(tb) {
-  const out = [];
-  const walk = (node, p) => {
-    for (const c of node.contents || []) {
-      if (c.kind === 'category') walk(c, p.concat(c.name));
-      else if (c.kind === 'block') out.push({ type: c.type, path: p });
-    }
-  };
-  walk(tb, []);
+const norm = (c) => (c == null ? null : JSON.stringify([].concat(c).slice().sort()));
+const labels = (shape) => shape.flatMap(i => i.fields)
+  .filter(f => !f.name || (!IGNORE_LABEL_FIELDS.has(f.name) && f.kind === 'label'))
+  .map(f => String(f.text).trim()).filter(Boolean);
+const simLabels = (inputs) => inputs.flatMap(i => i.fields)
+  .filter(f => !f.name && f.visible)
+  .map(f => String(f.text).trim()).filter(Boolean);
+
+function serialisedFields(xml) {
+  const top = xml.replace(/ xmlns="[^"]*"/g, '');
+  // Only the block's own fields: strip nested <value>/<statement> children first.
+  const own = top.replace(/<(value|statement)\b[\s\S]*?<\/\1>/g, '');
+  const out = {};
+  for (const m of own.matchAll(/<field name="([^"]+)">([^<]*)<\/field>/g)) out[m[1]] = m[2];
+  return out;
+}
+function mutationAttrs(xml) {
+  const m = xml.replace(/ xmlns="[^"]*"/g, '').match(/^<block[^>]*>\s*<mutation([^>]*)\/?>/);
+  const out = {};
+  if (m) for (const a of m[1].matchAll(/([\w_]+)="([^"]*)"/g)) out[a[1]] = a[2];
   return out;
 }
 
-// ── Compare ──────────────────────────────────────────────────────────────────
-const report = { meta: cat.meta, levels: {} };
-let problems = 0;
+function compare(type, orEntry, simBlock) {
+  const p = [];
+  const sim = describeSim(simBlock);
 
-for (const [lvl, simTb] of [['beginner', beginnerToolbox], ['expert', expertToolbox]]) {
-  const orBlocks = cat.toolboxes[lvl].blocks;
-  const simBlocks = simToolboxTypes(simTb);
-  const orTypes = orBlocks.map(b => b.type);
-  const simTypes = simBlocks.map(b => b.type);
-  const r = {
-    missingInSim: [...new Set(orTypes.filter(t => !simTypes.includes(t)))],
-    extraInSim: [...new Set(simTypes.filter(t => !orTypes.includes(t)))],
-    orderMatches: JSON.stringify(orTypes.filter(t => simTypes.includes(t))) === JSON.stringify(simTypes.filter(t => orTypes.includes(t))),
-    blocks: {},
-  };
-  problems += r.missingInSim.length + r.extraInSim.length + (r.orderMatches ? 0 : 1);
+  // Connections and output type.
+  const orOut = orEntry.output ? (orEntry.outputCheck || null) : false;
+  if ((orOut === false) !== (sim.output === false)) p.push(`output connection — OR ${orOut === false ? 'none' : 'yes'} vs sim ${sim.output === false ? 'none' : 'yes'}`);
+  else if (orOut !== false && norm(orOut) !== norm(sim.output)) p.push(`output type — OR ${JSON.stringify(orOut)} vs sim ${JSON.stringify(sim.output)}`);
+  if (orEntry.prev !== sim.prev) p.push(`previous connection — OR ${orEntry.prev} vs sim ${sim.prev}`);
+  if (orEntry.next !== sim.next) p.push(`next connection — OR ${orEntry.next} vs sim ${sim.next}`);
+  if (orEntry.colour && String(orEntry.colour).toLowerCase() !== String(sim.colour).toLowerCase()) p.push(`colour — OR ${orEntry.colour} vs sim ${sim.colour}`);
 
-  const seen = new Set();
-  for (const e of orBlocks) {
-    if (seen.has(e.type)) continue; // first toolbox occurrence is the canonical one
-    seen.add(e.type);
-    const sim = simDescribe(e.type);
-    const issues = [];
-    if (!sim) { issues.push('block type not defined in sim'); }
-    else if (sim.error) { issues.push('sim failed to create block: ' + sim.error); }
-    else {
-      const of = orFields(e);
-      for (const [name, f] of Object.entries(of)) {
-        const s = sim.fields[name];
-        if (!s) { issues.push(`missing field ${name}${f.visible ? '' : ' (hidden in OR)'} — OR default "${f.value}"`); continue; }
-        if (f.options && s.options) {
-          const miss = f.options.filter(o => !s.options.includes(o));
-          const extra = s.options.filter(o => !f.options.includes(o));
-          if (miss.length || extra.length) issues.push(`field ${name} options differ — OR [${f.options}] vs sim [${s.options}]`);
-        } else if (f.options && !s.options) issues.push(`field ${name} is a dropdown in OR [${f.options}] but not in sim`);
-        if (f.visible && f.value !== s.value && String(f.value) !== String(s.value)) issues.push(`field ${name} default — OR "${f.value}" vs sim "${s.value}"`);
-      }
-      for (const name of Object.keys(sim.fields)) if (!of[name]) issues.push(`extra field ${name} in sim (not in OR)`);
-      const oi = orInputs(e), si = sim.inputs;
-      if (JSON.stringify(oi) !== JSON.stringify(si)) issues.push(`inputs differ — OR [${oi}] vs sim [${si}]`);
-    }
-    if (issues.length) { r.blocks[e.type] = issues; problems += issues.length; }
+  // Inputs (value/statement), in order, with checks.
+  const orInputs = orEntry.shape.filter(i => i.name && i.type !== 5);
+  const simInputs = sim.inputs.filter(i => i.name && i.type !== Blockly.inputs.inputTypes.DUMMY && i.type !== 5);
+  const oi = orInputs.map(i => i.name), si = simInputs.map(i => i.name);
+  if (JSON.stringify(oi) !== JSON.stringify(si)) p.push(`inputs differ — OR [${oi}] vs sim [${si}]`);
+  else for (let k = 0; k < orInputs.length; k++) {
+    if (norm(orInputs[k].check) !== norm(simInputs[k].check)) p.push(`input ${oi[k]} check — OR ${JSON.stringify(orInputs[k].check)} vs sim ${JSON.stringify(simInputs[k].check)}`);
   }
-  report.levels[lvl] = r;
+
+  // Named fields: presence, visibility, dropdown options, defaults.
+  const simFields = Object.fromEntries(sim.inputs.flatMap(i => i.fields).filter(f => f.name).map(f => [f.name, f]));
+  for (const inp of orEntry.shape) for (const f of inp.fields) {
+    if (!f.name || IGNORE_LABEL_FIELDS.has(f.name)) continue;
+    const s = simFields[f.name];
+    if (!s) { p.push(`missing field ${f.name}`); continue; }
+    if (f.visible !== s.visible) p.push(`field ${f.name} visibility — OR ${f.visible} vs sim ${s.visible}`);
+    if (f.options) {
+      const ov = f.options.map(o => o[1]);
+      if (!s.options || JSON.stringify(ov) !== JSON.stringify(s.options)) p.push(`field ${f.name} options — OR [${ov}] vs sim [${s.options}]`);
+    }
+  }
+
+  // Visible labels, in order.
+  const ol = labels(orEntry.shape), sl = simLabels(sim.inputs);
+  if (JSON.stringify(ol) !== JSON.stringify(sl)) p.push(`labels differ — OR ${JSON.stringify(ol)} vs sim ${JSON.stringify(sl)}`);
+
+  // Serialisation: own field values + mutation attributes.
+  const simXml = Blockly.Xml.domToText(Blockly.Xml.blockToDom(simBlock));
+  const of = serialisedFields(orEntry.xml), sf = serialisedFields(simXml);
+  for (const [k, val] of Object.entries(of)) {
+    if (!(k in sf)) p.push(`serialised field ${k} missing — OR writes "${val}"`);
+    else if (String(sf[k]).toLowerCase() !== String(val).toLowerCase()) p.push(`serialised field ${k} — OR "${val}" vs sim "${sf[k]}"`);
+  }
+  for (const k of Object.keys(sf)) if (!(k in of)) p.push(`serialised field ${k} only in sim`);
+  const om = mutationAttrs(orEntry.xml), sm = mutationAttrs(simXml);
+  if (JSON.stringify(om) !== JSON.stringify(sm)) p.push(`mutation — OR ${JSON.stringify(om)} vs sim ${JSON.stringify(sm)}`);
+
+  return p;
 }
+
+function check(type, orEntry, xml) {
+  let block;
+  try { block = load(xml); } catch (e) { return [`failed to load OR XML into sim: ${e.message}`]; }
+  try { return compare(type, orEntry, block); } finally { block.dispose(); }
+}
+
+// ── Run ──────────────────────────────────────────────────────────────────────
+const results = []; // { group, type, problems:[{text, excepted}] }
+const push = (group, type, problems) => {
+  if (!problems.length) return;
+  results.push({ group, type, problems: problems.map(text => ({ text, excepted: isExcepted(type, text) })) });
+};
+
+if (OR.meta.extractedAt !== cat.meta.extractedAt) {
+  push('specs', 'orSpecs.js', [`generated specs are stale (catalogue ${cat.meta.extractedAt}, specs ${OR.meta.extractedAt}) — run npm run or:specs`]);
+}
+
+const seen = new Set();
+for (const lvl of ['beginner', 'expert']) {
+  for (const e of cat.toolboxes[lvl].blocks) {
+    if (seen.has(e.type)) continue;
+    seen.add(e.type);
+    if (!Blockly.Blocks[e.type]) { push('blocks', e.type, ['block type not defined in sim']); continue; }
+    // Load the toolbox XML (with default children) but compare against OR's serialisation.
+    push('blocks', e.type, check(e.type, e, e.toolboxXml));
+  }
+}
+
+for (const [type, variants] of Object.entries(dyn.modeVariants)) {
+  for (const v of variants) push('sensor modes', `${type} [${v.mode}]`, check(type, v, v.xml));
+}
+for (const g of dyn.getSample) {
+  push('generic sensor', `robSensors_getSample [${g.sensortype}]`, check('robSensors_getSample', g, g.xml));
+}
+
+const active = results.flatMap(r => r.problems.filter(p => !p.excepted).map(p => ({ ...r, p })));
+const excepted = results.flatMap(r => r.problems.filter(p => p.excepted).map(p => ({ ...r, p })));
 
 if (process.argv.includes('--json')) {
-  console.log(JSON.stringify(report, null, 2));
+  console.log(JSON.stringify({ meta: cat.meta, results }, null, 2));
 } else {
-  const L = [];
-  L.push(`# Open Roberta fidelity report`, ``,
-    `Catalogue: ${cat.meta.source} · robot ${cat.meta.robot} · lang ${cat.meta.lang} · extracted ${cat.meta.extractedAt}`, ``);
-  for (const [lvl, r] of Object.entries(report.levels)) {
-    L.push(`## ${lvl}`, ``);
-    L.push(`- Toolbox order matches (shared blocks): ${r.orderMatches ? 'yes' : '**no**'}`);
-    L.push(`- In OR but missing from sim toolbox: ${r.missingInSim.length ? r.missingInSim.map(t => '`' + t + '`').join(', ') : 'none'}`);
-    L.push(`- In sim toolbox but not in OR: ${r.extraInSim.length ? r.extraInSim.map(t => '`' + t + '`').join(', ') : 'none'}`, ``);
-    const entries = Object.entries(r.blocks);
-    L.push(`### Block mismatches (${entries.length})`, ``);
-    for (const [t, issues] of entries) {
-      L.push(`- \`${t}\``);
-      for (const i of issues) L.push(`  - ${i}`);
-    }
-    L.push('');
+  const L = ['# Open Roberta fidelity report', '',
+    `Catalogue: ${cat.meta.source} · robot ${cat.meta.robot} · lang ${cat.meta.lang} · extracted ${cat.meta.extractedAt}`, '',
+    `Checked ${seen.size} toolbox blocks, ${Object.values(dyn.modeVariants).flat().length} sensor-mode variants, ${dyn.getSample.length} generic-sensor variants.`, '',
+    `**Problems: ${active.length}** · intentional exceptions: ${excepted.length}`, ''];
+  let group = null;
+  for (const r of results) {
+    const act = r.problems.filter(p => !p.excepted);
+    if (!act.length) continue;
+    if (r.group !== group) { group = r.group; L.push(`## ${group}`, ''); }
+    L.push(`- \`${r.type}\``);
+    for (const p of act) L.push(`  - ${p.text}`);
   }
-  L.push(`**Total problems: ${problems}**`);
+  if (excepted.length) {
+    L.push('', '## Intentional exceptions', '');
+    for (const [t, prefix, reason] of EXCEPTIONS) {
+      const hits = excepted.filter(x => (t === '*' || x.type.startsWith(t)) && x.p.text.startsWith(prefix));
+      if (hits.length) L.push(`- \`${t}\` — ${prefix}: ${reason} (${hits.length})`);
+    }
+  }
   console.log(L.join('\n'));
 }
-process.exit(problems ? 1 : 0);
+process.exit(active.length ? 1 : 0);

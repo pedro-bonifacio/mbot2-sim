@@ -53,3 +53,8 @@ depends on exact matches.
 
 - **2026-11-17:** No programs in the old format exist, so the sync is a clean break.
   The "migrate old saved programs" consequence above is dropped.
+- **2026-11-17:** Behaviour is taken from Open Roberta too: the MicroPython its server
+  generates for every block is stored in `reference_openroberta/live/or-mbot2-semantics.json`.
+  This revealed that the real colour sensor has no orange (CLAUDE.md §10 updated), that
+  the right motor is mirrored, and that "contar com … até B" excludes B. Questions only
+  the physical robot can answer are tracked in `docs/VERIFY_ON_ROBOT.md`.
