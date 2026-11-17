@@ -43,11 +43,12 @@ Done this session (details in `CHANGELOG.md → Unreleased`):
    - [ ] **Level selector looks:** **★ Níveis** opens a window with the levels by world
          (id, title, ☆☆ / ★☆ / ★★, the open one outlined in blue) and the free maps; a click
          opens it. Is it clear and big enough for the class?
+   - [ ] **Read `docs/LEVEL_AUTHORING.md`** — is the workflow how you'd want to make levels?
    - [ ] **Robot in class:** `VERIFY_ON_ROBOT.md` (10 checks).
 2. **Build, level engine (Phase C), in this order:** ~~save stars and programs per level~~
    (done: each level keeps its own program and stars; **Guardar progresso** / **Abrir progresso**);
-   ~~level selector~~ (done: **★ Níveis**);
-   `docs/LEVEL_AUTHORING.md` (+ optional `/new-level` skill); `levels:mat` printable mats;
+   ~~level selector~~ (done: **★ Níveis**); ~~`docs/LEVEL_AUTHORING.md`~~ (done; optional
+   `/new-level` skill still open); `levels:mat` printable mats;
    PNG `background` in levels.
 3. Then content: evaluation levels (Phase D), World 1–4 levels.
 
@@ -104,7 +105,7 @@ Prerequisite for any evaluated level ([0003](decisions/0003-core-levels-use-real
 
 ## Phase C — Level engine & authoring toolchain
 
-Format: [`LEVEL_FORMAT.md`](LEVEL_FORMAT.md). Decisions: [0001](decisions/0001-self-directed-progression-no-locks.md), [0005](decisions/0005-randomised-level-variants.md), [0006](decisions/0006-level-goals-defined-as-data.md), [0009](decisions/0009-text-first-level-authoring.md).
+Format: [`LEVEL_FORMAT.md`](LEVEL_FORMAT.md); how-to: [`LEVEL_AUTHORING.md`](LEVEL_AUTHORING.md). Decisions: [0001](decisions/0001-self-directed-progression-no-locks.md), [0005](decisions/0005-randomised-level-variants.md), [0006](decisions/0006-level-goals-defined-as-data.md), [0009](decisions/0009-text-first-level-authoring.md).
 
 - [x] YAML level files + JSON Schema + Vite plugin (YAML → JSON, validated, solutions stripped)
 - [x] Map primitives renderer (wall, box, line, arc, patch, spawn) in cm, palette names (`src/levels/raster.js`) — PNG `background` not yet supported
@@ -117,7 +118,8 @@ Format: [`LEVEL_FORMAT.md`](LEVEL_FORMAT.md). Decisions: [0001](decisions/0001-s
 - [x] `npm run levels:check`: schema, solution must pass all seeds, anti-solutions must fail, preview PNG per level
 - [ ] `npm run levels:mat <id>`: printable mat at real scale, tiled A4/A3, variant marks
 - [x] `?level=<id>` opens a level; editing its YAML reloads it on the dev server
-- [ ] `docs/LEVEL_AUTHORING.md` (humans + LLMs); optional `/new-level` Claude Code skill
+- [x] `docs/LEVEL_AUTHORING.md` (humans + LLMs)
+- [ ] Optional `/new-level` Claude Code skill
 - [ ] Migrate existing maps; "Livre" sandbox keeps free map selection
 
 ## Phase D — Evaluation levels (first priority content)
