@@ -91,6 +91,11 @@ export const ptMessages = {
   LEVEL_FAILED_ERROR: '✗ O programa parou com um erro.',
   LEVEL_ALL_PASSED: '★★ Funciona em todas as %1 variantes!',
   LEVEL_ALL_FAILED: 'Funciona em %1 de %2 variantes. Falha na variante %3.',
+  PROGRESS_NOT_SAVED: 'Aviso: este browser não está a guardar o teu programa. Usa «Guardar» ou «Guardar progresso» antes de sair.',
+  PROGRESS_EXPORT_DONE: 'Progresso guardado: %1. Noutro computador, usa «Abrir progresso» com este ficheiro.',
+  PROGRESS_IMPORT_CONFIRM: 'Abrir um ficheiro de progresso junta as estrelas dele às tuas e substitui os programas guardados dos níveis que estão no ficheiro. Continuar?',
+  PROGRESS_IMPORT_ERROR: 'Este ficheiro não é um ficheiro de progresso válido.',
+  PROGRESS_IMPORT_DONE: 'Progresso aberto: estrelas de %1 nível(is), %2 programa(s).',
   PROGRAM_EXPORT_OR_NAME: 'O teu nome (fica no nome do ficheiro):',
   PROGRAM_EXPORT_OR_DONE: 'Exportado: %1. No Open Roberta Lab, escolhe «Importar programa» e abre este ficheiro.',
 };

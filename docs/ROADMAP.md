@@ -36,10 +36,13 @@ Done this session (details in `CHANGELOG.md → Unreleased`):
    - [x] **Level rules decided** ([decision 0013](decisions/0013-when-a-level-run-is-judged.md)):
      pass after 2 s still with the goals met; touching a wall always fails; a robot stopped
      5 s with a goal unmet fails early; levels can set `settle` / `stall`; variant 1 first.
-     Stars are not saved yet — next build item.
+   - [ ] **Progress looks:** open `?level=04-01`, build anything, switch to a free map and
+         back — each keeps its own program; reload — ★ and the program are still there.
+         **Guardar progresso** downloads `<Nome>_progresso_<data>.json`; in another browser
+         **Abrir progresso** brings stars and programs back.
    - [ ] **Robot in class:** `VERIFY_ON_ROBOT.md` (10 checks).
-2. **Build, level engine (Phase C), in this order:** save stars and programs per level
-   (localStorage + export/import file); level selector (worlds, ★ status, no locks);
+2. **Build, level engine (Phase C), in this order:** ~~save stars and programs per level~~
+   (done: each level keeps its own program and stars; **Guardar progresso** / **Abrir progresso**); level selector (worlds, ★ status, no locks);
    `docs/LEVEL_AUTHORING.md` (+ optional `/new-level` skill); `levels:mat` printable mats;
    PNG `background` in levels.
 3. Then content: evaluation levels (Phase D), World 1–4 levels.
@@ -106,7 +109,7 @@ Format: [`LEVEL_FORMAT.md`](LEVEL_FORMAT.md). Decisions: [0001](decisions/0001-s
 - [x] Variants: seeded parameters + ★★ robustness run (**Testar todas as variantes**)
 - [ ] Stars — ★/★★ shown, kept in memory only; ★★★ challenges not yet
 - [ ] Level selector: worlds, suggested path, concepts, ★ status (**no locks**) — for now levels are a group in the map menu
-- [ ] Per-level program save slots; progress export/import (file)
+- [x] Per-level program save slots; progress export/import (file) — `src/levels/progress.js`, `npm run progress:check`
 - [x] `npm run levels:check`: schema, solution must pass all seeds, anti-solutions must fail, preview PNG per level
 - [ ] `npm run levels:mat <id>`: printable mat at real scale, tiled A4/A3, variant marks
 - [x] `?level=<id>` opens a level; editing its YAML reloads it on the dev server
