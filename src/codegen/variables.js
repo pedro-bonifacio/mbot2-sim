@@ -68,6 +68,11 @@ export function registerVariableCodegen() {
   G['robProcedures_callreturn'] = (b) => [call(b), Order.FUNCTION_CALL];
 
   G['robProcedures_ifreturn'] = (b) => {
+    // Outside a function the block only carries a warning; a bare `return` would
+    // make the whole program unparseable.
+    let inDef = false;
+    for (let p = b.getSurroundParent(); p && !inDef; p = p.getSurroundParent()) inDef = /^robProcedures_def/.test(p.type);
+    if (!inDef) return '';
     const cond = v(b, 'CONDITION', Order.NONE) || 'false';
     const ret = b.hasReturnValue_
       ? `return ${v(b, 'VALUE', Order.NONE) || defaultLiteral(b.returnType_)};`

@@ -339,7 +339,7 @@ Variables follow Open Roberta, not Blockly's variable model. A variable exists b
 
 `variables_get` / `variables_set` refer to a declaration by name and carry its type (`<mutation datatype="Number"/>`), which sets their connection checks. Names are unique across the workspace (case-insensitive), so they map 1:1 onto JS names. Renaming a declaration renames its references; "−" on a declaration removes it and all its references, as in Open Roberta.
 
-`_varScope.syncWorkspace` is the one change listener that keeps this consistent: reference types, out-of-scope warnings, call arguments (`robProcedures_call*` mirror their definition's parameters and return type), the shape of "se … retorna …", and free names for pasted blocks. It's idempotent. `npm run or:variables` (`scripts/variables-check.mjs`) imports an Open Roberta-format program, runs it, and drives +/−/rename/type changes headlessly.
+`_varScope.syncWorkspace` is the one change listener that keeps this consistent: reference types, out-of-scope warnings, call arguments (`robProcedures_call*` mirror their definition's parameters and return type), the shape of "se … retorna …", and free names for pasted blocks. It's idempotent. `npm run or:variables` (`scripts/variables-check.mjs`) imports an Open Roberta-format program, runs it, and drives +/−/rename/type changes headlessly. It also checks the browser test programs `scripts/fixtures/teste-*.xml` (load them with **Carregar**).
 
 ---
 

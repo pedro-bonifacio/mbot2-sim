@@ -159,6 +159,54 @@ const flyoutText = (items) => items.map((el) => {
   ws.dispose();
 }
 
+// ── 3. Browser test programs (scripts/fixtures/teste-*.xml) ─────────────────
+// Each loads, carries exactly the expected warnings and generates valid ES5; the
+// finite ones run against a robotAPI stub that records calls.
+{
+  const expectations = {
+    'teste-1-variaveis.xml': { warnings: 0, calls: ['drive_for(30,20)', 'turn_for(30,90)', 'display_text(mBot volta 1,0,0)',
+      'drive_for(30,10)', 'turn_for(30,90)', 'display_text(mBot volta 2,0,0)', 'drive_for(30,30)', 'turn_for(30,90)',
+      'display_text(mBot volta 3,0,0)', 'display_text(terminou: true,0,1)'] },
+    'teste-2-funcao.xml': { warnings: 0, calls: [...Array(4).fill(['drive_for(30,20)', 'turn_for(30,90)']).flat(),
+      ...Array(4).fill(['drive_for(30,40)', 'turn_for(30,90)']).flat(), 'display_text(Feito,0,0)'] },
+    'teste-3-retorno.xml': { warnings: 0 },
+    'teste-4-erros.xml': { warnings: 4 },
+  };
+  for (const [file, exp] of Object.entries(expectations)) {
+    const ws = new Blockly.Workspace();
+    try {
+      const text = fs.readFileSync(path.join(ROOT, 'scripts/fixtures', file), 'utf8');
+      Blockly.Xml.domToWorkspace(openRobertaToBlocklyDom(text), ws);
+      syncBlocks(ws);
+      const warned = ws.getAllBlocks(false).filter((b) => b.robWarning_);
+      check(`${file} warnings`, warned.length === exp.warnings,
+        warned.map((b) => `${b.type}: ${b.robWarning_}`).join(' | ') || 'none');
+      const code = generateCode(ws);
+      if (verbose) console.log(`── ${file}\n${code}`);
+      if (!exp.calls) { new Interpreter(code); continue; }
+      const calls = [];
+      const interp = new Interpreter(code, (it, global) => {
+        const api = it.nativeToPseudo({});
+        it.setProperty(global, 'robotAPI', api);
+        for (const name of new Set([...code.matchAll(/robotAPI\.(\w+)/g)].map((m) => m[1]))) {
+          it.setProperty(api, name, it.createNativeFunction((...args) => {
+            const a = args.map((x) => it.pseudoToNative(x)).filter((x) => typeof x !== 'string' || !/^[A-Z_]+$/.test(x));
+            calls.push(`${name}(${a.join(',')})`);
+          }));
+        }
+      });
+      let steps = 0;
+      while (interp.step()) if (++steps > 1e6) throw new Error('did not finish');
+      const got = calls.filter((c) => /^(drive_for|turn_for|display_text)/.test(c));
+      check(`${file} run`, got.join(' ') === exp.calls.join(' '), got.join(' '));
+    } catch (e) {
+      failures.push(`${file}: ${e.message}`);
+    } finally {
+      ws.dispose();
+    }
+  }
+}
+
 console.log(`variables check: ${failures.length} failures`);
 for (const f of failures) console.log('  - ' + f);
 process.exit(failures.length ? 1 : 0);
