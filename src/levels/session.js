@@ -105,6 +105,8 @@ const observer = {
     state.lastVerdict = v;
     if (running()) endRun();
     if (v.passed) markStar('one');
+    // One layout only: passing it is already passing "every variant".
+    if (v.passed && testSeeds(state.level).length === 1) markStar('two');
     emit();
   },
 };

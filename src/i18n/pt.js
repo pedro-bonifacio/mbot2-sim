@@ -112,6 +112,7 @@ export const ptMessages = {
   LEVEL_FAILED_TIME: '✗ O tempo acabou (%1 s).',
   LEVEL_FAILED_STALLED: '✗ O robô parou sem cumprir o objetivo.',
   LEVEL_FAILED_ERROR: '✗ O programa parou com um erro.',
+  LEVEL_PASSED_ONLY_LAYOUT: '★★ Objetivo cumprido em %1 s!',
   LEVEL_TRY_ALL: 'Agora experimenta «Testar todas as variantes» para ganhar ★★.',
   LEVEL_NEXT: 'Próximo nível ›',
   LEVEL_NEXT_TITLE: 'Abrir o nível %1 · %2',

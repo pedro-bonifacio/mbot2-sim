@@ -113,6 +113,7 @@ The student sees the first seed first; **Outra variante** cycles through the see
 
 - ★ — the run passed on the variant on screen.
 - ★★ — **Testar todas as variantes**: the program passes on every seed (run headlessly).
+  A level with one layout (no `variants`) gives ★★ with the ★, and hides that button.
 - ★★★ — optional challenge (not implemented yet).
 
 ## Checking levels

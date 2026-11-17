@@ -69,7 +69,7 @@ function render(st) {
     <ul class="goals">${goals}</ul>
     ${result ? `<p class="result ${result.cls}">${esc(result.text)}</p>` : ''}
     <div class="level-actions">${variantRow}
-      <button data-action="all" title="${esc(MSG.LEVEL_CHECK_ALL_TITLE)}" ${isRunning ? 'disabled' : ''}>${MSG.LEVEL_CHECK_ALL}</button>
+      ${st.variants > 1 ? `<button data-action="all" title="${esc(MSG.LEVEL_CHECK_ALL_TITLE)}" ${isRunning ? 'disabled' : ''}>${MSG.LEVEL_CHECK_ALL}</button>` : ''}
       ${nextBtn}
     </div>`;
   if (v && v !== lastReported) { lastReported = v; reportRun(v, st); }
@@ -86,7 +86,7 @@ function nextLevel(level) {
 
 /** A run's verdict in words (PT-PT). */
 function verdictText(v, st) {
-  if (v.passed) return fmt(MSG.LEVEL_PASSED, v.timeS);
+  if (v.passed) return fmt(st.variants > 1 ? MSG.LEVEL_PASSED : MSG.LEVEL_PASSED_ONLY_LAYOUT, v.timeS);
   return v.reason === 'collision' ? MSG.LEVEL_FAILED_COLLISION
     : v.reason === 'timeLimit' ? fmt(MSG.LEVEL_FAILED_TIME, st.prepared.timeLimitS)
     : v.reason === 'stalled' ? MSG.LEVEL_FAILED_STALLED
