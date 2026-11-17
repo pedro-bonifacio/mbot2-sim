@@ -40,9 +40,13 @@ Done this session (details in `CHANGELOG.md → Unreleased`):
          back — each keeps its own program; reload — ★ and the program are still there.
          **Guardar progresso** downloads `<Nome>_progresso_<data>.json`; in another browser
          **Abrir progresso** brings stars and programs back.
+   - [ ] **Level selector looks:** **★ Níveis** opens a window with the levels by world
+         (id, title, ☆☆ / ★☆ / ★★, the open one outlined in blue) and the free maps; a click
+         opens it. Is it clear and big enough for the class?
    - [ ] **Robot in class:** `VERIFY_ON_ROBOT.md` (10 checks).
 2. **Build, level engine (Phase C), in this order:** ~~save stars and programs per level~~
-   (done: each level keeps its own program and stars; **Guardar progresso** / **Abrir progresso**); level selector (worlds, ★ status, no locks);
+   (done: each level keeps its own program and stars; **Guardar progresso** / **Abrir progresso**);
+   ~~level selector~~ (done: **★ Níveis**);
    `docs/LEVEL_AUTHORING.md` (+ optional `/new-level` skill); `levels:mat` printable mats;
    PNG `background` in levels.
 3. Then content: evaluation levels (Phase D), World 1–4 levels.
@@ -108,7 +112,7 @@ Format: [`LEVEL_FORMAT.md`](LEVEL_FORMAT.md). Decisions: [0001](decisions/0001-s
 - [x] Zone overlay rendering
 - [x] Variants: seeded parameters + ★★ robustness run (**Testar todas as variantes**)
 - [ ] Stars — ★/★★ shown, kept in memory only; ★★★ challenges not yet
-- [ ] Level selector: worlds, suggested path, concepts, ★ status (**no locks**) — for now levels are a group in the map menu
+- [x] Level selector: worlds, ★ status, kind badge (**no locks**) — `src/ui/levelSelector.js`; concepts per level still to show
 - [x] Per-level program save slots; progress export/import (file) — `src/levels/progress.js`, `npm run progress:check`
 - [x] `npm run levels:check`: schema, solution must pass all seeds, anti-solutions must fail, preview PNG per level
 - [ ] `npm run levels:mat <id>`: printable mat at real scale, tiled A4/A3, variant marks

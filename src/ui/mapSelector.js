@@ -7,6 +7,7 @@ import { stop as stopProgram } from '../runtime/runLoop.js';
 import { RunState, getRunState } from '../runtime/runState.js';
 import { appendConsoleMessage } from './console.js';
 import { listLevels, loadLevel, clearLevel } from '../levels/session.js';
+import { setToolboxMode } from '../blockly/index.js';
 import { ptMessages as MSG } from '../i18n/pt.js';
 
 let _catalogue   = [];
@@ -57,25 +58,61 @@ export async function initMapSelector() {
     const entry = kind === 'map' ? _catalogue.find(m => m.name === name) : null;
     if (kind === 'map' && !entry) return;
 
-    const state = getRunState();
-    if (state === RunState.RUNNING || state === RunState.PAUSED_ASYNC) {
-      const ok = window.confirm('Mudar de mapa irá parar o programa. Continuar?');
-      if (!ok) {
-        select.value = _activeMapName;  // revert dropdown to what is loaded
-        return;
-      }
-      stopProgram();
-      resetSim();
-      resumeSim();
+    if (!_stopIfRunning()) {
+      select.value = _activeMapName;  // revert dropdown to what is loaded
+      return;
     }
     if (kind === 'level') _selectLevel(name);
     else _loadMap(entry);
   });
 }
 
+/** Asks before stopping a running program; false = the student cancelled. */
+function _stopIfRunning() {
+  const state = getRunState();
+  if (state !== RunState.RUNNING && state !== RunState.PAUSED_ASYNC) return true;
+  if (!window.confirm(MSG.MAP_CHANGE_CONFIRM)) return false;
+  stopProgram();
+  resetSim();
+  resumeSim();
+  return true;
+}
+
+/** The free maps (name, url), for the level selector. */
+export function listFreeMaps() { return _catalogue.slice(); }
+
+/**
+ * Opens a level or a free map from the level selector, as the dropdown would
+ * (asks before stopping a running program). Returns false if cancelled.
+ */
+export async function openFromSelector(kind, name) {
+  if (!_stopIfRunning()) return false;
+  const select = document.getElementById('map-select');
+  if (kind === 'level') {
+    if (select) select.value = `level:${name}`;
+    _selectLevel(name);
+  } else {
+    const entry = _catalogue.find((m) => m.name === name);
+    if (!entry) return false;
+    if (select) select.value = `map:${entry.name}`;
+    await _loadMap(entry);
+  }
+  return true;
+}
+
+/** The level's toolbox (beginner/expert) when it opens; the student can still switch. */
+function _applyLevelToolbox(id) {
+  const level = listLevels().find((l) => l.id === id);
+  if (!level || !level.toolbox) return;
+  setToolboxMode(level.toolbox);
+  const sel = document.getElementById('toolbox-mode');
+  if (sel) sel.value = level.toolbox;
+}
+
 function _selectLevel(id) {
   try {
     loadLevel(id);
+    _applyLevelToolbox(id);
     _activeMapName = `level:${id}`;
   } catch (err) {
     console.error('[mapSelector] Failed to load level:', err);

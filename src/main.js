@@ -8,6 +8,7 @@ import { initButtons }     from './ui/buttons.js';
 import { initMapSelector } from './ui/mapSelector.js';
 import { initProgramIO }   from './ui/programIO.js';
 import { initLevelPanel }  from './ui/levelPanel.js';
+import { initLevelSelector } from './ui/levelSelector.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   initConsole();
@@ -19,6 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initProgramIO();   // auto-restore + auto-save must come after Blockly is mounted
   initButtons();
   initLevelPanel();
+  initLevelSelector();
   await initMapSelector();
   // Dev server only (stripped from builds): window.__dev for automated UI checks.
   if (import.meta.env.DEV) (await import('./dev/devHooks.js')).installDevHooks();
