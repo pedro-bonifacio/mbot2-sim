@@ -50,8 +50,8 @@ Done this session (details in `CHANGELOG.md → Unreleased`):
    (done: each level keeps its own program and stars; **Guardar progresso** / **Abrir progresso**);
    ~~level selector~~ (done: **★ Níveis**); ~~`docs/LEVEL_AUTHORING.md`~~ (done; optional
    `/new-level` skill still open); ~~`levels:mat` printable mats~~ (done);
-   PNG `background` in levels — **ask the teacher first** whether hand-drawn backgrounds are
-   still wanted (lines/arcs/patches cover most maps; it makes level loading async).
+   ~~PNG `background` in levels~~ (dropped 2026-11-17: not needed; the classroom setup is
+   coloured cardboard + boxes, see the kit item below).
 3. Then content: evaluation levels (Phase D), World 1–4 levels.
 
 **How we test** (decided 2026-11-17: the assistant tests itself; the teacher only checks looks):
@@ -110,7 +110,7 @@ Prerequisite for any evaluated level ([0003](decisions/0003-core-levels-use-real
 Format: [`LEVEL_FORMAT.md`](LEVEL_FORMAT.md); how-to: [`LEVEL_AUTHORING.md`](LEVEL_AUTHORING.md). Decisions: [0001](decisions/0001-self-directed-progression-no-locks.md), [0005](decisions/0005-randomised-level-variants.md), [0006](decisions/0006-level-goals-defined-as-data.md), [0009](decisions/0009-text-first-level-authoring.md).
 
 - [x] YAML level files + JSON Schema + Vite plugin (YAML → JSON, validated, solutions stripped)
-- [x] Map primitives renderer (wall, box, line, arc, patch, spawn) in cm, palette names (`src/levels/raster.js`) — PNG `background` not yet supported
+- [x] Map primitives renderer (wall, box, line, arc, patch, spawn) in cm, palette names (`src/levels/raster.js`) — PNG `background` dropped (teacher: not needed)
 - [x] Referee: goals evaluated each tick (browser and headless at the same ticks); result in the level panel and console, PT-PT
 - [x] Zone overlay rendering
 - [x] Variants: seeded parameters + ★★ robustness run (**Testar todas as variantes**)
