@@ -1,4 +1,4 @@
-import { generateCode } from '../codegen/index.js';
+import { generateCode, generateRunCode } from '../codegen/index.js';
 import { createInterpreter, destroyInterpreter, isInterpreterPaused } from './interpreter.js';
 import { tickProgram } from './programTick.js';
 import { RunState, getRunState, setRunState, asyncTicket } from './runState.js';
@@ -79,8 +79,8 @@ function _observe(ended) {
 
 export function run(workspace) {
   if (isActive()) return;
-  const jsCode = generateCode(workspace);
-  console.log('--- Generated JS ---\n' + jsCode + '\n--- End Generated JS ---');
+  const jsCode = generateRunCode(workspace);
+  console.log('--- Generated JS ---\n' + generateCode(workspace) + '\n--- End Generated JS ---');
   const seed = _observer && _observer.seed ? _observer.seed() : undefined;
   runCode(jsCode, seed === undefined ? {} : { seed });
 }

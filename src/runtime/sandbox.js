@@ -6,8 +6,20 @@ import { programRandom } from '../sim/random.js';
 // Injects robotAPI and console shims into the interpreter's global scope.
 export function initInterpreter(interpreter, globalObject) {
   _injectRobotAPI(interpreter, globalObject);
+  _injectHighlight(interpreter, globalObject);
   _injectConsole(interpreter, globalObject);
   _seedMathRandom(interpreter, globalObject);
+}
+
+// highlightBlock('<id>') — emitted before each statement by generateCode({ highlight })
+// — reports the running block to the editor (src/ui/blockHighlight.js). A no-op in the
+// headless runner, but it runs there too, so step counts match the browser.
+let _highlightHook = null;
+export function setHighlightHook(fn) { _highlightHook = fn; }
+function _injectHighlight(interpreter, globalObject) {
+  interpreter.setProperty(globalObject, 'highlightBlock', interpreter.createNativeFunction((id) => {
+    if (_highlightHook) _highlightHook(String(id));
+  }));
 }
 
 // The random blocks compile to Math.random(); inside the sandbox it draws from the

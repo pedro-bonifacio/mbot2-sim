@@ -82,6 +82,7 @@ export const ptMessages = {
   PROGRAM_NEW_CONFIRM: 'Apagar programa atual? Isto não pode ser desfeito.',
   PROGRAM_UNSUPPORTED_BLOCKS: 'Aviso: Alguns blocos do ficheiro não são suportados e foram ignorados.',
   APP_TITLE: 'Simulador mBot 2',
+  SPLITTER_TITLE: 'Arrasta para mudar o tamanho; duplo clique para voltar ao normal',
   RUN_START_ERROR: 'Erro ao iniciar o programa: %1',
   RUN_STOPPED: 'Programa interrompido.',
   RUN_COLLISION: 'Colisão detectada.',

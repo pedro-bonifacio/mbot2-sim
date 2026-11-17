@@ -113,7 +113,7 @@ When a user drags a block and clicks Run, this is the complete path:
    Built directly from Open Roberta's mBot 2 toolbox XML (beginner/expert), with PT category names. Every program hangs under the non-deletable start block (`src/blockly/startBlock.js`); loose blocks are disabled and don't run.
 
 3. **Workspace → JS string** (`src/codegen/`)
-   `generateCode(workspace)` generates only the chain under the start block (plus function definitions). Each block type has a generator (`javascriptGenerator.forBlock[type]`) emitting ES5 such as:
+   `generateCode(workspace)` generates only the chain under the start block (plus function definitions). Every run uses `generateRunCode(workspace)`, the same code with `highlightBlock('<id>');` before each statement (the editor outlines the running block, `src/ui/blockHighlight.js`); the browser run, the ★★ check and the sim scripts all run this form, so their step counts match. The plain form is only printed (DevTools, `sim --code`). Each block type has a generator (`javascriptGenerator.forBlock[type]`) emitting ES5 such as:
    ```js
    robotAPI.drive_for("FOREWARD", 30, 50);
    ```

@@ -50,6 +50,7 @@ for (const lvl of ['beginner', 'expert']) {
       }
       const code = generateCode(ws);
       new Interpreter(code); // throws on syntax errors (ES5 parser)
+      new Interpreter(generateCode(ws, { highlight: true }));   // the form that runs
       if (verbose) console.log(`── ${e.type}\n${code}`);
     } catch (err) {
       failures.push(`${e.type}: ${err.message}`);

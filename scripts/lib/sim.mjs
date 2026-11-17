@@ -16,14 +16,14 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 const imp = (p) => import(path.join(ROOT, p));
 
 const { registerAllBlocks } = await imp('src/blockly/index.js');
-const { generateCode } = await imp('src/codegen/index.js');
+const { generateCode, generateRunCode } = await imp('src/codegen/index.js');
 const { isOpenRobertaXml, openRobertaToBlocklyDom } = await imp('src/blockly/orFormat.js');
 const { syncBlocks } = await imp('src/blockly/blocks/_varScope.js');
 const { parseMapPixels } = await imp('src/sim/mapLoader.js');
 const { runHeadless } = await imp('src/runtime/headless.js');
 registerAllBlocks();
 
-/** Program file (Open Roberta export or Blockly XML) → { code, warnings }. */
+/** Program file (Open Roberta export or Blockly XML) → { code (as it runs, with block highlighting), plainCode, warnings }. */
 export function loadProgram(file) {
   const text = fs.readFileSync(path.resolve(ROOT, file), 'utf8');
   const ws = new Blockly.Workspace();
@@ -32,7 +32,7 @@ export function loadProgram(file) {
     Blockly.Xml.domToWorkspace(dom, ws);
     syncBlocks(ws);
     const warnings = ws.getAllBlocks(false).filter((b) => b.robWarning_).map((b) => `${b.type}: ${b.robWarning_}`);
-    return { code: generateCode(ws), warnings };
+    return { code: generateRunCode(ws), plainCode: generateCode(ws), warnings };
   } finally {
     ws.dispose();
   }
@@ -52,9 +52,9 @@ export function loadMap(name = 'default.png') {
 
 /** Loads, generates and runs a program file. */
 export function simulate({ program, map = 'default.png', ...opts }) {
-  const { code, warnings } = loadProgram(program);
+  const { code, plainCode, warnings } = loadProgram(program);
   const result = runHeadless({ code, map: loadMap(map), ...opts });
-  return { warnings, ...result, code };
+  return { warnings, ...result, code: plainCode };
 }
 
 /**

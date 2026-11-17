@@ -60,8 +60,38 @@ export function initSim() {
   console.log('[sim] canvas initialised');
 }
 
+// The robot's trail: where its centre has been since the last Executar / Reiniciar /
+// map change, so the student can see the path it took. Display only (cm, per frame).
+const TRAIL_STEP_CM = 0.4;
+const TRAIL_MAX = 20000;
+let trail = [];
+
+export function clearTrail() { trail = []; }
+
+function recordTrail() {
+  const last = trail[trail.length - 1];
+  if (last && Math.hypot(robot.x - last[0], robot.y - last[1]) < TRAIL_STEP_CM) return;
+  if (trail.length >= TRAIL_MAX) trail.splice(0, TRAIL_MAX / 4);
+  trail.push([robot.x, robot.y]);
+}
+
+function drawTrail() {
+  if (trail.length < 2) return;
+  ctx.save();
+  ctx.strokeStyle = 'rgba(234, 88, 12, 0.75)';
+  ctx.lineWidth = Math.max(1.5 / camera.scale, 0.35 * PX_PER_CM);
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.setLineDash([]);
+  ctx.beginPath();
+  trail.forEach(([x, y], i) => (i ? ctx.lineTo(x * PX_PER_CM, y * PX_PER_CM) : ctx.moveTo(x * PX_PER_CM, y * PX_PER_CM)));
+  ctx.stroke();
+  ctx.restore();
+}
+
 /** Resize canvas to match loaded map dimensions and reset camera to fit-to-view. */
 export function resizeCanvas(mapInfo) {
+  clearTrail();
   // mapInfo.width and mapInfo.height are in cm; convert to px for the canvas bitmap.
   canvas.width  = Math.round(mapInfo.width  * DISPLAY_SCALE);
   canvas.height = Math.round(mapInfo.height * DISPLAY_SCALE);
@@ -123,6 +153,7 @@ function loop(now) {
   // The world advances in fixed ticks owned by the run loop (src/runtime/runLoop.js);
   // this loop only hands it the frame's time and then draws.
   if (!paused && frameHook) frameHook(dt);
+  recordTrail();
 
   // Clear per-tick sensor cache every frame so visualisations (cone, quad-RGB dots)
   // always reflect current robot position, even when no interpreter is running.
@@ -152,6 +183,8 @@ function draw() {
     ctx.lineWidth   = 1 / camera.scale;
     ctx.strokeRect(0, 0, mapSize.wCm * PX_PER_CM, mapSize.hCm * PX_PER_CM);
   }
+
+  drawTrail();
 
   const { xPx, yPx } = worldToScreen(robot.x, robot.y);
 
@@ -311,6 +344,7 @@ export function togglePause(){ paused = !paused; }
 export function isPaused()   { return paused; }
 
 export function resetSim() {
+  clearTrail();
   resetRobot();
   resetLeds();
   resetDisplay();

@@ -14,6 +14,11 @@ export function registerControlCodegen() {
   // Start block: global variable declarations; the chain under it is the program.
   G['robControls_start'] = (b) => globalDeclarations(b);
 
+  // break / continue. Blockly's own generator asks the block for its surrounding loop
+  // when a statement prefix is set (block highlighting); the Open Roberta block has no
+  // such method. blockToCode already puts the highlight before this statement.
+  G['controls_flow_statements'] = (b) => (b.getFieldValue('FLOW') === 'CONTINUE' ? 'continue;\n' : 'break;\n');
+
   // if / if-else: same input names as Blockly's controls_if (IFn, DOn, ELSE).
   G['robControls_if'] = G['controls_if'];
   G['robControls_ifElse'] = G['controls_if'];

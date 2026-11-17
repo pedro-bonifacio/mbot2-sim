@@ -1,5 +1,5 @@
 import { getWorkspace } from '../blockly/index.js';
-import { generateCode } from '../codegen/index.js';
+import { generateRunCode } from '../codegen/index.js';
 import { RunState, onRunStateChange } from '../runtime/runState.js';
 import { onLevelChange, getLevelState, nextVariant, checkAllVariants, listLevels } from '../levels/session.js';
 import { openFromSelector } from './mapSelector.js';
@@ -35,7 +35,7 @@ export function initLevelPanel() {
     }
     if (action === 'all') {
       const ws = getWorkspace();
-      const r = ws && checkAllVariants(generateCode(ws));
+      const r = ws && checkAllVariants(generateRunCode(ws));
       if (r) reportAll(r);
     }
   });

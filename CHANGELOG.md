@@ -15,6 +15,9 @@
 ### Added
 - Tidier top bar: **Executar / Parar / Reiniciar**, speed, **★ Níveis** with the name of what is open, and one **Ficheiro ▾** menu for programs, Open Roberta export and progress. The "Nível / mapa" dropdown is gone (★ Níveis lists the free maps too).
 - **Fast-forward ×1 / ×2 / ×4**: the result is exactly the same at any speed.
+- **Resizable editor / robot split**: drag the divider (double-click resets); the map shrinks to fit. By default each side gets half the screen, so the block editor has room on school laptops.
+- **The running block is outlined in yellow** while the program runs (it stays on a block while the robot drives or waits).
+- **The robot leaves an orange trail** showing the path it took; cleared by Executar, Reiniciar or a map change.
 - Levels with a single layout give ★★ as soon as they are passed.
 - The level panel shows the latest result in words (green / red) and a **Próximo nível ›** button once the level has ★.
 - The simulator reopens the level or map that was open last time on this computer.
