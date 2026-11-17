@@ -1,7 +1,8 @@
 import * as Blockly from 'blockly';
 import { getWorkspace, setToolboxMode } from '../blockly/index.js';
 import { loadProgramText, exportOpenRobertaText } from '../ui/programIO.js';
-import { loadMapByName, getActiveMapName } from '../ui/mapSelector.js';
+import { loadMapByName, getActiveMapName, loadLevelById } from '../ui/mapSelector.js';
+import { getLevelState, nextVariant } from '../levels/session.js';
 import { RunState, getRunState } from '../runtime/runState.js';
 import { robot, getSpawn } from '../sim/robot.js';
 import { ledState } from '../sim/leds.js';
@@ -29,6 +30,8 @@ import { syncBlocks } from '../blockly/blocks/_varScope.js';
 //   await __dev.run({ timeoutMs, keys: [{ key: 'A', at: 0.5 }] })   press Executar, wait for the end
 //   __dev.state()                    run state, pose, display, LEDs, console, errors
 //   await __dev.map('default.png')
+//   __dev.level('04-01')            open a level; __dev.variant() next variant
+//   __dev.checkAll()                 press "Testar todas as variantes"; → per-seed verdicts
 //   __dev.exportOR()                 the program as "Exportar para Open Roberta" writes it
 //
 // Everything after load() is cleared by load() / reset(): console capture and errors.
@@ -189,6 +192,13 @@ function state() {
     run: getRunState(),
     seed: programSeed(),             // replay with: npm run sim -- <program> --seed <seed>
     map: getActiveMapName(),
+    level: (() => {
+      const st = getLevelState();
+      if (!st.level) return undefined;
+      return { id: st.level.id, variant: `${st.variant}/${st.variants}`, params: st.prepared.params, stars: st.stars,
+        verdict: st.lastVerdict ? { passed: st.lastVerdict.passed, reason: st.lastVerdict.reason, timeS: st.lastVerdict.timeS,
+          failed: st.lastVerdict.goals.filter((g) => !g.passed).map((g) => g.label) } : null };
+    })(),
     pose: relativePose(getSpawn()),
     display: display.text.map((d) => (d.col ? `${d.row}:${d.col} ${d.text}` : `${d.row} ${d.text}`)),
     leds: ledState.some((l) => l.on) ? ledState.map((l) => (l.on ? l.colour : null)) : undefined,
@@ -235,6 +245,14 @@ export function installDevHooks() {
     block: (id) => blockLine(block(id)),
     xml: () => Blockly.Xml.domToText(Blockly.Xml.workspaceToDom(ws())),
     exportOR: () => exportOpenRobertaText(),
+    level: (id) => { loadLevelById(id); return state(); },
+    variant: () => { nextVariant(); return state(); },
+    checkAll: () => {
+      document.querySelector('#level-panel button[data-action="all"]').click();
+      const st = getLevelState();
+      return st.allVariants && { passed: st.allVariants.passed,
+        results: st.allVariants.results.map((r) => `seed ${r.seed}: ${r.verdict.passed ? 'passed' : 'failed (' + r.verdict.reason + ')'}`) };
+    },
     sync: () => { syncBlocks(ws()); return tree(); },   // run the sync listener's work directly
     get ws() { return ws(); },
   };

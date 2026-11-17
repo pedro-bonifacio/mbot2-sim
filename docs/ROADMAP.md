@@ -7,7 +7,7 @@ Last reviewed: 2026-11-17
 
 ---
 
-## ▶ Where we left off (2026-11-17, evening)
+## ▶ Where we left off (2026-11-17, night)
 
 **State:** everything is on `main` (local only, not pushed). Latest: **"Exportar para
 Open Roberta"** (button in the top bar). A real Open Roberta export goes sim → export
@@ -19,11 +19,12 @@ back to the sim with the same behaviour (`scripts/fixtures/from-openroberta/`).
 
 **Start the next session with:**
 
-1. **Teacher, with a robot in class:** `VERIFY_ON_ROBOT.md` (now 10 checks, incl. an exported file on the real robot).
-2. Rest of Phase A: levels/seeds in the headless runner — needs the level format (Phase C),
-   so the next big step is the level engine. (Collision footprint, fixed-timestep physics,
-   seeded PRNG: done.)
-3. Then Phase B (running-block highlight, sensor panel) or the level engine (Phase C).
+1. **Level engine (Phase C) is running** with 3 sample levels (`levels/`, `docs/LEVEL_FORMAT.md`).
+   Next pieces: save stars and programs per level (localStorage + export file), a real
+   level selector (worlds, ★ status, no locks), `docs/LEVEL_AUTHORING.md`, `levels:mat`
+   (printable mats), and PNG `background` support.
+2. **Teacher, with a robot in class:** `VERIFY_ON_ROBOT.md` (10 checks).
+3. Then content: evaluation levels (Phase D) and World 1–4 levels.
 
 **How we test** (decided 2026-11-17: the assistant tests itself; the teacher only checks looks):
 - `npm run check` — fidelity, codegen, variables/functions, sim tests.
@@ -77,17 +78,17 @@ Prerequisite for any evaluated level ([0003](decisions/0003-core-levels-use-real
 
 Format: [`LEVEL_FORMAT.md`](LEVEL_FORMAT.md). Decisions: [0001](decisions/0001-self-directed-progression-no-locks.md), [0005](decisions/0005-randomised-level-variants.md), [0006](decisions/0006-level-goals-defined-as-data.md), [0009](decisions/0009-text-first-level-authoring.md).
 
-- [ ] YAML level files + JSON Schema + Vite plugin (YAML → JSON)
-- [ ] Map primitives renderer (wall, box, line, arc, patch, spawn) in cm, palette names; PNG background still supported
-- [ ] Referee: goals evaluated each tick; success/failure overlay in PT-PT
-- [ ] Zone overlay rendering
-- [ ] Variants: seeded parameters + ★★ robustness run
-- [ ] Stars
-- [ ] Level selector: worlds, suggested path, concepts, ★ status (**no locks**)
+- [x] YAML level files + JSON Schema + Vite plugin (YAML → JSON, validated, solutions stripped)
+- [x] Map primitives renderer (wall, box, line, arc, patch, spawn) in cm, palette names (`src/levels/raster.js`) — PNG `background` not yet supported
+- [x] Referee: goals evaluated each tick (browser and headless at the same ticks); result in the level panel and console, PT-PT
+- [x] Zone overlay rendering
+- [x] Variants: seeded parameters + ★★ robustness run (**Testar todas as variantes**)
+- [ ] Stars — ★/★★ shown, kept in memory only; ★★★ challenges not yet
+- [ ] Level selector: worlds, suggested path, concepts, ★ status (**no locks**) — for now levels are a group in the map menu
 - [ ] Per-level program save slots; progress export/import (file)
-- [ ] `npm run levels:check`: schema, solution must pass all seeds, anti-solutions must fail, preview PNG per level
+- [x] `npm run levels:check`: schema, solution must pass all seeds, anti-solutions must fail, preview PNG per level
 - [ ] `npm run levels:mat <id>`: printable mat at real scale, tiled A4/A3, variant marks
-- [ ] `?level=<id>&dev` hot-reload preview
+- [x] `?level=<id>` opens a level; editing its YAML reloads it on the dev server
 - [ ] `docs/LEVEL_AUTHORING.md` (humans + LLMs); optional `/new-level` Claude Code skill
 - [ ] Migrate existing maps; "Livre" sandbox keeps free map selection
 

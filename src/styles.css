@@ -65,3 +65,17 @@ main { display: flex; height: calc(100vh - 56px); overflow: hidden; }
 .blocklyRobPlusMinus:active > rect {
   fill: rgba(255, 255, 255, 0.7) !important;
 }
+
+/* Level panel (src/ui/levelPanel.js) */
+#level-panel { background: #fff; border: 1px solid #d1d5db; border-radius: 4px; padding: 8px 12px; font-size: 14px; flex-shrink: 0; }
+#level-panel .level-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+#level-panel .stars { color: #d97706; font-size: 18px; letter-spacing: 2px; }
+#level-panel .objective { margin: 6px 0; }
+#level-panel .goals { list-style: none; margin: 4px 0 8px; padding: 0; }
+#level-panel .goals li { margin: 2px 0; color: #374151; }
+#level-panel .goals li .mark { display: inline-block; width: 1.2em; font-weight: bold; }
+#level-panel .goals li.ok { color: #15803d; }
+#level-panel .goals li.bad { color: #b91c1c; }
+#level-panel .level-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+#level-panel .variant { color: #4b5563; margin-right: 4px; }
+#level-panel button { padding: 4px 10px; cursor: pointer; }

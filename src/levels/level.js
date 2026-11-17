@@ -92,8 +92,8 @@ export function prepareLevel(level, seed = testSeeds(level)[0]) {
     const p = `zones[${i}]`;
     if (!z.id) throw new Error(`${level.id}: ${p}: a zone needs an id`);
     zones[z.id] = z.r !== undefined
-      ? { id: z.id, type: 'circle', cx: num(z.cx, `${p}.cx`), cy: num(z.cy, `${p}.cy`), r: num(z.r, `${p}.r`) }
-      : { id: z.id, type: 'rect', x: num(z.x, `${p}.x`), y: num(z.y, `${p}.y`), w: num(z.w, `${p}.w`), h: num(z.h, `${p}.h`) };
+      ? { id: z.id, label: z.label, type: 'circle', cx: num(z.cx, `${p}.cx`), cy: num(z.cy, `${p}.cy`), r: num(z.r, `${p}.r`) }
+      : { id: z.id, label: z.label, type: 'rect', x: num(z.x, `${p}.x`), y: num(z.y, `${p}.y`), w: num(z.w, `${p}.w`), h: num(z.h, `${p}.h`) };
   });
 
   const goals = (level.goals || []).map((g, i) => {

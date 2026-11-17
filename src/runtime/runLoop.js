@@ -9,6 +9,7 @@ import { robotAPI } from '../sim/robotAPI.js';
 import { seedProgramRandom, freshSeed } from '../sim/random.js';
 import { setFrameHook } from '../sim/canvas.js';
 import { TICK_S, physicsTick } from './simTick.js';
+import { simNow } from '../sim/clock.js';
 
 // The browser's world clock (decision 0004). Each animation frame the canvas loop
 // hands over its (capped) frame time; it is cut into fixed 1/60 s ticks, and each
@@ -17,6 +18,19 @@ import { TICK_S, physicsTick } from './simTick.js';
 // drawn; it never changes where the robot goes.
 
 let _accS = 0;   // frame time not yet turned into ticks
+let _runStartMs = 0;
+let _observer = null;
+
+/**
+ * Run observer — the level referee (src/levels/session.js). Hooks, all optional:
+ *   seed()                 program random seed for the next run (else a fresh one)
+ *   onStart()              a run starts
+ *   onTick({ timeS, ended })  after each tick of a run, at the same points as the
+ *                          headless runner calls its referee: after the program tick
+ *                          that ends the run (ended = 'finished' | 'collision' |
+ *                          'error' | 'internal'), else after the physics tick.
+ */
+export function setRunObserver(observer) { _observer = observer; }
 
 const isActive = () => getRunState() === RunState.RUNNING || getRunState() === RunState.PAUSED_ASYNC;
 
@@ -32,19 +46,33 @@ export function advanceFrame(frameS) {
   // floating-point drift in the accumulated frame times.
   while (_accS >= TICK_S - 1e-9) {
     _accS -= TICK_S;
-    if (isActive()) _handle(tickProgram());
+    if (!isActive()) { physicsTick(); continue; }
+    const r = tickProgram();
+    if (r.status !== 'running') {
+      _handle(r);
+      _observe(r.status);
+      physicsTick();
+      continue;
+    }
+    _handle(r);
     physicsTick();
+    _observe(null);
   }
   // DevTools: current quad RGB probe samples.
   if (!window.simState) window.simState = {};
   window.simState.quadRGBProbes = getQuadRGBProbeData();
 }
 
+function _observe(ended) {
+  if (_observer && _observer.onTick) _observer.onTick({ timeS: (simNow() - _runStartMs) / 1000, ended });
+}
+
 export function run(workspace) {
   if (isActive()) return;
   const jsCode = generateCode(workspace);
   console.log('--- Generated JS ---\n' + jsCode + '\n--- End Generated JS ---');
-  runCode(jsCode);
+  const seed = _observer && _observer.seed ? _observer.seed() : undefined;
+  runCode(jsCode, seed === undefined ? {} : { seed });
 }
 
 /**
@@ -68,7 +96,20 @@ export function runCode(jsCode, { seed = freshSeed() } = {}) {
 
   resetSensors();
   robotAPI._resetMessageBus();
+  _runStartMs = simNow();
   setRunState(RunState.RUNNING);   // the next tick starts it
+  if (_observer && _observer.onStart) _observer.onStart();
+}
+
+/** Ends a run quietly (the level referee has decided): like Parar, without the message. */
+export function endRun() {
+  if (!isActive()) return;
+  destroyInterpreter();
+  asyncTicket.pending = false;
+  asyncTicket.resolveCondition = null;
+  asyncTicket.callback = null;
+  resetMotors();
+  setRunState(RunState.IDLE);
 }
 
 export function stop() {

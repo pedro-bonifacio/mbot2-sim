@@ -21,6 +21,11 @@ let frameHook = null;
 /** Called once per animation frame (unless paused) with the frame's time in seconds. */
 export function setFrameHook(fn) { frameHook = fn; }
 
+// Level zones (decision 0006): referee-only areas drawn as a translucent overlay.
+// Sensors never see them. [{ id, label?, type: 'rect'|'circle', … cm }] or null.
+let zoneOverlay = null;
+export function setZoneOverlay(zones) { zoneOverlay = zones; }
+
 const MAX_DT = 1 / 30;   // frame time cap: absorbs tab-suspend lag (CLAUDE.md §8)
 
 const camera = { offsetX: 0, offsetY: 0, scale: 1 };
@@ -138,6 +143,8 @@ function draw() {
   ctx.globalAlpha = hasMap() ? 0.25 : 1.0;
   drawGrid();
   ctx.globalAlpha = 1.0;
+
+  if (zoneOverlay) drawZones();
 
   const mapSize = getMapSizeCm();
   if (mapSize) {
@@ -274,6 +281,28 @@ function drawGrid() {
   for (let y = 0; y <= maxY; y += step) {
     ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(maxX, y); ctx.stroke();
   }
+}
+
+function drawZones() {
+  const s = PX_PER_CM;
+  ctx.save();
+  ctx.lineWidth = 2 / camera.scale;
+  ctx.setLineDash([8 / camera.scale, 6 / camera.scale]);
+  ctx.font = `${Math.max(12, 2 * s) / camera.scale}px sans-serif`;
+  ctx.textBaseline = 'top';
+  for (const z of zoneOverlay) {
+    ctx.beginPath();
+    if (z.type === 'circle') ctx.arc(z.cx * s, z.cy * s, z.r * s, 0, Math.PI * 2);
+    else ctx.rect(z.x * s, z.y * s, z.w * s, z.h * s);
+    ctx.fillStyle = 'rgba(40, 110, 255, 0.16)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(40, 110, 255, 0.85)';
+    ctx.stroke();
+    const [lx, ly] = z.type === 'circle' ? [(z.cx - z.r) * s, (z.cy - z.r) * s] : [z.x * s, z.y * s];
+    ctx.fillStyle = 'rgba(20, 70, 200, 0.95)';
+    ctx.fillText(z.label || z.id, lx + 4 / camera.scale, ly + 4 / camera.scale);
+  }
+  ctx.restore();
 }
 
 export function pauseSim()   { paused = true; }

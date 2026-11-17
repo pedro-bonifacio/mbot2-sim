@@ -11,7 +11,7 @@ import { seedProgramRandom } from '../sim/random.js';
 import { ledState, resetLeds } from '../sim/leds.js';
 import { resetDisplay, getDisplayState } from '../ui/display.js';
 import { setPressed } from '../ui/buttons.js';
-import { setConsoleSink } from '../ui/console.js';
+import { setConsoleSink, getConsoleSink } from '../ui/console.js';
 
 // Headless run: the same interpreter, robotAPI, sensors and physics as the browser,
 // stepped in fixed ticks of simulated time (decision 0004) with no rendering.
@@ -59,6 +59,7 @@ export function runHeadless({ code, map, maxSeconds = 60, keys = [], sampleEvery
   for (const k of keys) setPressed(k.key, false);
 
   const messages = [];
+  const previousSink = getConsoleSink();   // the browser's ★★ check runs in a live page
   setConsoleSink((text, level) => messages.push({ t: round(simNow() / 1000, 2), level, text }));
 
   const path = [];
@@ -94,7 +95,7 @@ export function runHeadless({ code, map, maxSeconds = 60, keys = [], sampleEvery
   } finally {
     if (status === 'timeout' || status === 'judged') destroyInterpreter();
     resetMotors();
-    setConsoleSink(null);
+    setConsoleSink(previousSink);
     for (const k of keys) setPressed(k.key, false);
   }
 
