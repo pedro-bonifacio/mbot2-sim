@@ -31,6 +31,7 @@ you are looking at tells you how much to trust it and how to change it.
 
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) — pipeline, async ticketing, sensors, coordinate systems.
 - [`LEVEL_FORMAT.md`](LEVEL_FORMAT.md) — level file reference (YAML in `levels/`, goals, variants, `levels:check`).
+- [`LEVEL_AUTHORING.md`](LEVEL_AUTHORING.md) — how to make a level: workflow, design checklist, common mistakes, asking an LLM.
 - [`MAP_AUTHORING.md`](MAP_AUTHORING.md) — painting map PNGs (free maps), reserved colours, spawn markers; stamp in [`map-templates/`](map-templates/).
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — setup, code style, adding a block.
 - [`DEPLOYMENT.md`](DEPLOYMENT.md) — hosting and map-update workflow.
