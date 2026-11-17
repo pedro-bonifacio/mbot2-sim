@@ -1,5 +1,6 @@
 import { robot, resetRobot, ROBOT_CONSTANTS } from './robot.js';
 import { step } from './kinematics.js';
+import { advanceClock } from './clock.js';
 import { PX_PER_CM, worldToScreen } from './world.js';
 import { DISPLAY_SCALE, ROBOT_LENGTH_PX, ROBOT_WIDTH_PX } from './constants.js';
 import { drawMap, hasMap, getMapSizeCm } from './map.js';
@@ -112,7 +113,10 @@ function loop(now) {
   lastTime   = now;
   const dt   = Math.min(dtMs / 1000, MAX_DT);
 
-  if (!paused) step(robot, dt);
+  if (!paused) {
+    step(robot, dt);
+    advanceClock(dt);
+  }
 
   // Clear per-tick sensor cache every frame so visualisations (cone, quad-RGB dots)
   // always reflect current robot position, even when no interpreter is running.

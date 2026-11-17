@@ -54,6 +54,21 @@ export async function loadMapFromUrl(url) {
 
   const imageData = ctx.getImageData(0, 0, w, h).data;
 
+  const info = parseMapPixels(imageData, w, h);
+  console.log(
+    `[mapLoader] Map size: ${info.width} \xD7 ${info.height} cm (${w} \xD7 ${h} px), ` +
+    `spawn (${info.spawnX.toFixed(1)}, ${info.spawnY.toFixed(1)}) cm, ` +
+    `heading ${(info.spawnHeading * 180 / Math.PI).toFixed(1)}\xB0`
+  );
+  return { ...info, offscreenCanvas: oc };
+}
+
+/**
+ * Finds the spawn pose in raw RGBA map pixels (PNG resolution). Pure — used by the
+ * browser loader above and by the headless runner (scripts/sim-run.mjs).
+ * Returns { width, height, spawnX, spawnY, spawnHeading, imageData } in cm/rad.
+ */
+export function parseMapPixels(imageData, w, h) {
   // Pass 1 — cyan spawn zone centroid (pixel coords)
   let cxSum = 0, cySum = 0, cCount = 0;
   // Pass 2 — yellow direction marker centroid (pixel coords)
@@ -101,11 +116,6 @@ export async function loadMapFromUrl(url) {
   const wCm = w / DISPLAY_SCALE;
   const hCm = h / DISPLAY_SCALE;
 
-  console.log(
-    `[mapLoader] Map size: ${wCm} \xD7 ${hCm} cm (${w} \xD7 ${h} px), ` +
-    `spawn (${spawnX.toFixed(1)}, ${spawnY.toFixed(1)}) cm, ` +
-    `heading ${(spawnHeading * 180 / Math.PI).toFixed(1)}\xB0`
-  );
 
   return {
     width:  wCm,
@@ -113,7 +123,6 @@ export async function loadMapFromUrl(url) {
     spawnX,
     spawnY,
     spawnHeading,
-    offscreenCanvas: oc,
     imageData,
   };
 }

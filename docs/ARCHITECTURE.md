@@ -196,11 +196,11 @@ Because the `resolveCondition` is checked once per frame (at 60 fps), the robot 
 ## Run loop and step budget
 
 ```js
-// src/runtime/runLoop.js
+// src/runtime/programTick.js
 const STEP_BUDGET_PER_FRAME = 1000;
 ```
 
-Each RAF frame, the run loop calls `interpreter.step()` up to 1000 times. This prevents a tight loop in user code (e.g. `while(true) {}`) from freezing the browser tab. The physics sim and canvas render still happen in the canvas RAF loop regardless.
+Each RAF frame, the run loop calls `tickProgram()` (`src/runtime/programTick.js`), which checks collision, resumes a finished async robot call, and calls `interpreter.step()` up to 1000 times. `tickProgram()` is UI-free; `runLoop.js` turns its result into run states and console messages, and the headless runner uses the same function. This prevents a tight loop in user code (e.g. `while(true) {}`) from freezing the browser tab. The physics sim and canvas render still happen in the canvas RAF loop regardless.
 
 ### Interaction with async tickets
 
@@ -326,6 +326,14 @@ At runtime, `src/sim/mapCatalogue.js` fetches `/maps/catalogue.json` and populat
 The generated code runs inside JS-Interpreter under ES5 semantics — do not emit `let`, `const`, arrow functions, template literals, or any ES6+ syntax.
 
 ---
+
+## Headless runner and sim tests
+
+`src/runtime/headless.js → runHeadless()` runs a program with the real interpreter, `robotAPI`, sensors and physics, in fixed ticks of simulated time (1/60 s: one `tickProgram()` + one physics `step()`), with no rendering. Time comes from `src/sim/clock.js` (`simNow()`), which in the browser advances with each physics step, so `wait_ms`, tones and timers behave the same in both ([decision 0004](decisions/0004-deterministic-simulation.md)).
+
+- `npm run sim -- <program.xml> [--map default.png] [--max 60] [--key A@1.5] [--path 0.5]` prints a short summary: status, simulated time, pose relative to the spawn (forward/right cm, turned °, + = right), display text, LEDs, console messages, block warnings.
+- `npm run sim:test` runs `scripts/fixtures/sim-tests.json` (program + map + key presses → expected status/pose/display). Part of `npm run check`.
+- Node glue (DOM shim, PNG decoding with `pngjs`, Blockly loading) lives in `scripts/lib/sim.mjs`.
 
 ## Typed variables and functions
 

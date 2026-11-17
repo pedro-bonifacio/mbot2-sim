@@ -1,6 +1,7 @@
 import { robot, ROBOT_CONSTANTS } from './robot.js';
 import { raycast as _raycast, getColorNameAt, getPixelAt, hasMap } from './map.js';
 import { isPressed as _isButtonPressed } from '../ui/buttons.js';
+import { simNow } from './clock.js';
 import { QUADRGB_FORWARD_OFFSET_CM, QUADRGB_LATERAL_OFFSETS_CM, QUADRGB_LIGHT_THRESHOLD } from './constants.js';
 
 const { CHASSIS_FRONT_OFFSET_CM, ULTRASONIC_CONE_DEG } = ROBOT_CONSTANTS;
@@ -17,14 +18,14 @@ export function resetTickCache() { _tickCache.clear(); }
 let _gyroZOffset   = 0; // robot.gyroCumulativeRad at last gyro Z reset
 let _encLOffset    = 0; // robot.motorAngleEM1 at last reset (port L)
 let _encROffset    = 0; // robot.motorAngleEM2 at last reset (port R)
-const _timerStart  = [0, 0, 0, 0, 0]; // performance.now() at last reset, slots 1-5
+const _timerStart  = [0, 0, 0, 0, 0]; // simNow() at last reset, slots 1-5
 
 /** Reset all sensor state at program start. Sets offsets relative to current robot state. */
 export function resetSensors() {
   _gyroZOffset   = robot.gyroCumulativeRad;
   _encLOffset    = robot.motorAngleEM1;
   _encROffset    = robot.motorAngleEM2;
-  _timerStart.fill(performance.now());
+  _timerStart.fill(simNow());
   _tickCache.clear();
 }
 
@@ -208,18 +209,18 @@ export function sensorEncoderReset(port) {
 
 // ── Timer ─────────────────────────────────────────────────────────────────────
 // Five timers (Open Roberta slots 1–5), in ms since program start or last reset.
-// Uses wall-clock time for now; moves to the simulated clock with decision 0004.
+// Simulated time (decision 0004).
 
 export function sensorTimer(slot) {
   const idx = Number(slot) - 1;
   if (!(idx >= 0 && idx < _timerStart.length)) return 0;
-  return performance.now() - _timerStart[idx];
+  return simNow() - _timerStart[idx];
 }
 
 export function sensorTimerReset(slot) {
   const idx = Number(slot) - 1;
   if (!(idx >= 0 && idx < _timerStart.length)) return;
-  _timerStart[idx] = performance.now();
+  _timerStart[idx] = simNow();
 }
 
 // ── Key / Joystick ────────────────────────────────────────────────────────────

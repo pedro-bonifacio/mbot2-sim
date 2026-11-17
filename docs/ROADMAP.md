@@ -21,6 +21,8 @@ and a real Open Roberta export imports and runs. See `CHANGELOG.md → Unrelease
    (how-to in `reference_openroberta/live/README.md`).
 4. **Teacher, with a robot in class:** `VERIFY_ON_ROBOT.md` (9 small checks).
 
+**How we test:** `npm run check` (fidelity, codegen, variables, sim tests). To see what a program does without a browser: `npm run sim -- <program.xml>`. New behaviour → add a case to `scripts/fixtures/sim-tests.json`.
+
 **How we work with Open Roberta Lab:** the assistant drives lab.open-roberta.org in a
 background browser tab (mBot 2, PT) to extract block data and to ask the server for the
 MicroPython a program compiles to. Keep server requests few; see
@@ -45,10 +47,10 @@ Prerequisite for any evaluated level ([0003](decisions/0003-core-levels-use-real
 - [x] OR-style typed variables (declared on the start block), functions (`robProcedures_*`), lists inside variable declarations (`npm run or:variables`)
 - [ ] **"Exportar para Open Roberta"**: `<export>`/`<block_set>` wrapper, sibling blocks, `<hide>` tags, embedded mBot 2 configuration, filename `<Nome>_<levelId>.xml`; validated by Open Roberta's server (source generation)
 - [ ] Confirm Open Roberta licence before reusing any of its code
-- [ ] Fixed-timestep physics + single simulated clock (`wait_ms`, timer sensor, tones, time limits)
+- [ ] Fixed-timestep physics + single simulated clock (`wait_ms`, timer sensor, tones, time limits) — clock done (`src/sim/clock.js`); the browser still steps physics with the frame's `dt`
 - [ ] Seeded PRNG utility for all randomness
 - [ ] Collision uses the oriented 17.5 × 13 cm footprint (`kinematics.js` uses a point, `runLoop.js` a 4.5 cm circle)
-- [ ] Headless runner: program + level + seed → result, no rendering
+- [ ] Headless runner: program + level + seed → result, no rendering — program + map + key presses done (`npm run sim`, `npm run sim:test`); levels and seeds still to come
 
 ## Phase B — QoL tier 1 (debugging & learning)
 

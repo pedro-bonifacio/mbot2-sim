@@ -11,6 +11,7 @@
 - Open Roberta-style typed variables: declared with "+" on the start block (type Número, Booleano, Caractere, Cor or a list of these), removed with "−". The **Variáveis** category lists them, plus function parameters and loop variables.
 - Open Roberta functions (**Funções**, expert): with or without a return value, typed parameters, "se … retorna …". Calls follow the definition when it changes.
 - Load programs exported from Open Roberta Lab (**Carregar**).
+- Headless simulator for development: `npm run sim` runs a program without a browser and prints where the robot ended up; `npm run sim:test` checks a list of programs.
 - Docs: decision log, roadmap, curriculum, workflow, verify-on-robot checklist.
 
 

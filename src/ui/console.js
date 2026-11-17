@@ -1,12 +1,17 @@
 const MAX_LINES = 200;
 
 let panel = null;
+let sink = null;
+
+/** Also send every student-facing message to fn(text, level) (headless runner). */
+export function setConsoleSink(fn) { sink = fn; }
 
 export function initConsole() {
   panel = document.getElementById('console-panel');
 }
 
 export function appendConsoleMessage(text, level = 'info') {
+  if (sink) sink(String(text), level);
   if (!panel) return;
   const div = document.createElement('div');
   div.textContent = text;

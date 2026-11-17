@@ -9,6 +9,7 @@ import {
   println_display,
 } from '../ui/display.js';
 import { led_on as _led_on, led_off as _led_off } from './leds.js';
+import { simNow } from './clock.js';
 import {
   sensorUltrasonic,
   sensorQuadRGB, sensorLineStatus,
@@ -178,8 +179,8 @@ export const robotAPI = {
   // ── Timing ────────────────────────────────────────────────────────────────
 
   wait_ms(ms, callback) {
-    const end = performance.now() + Math.max(0, num(ms));
-    waitUntil(callback, () => performance.now() >= end);
+    const end = simNow() + Math.max(0, num(ms));
+    waitUntil(callback, () => simNow() >= end);
   },
 
   // ── Sound ─────────────────────────────────────────────────────────────────
@@ -188,8 +189,8 @@ export const robotAPI = {
   play_tone(freq, ms, callback) {
     const duration = Math.max(0, num(ms));
     _play_tone(num(freq), duration);
-    const end = performance.now() + duration;
-    waitUntil(callback, () => performance.now() >= end);
+    const end = simNow() + duration;
+    waitUntil(callback, () => simNow() >= end);
   },
 
   set_volume(v)    { _set_volume(v); },
