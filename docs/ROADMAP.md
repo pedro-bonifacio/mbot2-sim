@@ -15,11 +15,7 @@ and a real Open Roberta export imports and runs. See `CHANGELOG.md → Unrelease
 
 **Start the next session with:**
 
-1. **Teacher:** `npm run dev` and click through both toolboxes. The block *rendering*
-   has not been checked in a browser yet (only headless): +/− buttons on if/wait/text
-   join/lists, colour picker, note dropdown, start block, greyed-out loose blocks,
-   loading `reference_openroberta/export-samples/openroberta/01-simples.xml`.
-   Then merge `or-fidelity` into `main` if it looks right.
+1. ~~**Teacher:** browser check of block rendering~~ — done 2026-11-17, all good; `or-fidelity` merged into `main`.
 2. **Next build task:** Open Roberta-style typed variables, functions and lists
    (Phase A item below). Specs for `robControls_start` (declare mutation),
    `robGlobalVariables_declare`, `robLocalVariables_declare`, `variables_get/set`

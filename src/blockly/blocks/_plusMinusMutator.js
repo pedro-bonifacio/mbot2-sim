@@ -14,6 +14,15 @@ export class FieldClickableLabel extends Blockly.FieldLabel {
     this.onClick_ = onClick;
   }
 
+  // FieldLabel renders text only. Add the border rect Blockly uses for
+  // editable fields (drawn behind the text) so the button gets a padded hit
+  // area and a hover highlight; see .blocklyRobPlusMinus in src/styles.css.
+  initView() {
+    this.createBorderRect_();
+    super.initView();
+    Blockly.utils.dom.addClass(this.fieldGroup_, 'blocklyRobPlusMinus');
+  }
+
   // FieldLabel has no editor; hijack the showEditor_ path that
   // Blockly's bindEvents_ triggers on click for EDITABLE fields.
   showEditor_() {

@@ -6,6 +6,7 @@
 - Programs run only from the start block ("iniciar"); loose blocks are disabled.
 - Robot behaviour follows Open Roberta's generated MicroPython: colour sensor sees 8 colours (no orange), signed encoders with mirrored right motor, 5 timers, ultrasonic up to 300 cm, blocking tones, for-loop end is exclusive.
 - HUD shows each quad RGB probe's reading.
+- On-block +/− buttons show a pointer cursor and hover highlight, with a larger tap area.
 ### Added
 - Load programs exported from Open Roberta Lab (**Carregar**).
 - Docs: decision log, roadmap, curriculum, workflow, verify-on-robot checklist.
