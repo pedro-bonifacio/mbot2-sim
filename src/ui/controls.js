@@ -3,7 +3,7 @@ import { appendConsoleMessage } from './console.js';
 import { setToolboxMode, getWorkspace } from '../blockly/index.js';
 import { run as runProgram, stop as stopProgram } from '../runtime/runLoop.js';
 import { RunState, getRunState, onRunStateChange } from '../runtime/runState.js';
-import { saveProgram, loadProgramFromFile, newProgram, exportToOpenRoberta } from './programIO.js';
+import { saveProgram, loadProgramFromFile, newProgram, exportToOpenRoberta, exportProgressFile, importProgressFile } from './programIO.js';
 
 export function initControls() {
   const btnRun    = document.getElementById('btn-run');
@@ -52,6 +52,15 @@ export function initControls() {
   });
 
   btnNew.addEventListener('click', () => newProgram());
+
+  const progressInput = document.getElementById('file-input-progress');
+  document.getElementById('btn-progress-export').addEventListener('click', () => exportProgressFile());
+  document.getElementById('btn-progress-import').addEventListener('click', () => progressInput.click());
+  progressInput.addEventListener('change', () => {
+    const file = progressInput.files[0];
+    if (file) importProgressFile(file);
+    progressInput.value = '';
+  });
 
   document.addEventListener('keydown', (e) => {
     if (e.code === 'Space' && e.target.tagName !== 'INPUT') {

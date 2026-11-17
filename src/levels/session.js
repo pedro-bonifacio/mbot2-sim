@@ -3,6 +3,7 @@ import { prepareLevel, testSeeds } from './level.js';
 import { rasterise } from './raster.js';
 import { createReferee } from './referee.js';
 import { runLevel } from './runLevel.js';
+import { getStars, addStar } from './progress.js';
 import { setMapData } from '../sim/map.js';
 import { respawnRobot } from '../sim/robot.js';
 import { resizeCanvas, resetCamera, resetSim, setZoneOverlay } from '../sim/canvas.js';
@@ -13,8 +14,7 @@ import { RunState, getRunState } from '../runtime/runState.js';
 // Loads a variant onto the canvas, judges each run with the referee (through the
 // run loop's observer, at the same ticks as the headless runner), and runs the
 // ★★ check: the student's program on every test variant, headlessly.
-//
-// Stars live in memory for now (progress saving is a later roadmap item).
+// Stars are saved per level in progress.js (this browser only, decision 0002).
 
 const state = {
   level: null,        // level object (catalogue.js)
@@ -23,12 +23,13 @@ const state = {
   referee: null,
   lastVerdict: null,  // verdict of the latest run on this variant
   allVariants: null,  // { passed, results: [{ seed, verdict }] } of the latest ★★ check
-  stars: {},          // id → { one: bool, two: bool }
 };
 const listeners = new Set();
 const emit = () => listeners.forEach((fn) => fn(getLevelState()));
 
 export function onLevelChange(fn) { listeners.add(fn); }
+/** Re-announces the current state (e.g. after a progress file was imported). */
+export function refreshLevelState() { emit(); }
 export function listLevels() { return LEVELS; }
 
 export function getLevelState() {
@@ -37,7 +38,7 @@ export function getLevelState() {
   return {
     level, prepared, lastVerdict, allVariants,
     variant: seedIndex + 1, variants: testSeeds(level).length,
-    stars: state.stars[level.id] || { one: false, two: false },
+    stars: getStars(level.id),
   };
 }
 
@@ -107,10 +108,7 @@ const observer = {
   },
 };
 
-function markStar(which) {
-  const s = state.stars[state.level.id] || (state.stars[state.level.id] = { one: false, two: false });
-  s[which] = true;
-}
+function markStar(which) { addStar(state.level.id, which); }
 
 /**
  * ★★ check: runs `code` (the student's generated program) on every test variant,
@@ -126,7 +124,7 @@ export function checkAllVariants(code) {
   const passed = results.every((r) => r.verdict.passed);
   loadLevel(level.id, seedIndex);   // restore map, robot and display
   state.allVariants = { id: level.id, passed, results };
-  if (passed) { markStar('one'); markStar('two'); }
+  if (passed) markStar('two');
   emit();
   return state.allVariants;
 }
