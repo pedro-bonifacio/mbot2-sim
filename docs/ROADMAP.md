@@ -20,8 +20,9 @@ back to the sim with the same behaviour (`scripts/fixtures/from-openroberta/`).
 **Start the next session with:**
 
 1. **Teacher, with a robot in class:** `VERIFY_ON_ROBOT.md` (now 10 checks, incl. an exported file on the real robot).
-2. Rest of Phase A: seeded PRNG, levels/seeds in the headless runner. (Collision footprint and
-   fixed-timestep physics: done.)
+2. Rest of Phase A: levels/seeds in the headless runner — needs the level format (Phase C),
+   so the next big step is the level engine. (Collision footprint, fixed-timestep physics,
+   seeded PRNG: done.)
 3. Then Phase B (running-block highlight, sensor panel) or the level engine (Phase C).
 
 **How we test** (decided 2026-11-17: the assistant tests itself; the teacher only checks looks):
@@ -61,7 +62,7 @@ Prerequisite for any evaluated level ([0003](decisions/0003-core-levels-use-real
 - [x] **"Exportar para Open Roberta"**: `<export>`/`<block_set>` wrapper, sibling blocks, `<hide>` tags, embedded mBot 2 configuration, filename `<Nome>_<levelId>.xml`; validated by Open Roberta's server (source generation) — `npm run or:export`; level id is `livre` until the level engine exists
 - [ ] Confirm Open Roberta licence before reusing any of its code
 - [x] Fixed-timestep physics + single simulated clock (`wait_ms`, timer sensor, tones, time limits): browser and headless run the same 1/60 s ticks (`src/runtime/simTick.js`); sim tests check 30 fps and uneven frames
-- [ ] Seeded PRNG utility for all randomness
+- [x] Seeded PRNG utility for all randomness (`src/sim/random.js`): random blocks draw from a per-run seed; Executar picks a fresh one (recorded, `__dev.state().seed`), headless defaults to 1 (`--seed`)
 - [x] Collision uses the oriented 17.5 × 13 cm footprint (`src/sim/collision.js`): stops at the point of contact, corners count while turning, map edge counts
 - [ ] Headless runner: program + level + seed → result, no rendering — program + map + key presses done (`npm run sim`, `npm run sim:test`); levels and seeds still to come
 

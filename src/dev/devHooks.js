@@ -9,6 +9,7 @@ import { getDisplayState } from '../ui/display.js';
 import { setConsoleSink } from '../ui/console.js';
 import { setPressed } from '../ui/buttons.js';
 import { relativePose } from '../runtime/headless.js';
+import { programSeed } from '../sim/random.js';
 import { FieldClickableLabel } from '../blockly/blocks/_plusMinusMutator.js';
 import { syncBlocks } from '../blockly/blocks/_varScope.js';
 
@@ -186,6 +187,7 @@ function state() {
   const display = getDisplayState();
   return {
     run: getRunState(),
+    seed: programSeed(),             // replay with: npm run sim -- <program> --seed <seed>
     map: getActiveMapName(),
     pose: relativePose(getSpawn()),
     display: display.text.map((d) => (d.col ? `${d.row}:${d.col} ${d.text}` : `${d.row} ${d.text}`)),

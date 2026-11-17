@@ -206,6 +206,10 @@ Each simulation tick, the run loop calls `tickProgram()` (`src/runtime/programTi
 
 When an async API call is active, the interpreter's `paused_` flag is `true` and `step()` returns without advancing execution. The run loop detects this and enters `PAUSED_ASYNC` state, which skips the step budget loop and just polls the async ticket each frame.
 
+### Randomness
+
+`src/sim/random.js` is the only source of randomness (decision [0004](decisions/0004-deterministic-simulation.md)). The random blocks compile to `Math.random()`, which `sandbox.js` replaces inside the interpreter with the run's seeded stream (mulberry32). **Executar** picks a fresh seed with `freshSeed()`, so each run differs as on the robot, and records it (`programSeed()`, `__dev.state().seed`); the headless runner takes `seed` (default 1, `npm run sim -- … --seed N`), so the same seed replays a browser run exactly. Level variants will draw from their own `createRng(variantSeed)` streams, independent of the program's.
+
 ### Fixed ticks: one clock for browser and headless
 
 Decision [0004](decisions/0004-deterministic-simulation.md). The world advances only in **ticks of 1/60 s of simulated time**, and each tick does the same two things in the same order everywhere:

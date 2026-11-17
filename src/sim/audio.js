@@ -12,10 +12,11 @@ const NOTE_FREQUENCIES = {
 const BEAT_DURATION_MS = { '1': 2000, '2': 1000, '4': 500, '8': 250 };
 
 function getCtx() {
-  if (typeof window === 'undefined') return null;   // headless runner: silent
+  const AC = typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext);
+  if (!AC) return null;   // headless runner and tests: silent
   if (!audioCtx) {
     try {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      audioCtx = new AC();
     } catch (e) {
       console.warn('[audio] AudioContext unavailable:', e.message);
     }

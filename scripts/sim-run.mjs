@@ -5,7 +5,7 @@
 //
 // Usage:
 //   node scripts/sim-run.mjs <program.xml> [--map default.png] [--max 60]
-//        [--key A@1.5[:0.2]]... [--path 0.5] [--code]
+//        [--key A@1.5[:0.2]]... [--path 0.5] [--seed 1] [--code]
 //   npm run sim -- scripts/fixtures/teste-2-funcao.xml --path 1
 
 const args = process.argv.slice(2);
@@ -32,6 +32,7 @@ const result = simulate({
   maxSeconds: Number(opt('--max', 60)),
   keys,
   sampleEvery: Number(opt('--path', 0)),
+  seed: Number(opt('--seed', 1)),
 });
 if (!args.includes('--code')) delete result.code;
 if (result.leds && result.leds.every((l) => l === null)) delete result.leds;

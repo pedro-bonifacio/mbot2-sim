@@ -63,7 +63,7 @@ export function simulate({ program, map = 'default.png', ...opts }) {
  * 1/30 s, as canvas.js does). Key presses follow simulated time. Used to check that
  * the browser gives the same result as runHeadless at any frame rate (decision 0004).
  */
-export async function simulateBrowser({ program, map = 'default.png', maxSeconds = 60, keys = [], frameS }) {
+export async function simulateBrowser({ program, map = 'default.png', maxSeconds = 60, keys = [], frameS, seed = 1 }) {
   globalThis.window ??= globalThis;
   globalThis.Image ??= class { set src(v) {} };
   const { runCode, advanceFrame, stop } = await imp('src/runtime/runLoop.js');
@@ -74,7 +74,7 @@ export async function simulateBrowser({ program, map = 'default.png', maxSeconds
   const { relativePose } = await imp('src/runtime/headless.js');
   const { setConsoleSink } = await imp('src/ui/console.js');
   const { setPressed } = await imp('src/ui/buttons.js');
-  const { resetDisplay } = await imp('src/ui/display.js');
+  const { resetDisplay, getDisplayState } = await imp('src/ui/display.js');
   const { resetLeds } = await imp('src/sim/leds.js');
 
   const m = loadMap(map);
@@ -90,7 +90,7 @@ export async function simulateBrowser({ program, map = 'default.png', maxSeconds
   console.error = () => {};   // runLoop logs program errors for DevTools
   const active = () => [RunState.RUNNING, RunState.PAUSED_ASYNC].includes(getRunState());
   try {
-    runCode(loadProgram(program).code);
+    runCode(loadProgram(program).code, { seed });
     for (let i = 0; active() && simNow() / 1000 < maxSeconds; i++) {
       const t = simNow() / 1000;
       for (const k of keys) setPressed(k.key, t >= k.at && t < k.at + (k.for ?? 0.2));
@@ -100,7 +100,8 @@ export async function simulateBrowser({ program, map = 'default.png', maxSeconds
     if (timedOut) stop();
     const status = timedOut ? 'timeout'
       : { 'Programa terminado.': 'finished', 'Colisão detectada.': 'collision' }[last] || 'error';
-    return { status, time: simNow() / 1000, pose: relativePose(m) };
+    const display = getDisplayState().text.map((d) => (d.col ? `${d.row}:${d.col} ${d.text}` : `${d.row} ${d.text}`));
+    return { status, time: simNow() / 1000, pose: relativePose(m), display };
   } finally {
     setConsoleSink(null);
     console.error = devError;
