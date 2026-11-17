@@ -1,0 +1,45 @@
+# World 4: ultrasonic. The wall moves between variants, so only a sensor solution
+# passes every seed (decision 0005).
+id: "04-01"
+world: 4
+kind: core
+title: Parar antes da parede
+objective: Anda em frente e pára com a frente do robô a menos de 15 cm da parede, sem lhe tocar. A parede não está sempre no mesmo sítio!
+concepts: [ultrassom, esperar até]
+assumes: [andar, comparação]
+toolbox: beginner
+timeLimit: 30
+
+variants:
+  params:
+    wallX: { min: 90, max: 170, step: 5 }   # cm from the left edge to the wall's face
+  seeds: [1, 2, 3, 4, 5, 6, 7, 8]
+
+map:
+  items:
+    - wall: { x: wallX, y: 1, w: 4, h: 120.5 }
+
+spawn: { x: 30, y: 61.25, heading: 0 }
+
+zones:
+  - { id: perto, label: perto da parede, x: wallX - 15, y: 1, w: 12, h: 120.5 }
+
+goals:
+  - robotStoppedIn: { zone: perto, probe: front }
+  - noCollision
+
+solution: |
+  robotAPI.drive("FOREWARD", 30);
+  while (!(robotAPI.ultrasonic() < 10)) {}
+  robotAPI.drive_stop();
+
+antiSolutions:
+  - name: distância fixa
+    why: Só funciona quando a parede calha no sítio certo.
+    code: |
+      robotAPI.drive_for("FOREWARD", 30, 80);
+  - name: tempo fixo
+    why: Anda sempre 10 s; ou bate na parede ou pára longe dela, conforme onde ela está.
+    code: |
+      robotAPI.drive("FOREWARD", 30);
+      robotAPI.wait_ms(10000);

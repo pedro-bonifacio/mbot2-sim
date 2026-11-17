@@ -1,0 +1,31 @@
+# World 1: sequencing. No variants — measuring the distance *is* the concept here.
+id: "01-01"
+world: 1
+kind: core
+title: Primeiros passos
+objective: Anda 50 cm em frente e pára com o centro do robô dentro do quadrado verde.
+concepts: [andar uma distância]
+toolbox: beginner
+timeLimit: 20
+
+map:
+  items:
+    - patch: { x: 75, y: 51.25, w: 10, h: 20, colour: green }   # the target, painted on the mat
+
+spawn: { x: 30, y: 61.25, heading: 0 }   # heading in degrees, clockwise from east (→)
+
+zones:
+  - { id: alvo, label: quadrado verde, x: 75, y: 51.25, w: 10, h: 20 }
+
+goals:
+  - robotStoppedIn: { zone: alvo, probe: centre }
+  - noCollision
+
+solution: |
+  robotAPI.drive_for("FOREWARD", 30, 50);
+
+antiSolutions:
+  - name: distância errada
+    why: Pára 20 cm antes do quadrado.
+    code: |
+      robotAPI.drive_for("FOREWARD", 30, 30);
