@@ -62,7 +62,7 @@ export function prepareLevel(level, seed = testSeeds(level)[0]) {
   if (map.border !== false) {
     const b = BORDER_CM;
     for (const [x, y, w, h] of [[0, 0, size.w, b], [0, size.h - b, size.w, b], [0, 0, b, size.h], [size.w - b, 0, b, size.h]]) {
-      items.push({ type: 'rect', x, y, w, h, angle: 0, rgb: WALL_RGB, wall: true });
+      items.push({ type: 'rect', x, y, w, h, angle: 0, rgb: WALL_RGB, wall: true, border: true });
     }
   }
   (map.items || []).forEach((entry, i) => {

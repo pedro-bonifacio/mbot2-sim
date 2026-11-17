@@ -26,7 +26,8 @@
     "sim:test": "node scripts/sim-test.mjs",
     "levels:check": "node scripts/levels-check.mjs",
     "progress:check": "node scripts/progress-check.mjs",
-    "check": "node scripts/or-fidelity-check.mjs > /dev/null && node scripts/codegen-check.mjs > /dev/null && node scripts/variables-check.mjs > /dev/null && node scripts/export-check.mjs > /dev/null && node scripts/sim-test.mjs > /dev/null && node scripts/levels-check.mjs --no-preview > /dev/null && node scripts/progress-check.mjs > /dev/null && echo 'all checks passed'"
+    "levels:mat": "node scripts/levels-mat.mjs",
+    "check": "node scripts/or-fidelity-check.mjs > /dev/null && node scripts/codegen-check.mjs > /dev/null && node scripts/variables-check.mjs > /dev/null && node scripts/export-check.mjs > /dev/null && node scripts/sim-test.mjs > /dev/null && node scripts/levels-check.mjs --no-preview > /dev/null && node scripts/progress-check.mjs > /dev/null && node scripts/levels-mat.mjs > /dev/null && echo 'all checks passed'"
   },
   "dependencies": {
     "@blockly/field-colour": "5.0.19",
