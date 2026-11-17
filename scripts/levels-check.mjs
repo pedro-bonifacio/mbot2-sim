@@ -146,5 +146,21 @@ function writePreview(level, seed) {
   fs.writeFileSync(path.join(PREVIEW_DIR, `${level.id}.png`), pngjs.PNG.sync.write(img));
 }
 
+// When a run passes or fails: the referee's rules, on real levels (scripts/fixtures/referee-cases.json).
+const { findLevel } = await import('./lib/levels.mjs');
+let failedCases = 0;
+if (!filter) {
+  const { cases } = JSON.parse(fs.readFileSync(path.join(ROOT, 'scripts/fixtures/referee-cases.json'), 'utf8'));
+  for (const c of cases) {
+    const level = { ...findLevel(c.level), ...(c.patch || {}) };
+    const r = runLevel({ level, code: c.code, seed: c.seed ?? 1 });
+    const v = r.verdict;
+    const ok = v && v.passed === c.expect.passed && v.reason === c.expect.reason && !(c.expect.beforeS && v.timeS >= c.expect.beforeS);
+    if (!ok) failedCases++;
+    if (!ok || verbose) print(`${ok ? 'ok  ' : 'FAIL'} referee: ${c.name}${ok ? '' : `\n       ✗ expected ${c.expect.passed ? 'pass' : 'fail'} (${c.expect.reason}), got ${describe(r)}`}`);
+  }
+  print(`referee cases: ${failedCases ? failedCases + ' failed' : `all ${cases.length} passed`}`);
+}
+
 print(`levels check: ${failedLevels ? failedLevels + ' failed' : 'all passed'}${preview ? ` (previews in ${path.relative(ROOT, PREVIEW_DIR)}/)` : ''}`);
-process.exit(failedLevels ? 1 : 0);
+process.exit(failedLevels || failedCases ? 1 : 0);

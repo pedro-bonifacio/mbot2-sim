@@ -33,12 +33,10 @@ Done this session (details in `CHANGELOG.md → Unreleased`):
          "perto da parede". Load `scripts/fixtures/levels/04-01-ultrassom.xml` → Executar →
          ✓ goals, "★ Objetivo cumprido"; **Testar todas as variantes** → ★★. Then
          `04-01-distancia-fixa.xml` → ✗ with the reason; **Outra variante** moves the wall.
-   - [ ] **Decide three level rules** (as built now):
-     a. a run **passes** when all goals hold and the program has ended *or* the robot has
-        stood still for **2 s** (so "repeat forever" sensor programs pass without waiting for
-        the time limit; a robot pausing 2 s in the zone and then leaving already passed) — keep 2 s?
-     b. the student always sees **variant 1 first**, **Outra variante** cycles — or a random one?
-     c. **stars are not saved** yet (lost on reload) — next build item.
+   - [x] **Level rules decided** ([decision 0013](decisions/0013-when-a-level-run-is-judged.md)):
+     pass after 2 s still with the goals met; touching a wall always fails; a robot stopped
+     5 s with a goal unmet fails early; levels can set `settle` / `stall`; variant 1 first.
+     Stars are not saved yet — next build item.
    - [ ] **Robot in class:** `VERIFY_ON_ROBOT.md` (10 checks).
 2. **Build, level engine (Phase C), in this order:** save stars and programs per level
    (localStorage + export/import file); level selector (worlds, ★ status, no locks);

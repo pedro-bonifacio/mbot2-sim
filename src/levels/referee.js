@@ -11,13 +11,18 @@ import { FLOOR_COLOURS } from './level.js';
 // Goals of two kinds:
 //   any time — reachZone: latched the first tick it holds;
 //   at the end — robotStoppedIn, displayShows, ledColour: judged on the current state;
-//   noCollision fails the run the moment the robot touches a wall.
+//   noCollision — shown as a goal; touching a wall fails every level anyway.
 // The run PASSES as soon as every goal holds and either the program has ended or the
-// robot has stood still for SETTLE_S (so "repeat forever: if near, stop" programs
-// pass without waiting for the time limit). It FAILS when it ends — program over,
-// collision, error, or the level's time limit — without passing.
+// robot has stood still for `settle` s (so "repeat forever: if near, stop" programs
+// pass without waiting for the time limit), or the time limit arrives with every goal
+// holding. It FAILS at once when the robot touches a wall, when the program ends or
+// errors without passing, when the robot — having moved — stands still for `stall` s
+// with a goal unmet (so a robot stopped in the wrong place fails without waiting for
+// the limit), or at the time limit. Levels set `settle` / `stall` (seconds or
+// "never"); the defaults are below.
 
 export const SETTLE_S = 2;
+export const STALL_S = 5;
 
 const COLOUR_PT = { red: 'vermelho', yellow: 'amarelo', green: 'verde', cyan: 'ciano', blue: 'azul',
   purple: 'roxo', white: 'branco', black: 'preto' };
@@ -52,7 +57,10 @@ export function goalLabel(goal, prepared) {
 export function createReferee(prepared) {
   const latched = new Set();     // indices of "any time" goals already met
   let restSince = null;
+  let moved = false;
   let verdict = null;
+  const settleS = prepared.settleS ?? SETTLE_S;   // Infinity = "never"
+  const stallS = prepared.stallS ?? STALL_S;
 
   function holdsNow(goal, i) {
     switch (goal.type) {
@@ -95,13 +103,15 @@ export function createReferee(prepared) {
       const results = prepared.goals.map(holdsNow);
       const all = results.every(Boolean);
       const resting = robot.vL === 0 && robot.vR === 0;
+      if (!resting) moved = true;
       restSince = resting ? (restSince ?? timeS) : null;
+      const restedS = resting ? timeS - restSince : 0;
 
-      const settled = resting && timeS - restSince >= SETTLE_S;
-      if (all && (ended || settled)) return decide(true, timeS, ended ? 'ended' : 'settled', results);
-      if (robot.collided && prepared.goals.some((g) => g.type === 'noCollision')) return decide(false, timeS, 'collision', results);
+      if (robot.collided || ended === 'collision') return decide(false, timeS, 'collision', results);
+      if (all && (ended || restedS >= settleS)) return decide(true, timeS, ended ? 'ended' : 'settled', results);
       if (ended) return decide(false, timeS, ended, results);
-      if (timeS >= prepared.timeLimitS) return decide(false, timeS, 'timeLimit', results);
+      if (!all && moved && restedS >= stallS) return decide(false, timeS, 'stalled', results);
+      if (timeS >= prepared.timeLimitS) return decide(all, timeS, 'timeLimit', results);
       return null;
     },
   };
