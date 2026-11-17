@@ -1,0 +1,115 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="v_contador">contador</variable>
+  </variables>
+  <block type="variables_set" id="Q@fS}rse)#$AVBrJWOp5" x="20" y="20">
+    <field name="VAR" id="v_contador">contador</field>
+    <value name="VALUE">
+      <block type="math_number" id="L$l7{RhgW6WINnMRsk_J">
+        <field name="NUM">0</field>
+      </block>
+    </value>
+    <next>
+      <block type="controls_repeat_ext" id="}(|R%_rzw%/;8?/oY5tg">
+        <value name="TIMES">
+          <shadow type="math_number" id="7$SsNOHqdXz8U+RU=pHt">
+            <field name="NUM">3</field>
+          </shadow>
+        </value>
+        <statement name="DO">
+          <block type="robActions_motorDiff_on_for" id="T$t_3vHcg9n]7R]E5jDg">
+            <field name="DIRECTION">FOREWARD</field>
+            <value name="POWER">
+              <shadow type="math_number" id="=spIi(e8q11*Medy!Iq8">
+                <field name="NUM">30</field>
+              </shadow>
+            </value>
+            <value name="DISTANCE">
+              <shadow type="math_number" id="?$Hv@SOr`xxVdd?.E^ev">
+                <field name="NUM">10</field>
+              </shadow>
+            </value>
+            <next>
+              <block type="variables_set" id="%2q;+bwtusV0ZYiv0b}`">
+                <field name="VAR" id="v_contador">contador</field>
+                <value name="VALUE">
+                  <block type="math_arithmetic" id="w_4)DqMT^!yEtDYY5u%f">
+                    <field name="OP">ADD</field>
+                    <value name="A">
+                      <block type="variables_get" id=":#3^D{WlROL!V,a,T5`g">
+                        <field name="VAR" id="v_contador">contador</field>
+                      </block>
+                    </value>
+                    <value name="B">
+                      <shadow type="math_number" id="M$aDEqK;O4Lj^;3dim[1">
+                        <field name="NUM">1</field>
+                      </shadow>
+                    </value>
+                  </block>
+                </value>
+                <next>
+                  <block type="robActions_display_text" id="Z:h+_)Puq=huoc5jd}r/">
+                    <value name="OUT">
+                      <block type="variables_get" id="qbal`8qMLHQoKF:i%7y{">
+                        <field name="VAR" id="v_contador">contador</field>
+                      </block>
+                    </value>
+                    <value name="COL">
+                      <shadow type="math_number" id="LM1G^`l-0_}pYtj5lz9t">
+                        <field name="NUM">0</field>
+                      </shadow>
+                    </value>
+                    <value name="ROW">
+                      <shadow type="math_number" id="2}.sL#)O-E_u0b:sy)~b">
+                        <field name="NUM">0</field>
+                      </shadow>
+                    </value>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </statement>
+        <next>
+          <block type="robControls_ifElse" id="Qz@{BN%9uj)zY+R$xr@v">
+            <value name="IF0">
+              <block type="logic_compare" id="1;aZVh5~8}6DFj_^9A?S">
+                <field name="OP">EQ</field>
+                <value name="A">
+                  <block type="robSensors_quadrgb_getSample" id="R8,[p+X[wldxy8J3xNp$">
+                    <field name="SENSORPORT">1</field>
+                    <field name="SLOT">1</field>
+                    <field name="MODE">COLOUR</field>
+                  </block>
+                </value>
+                <value name="B">
+                  <shadow type="robColour_picker" id=");Tkmz}$NK7wci}ME,Fz">
+                    <field name="COLOUR">#cc0000</field>
+                  </shadow>
+                </value>
+              </block>
+            </value>
+            <statement name="DO0">
+              <block type="robActions_println" id="z=$W#O`TTg|YIVd-Vme{">
+                <value name="OUT">
+                  <shadow type="text" id="wh1RQ6rzs-B1Rty5vCQn">
+                    <field name="TEXT">vermelho</field>
+                  </shadow>
+                </value>
+              </block>
+            </statement>
+            <statement name="ELSE">
+              <block type="robActions_println" id="`w`=L+/;Zn2q!Hi!(Wzk">
+                <value name="OUT">
+                  <block type="variables_get" id="A)Wo-xa6CMi5G946Wv7.">
+                    <field name="VAR" id="v_contador">contador</field>
+                  </block>
+                </value>
+              </block>
+            </statement>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

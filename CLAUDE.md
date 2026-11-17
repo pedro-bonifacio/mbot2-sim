@@ -20,6 +20,7 @@ Read this **before every coding session**. Violating any rule below means rework
 - `reference_openroberta/program.toolbox.expert.xml` — expert toolbox structure
 - `reference_openroberta/configuration.default.xml` — robot constants
 - `reference_openroberta/configuration.toolbox.xml` — sensor configuration blocks
+- `reference_openroberta/live/or-mbot2-catalogue.json` — **block definitions** (field names, dropdown values, defaults, hidden fields, PT labels) extracted from the live Open Roberta Lab. Check with `npm run or:check` ([decision 0011](docs/decisions/0011-live-open-roberta-as-fidelity-oracle.md)).
 
 If `openrobertambot2context.md` and an XML file conflict, **the XML wins** (it is the actual UI source).
 
@@ -130,3 +131,10 @@ The following sample program runs end-to-end in the sim:
 4. Turn 90° at 30 RPM
 5. Drive forward until ultrasonic < 10 cm OR quad-RGB sees red
 6. Stop, display "Done"
+
+## 15. Documentation & Decision Log
+
+- Index of all docs: [docs/README.md](docs/README.md).
+- **Before proposing or implementing a design change, read [docs/decisions/README.md](docs/decisions/README.md).** `Accepted` records are binding like the rules above. To change one, write a new record that supersedes it. Never rewrite an old record.
+- New decisions: copy `docs/decisions/0000-template.md`, next free number, add to the index.
+- Work plan: [docs/ROADMAP.md](docs/ROADMAP.md) — tick items as they ship. Level content: [docs/CURRICULUM.md](docs/CURRICULUM.md).

@@ -1,0 +1,308 @@
+# Open Roberta fidelity report
+
+Catalogue: https://lab.open-roberta.org · robot mbot2 · lang pt · extracted 2026-11-17T13:01:18.282Z
+
+## beginner
+
+- Toolbox order matches (shared blocks): yes
+- In OR but missing from sim toolbox: none
+- In sim toolbox but not in OR: `controls_flow_statements`
+
+### Block mismatches (27)
+
+- `robActions_motorDiff_on_for`
+  - missing field ACTORPORT (hidden in OR) — OR default ""
+  - field DIRECTION options differ — OR [FOREWARD,BACKWARDS] vs sim [FOREWARD,BACKWARD]
+- `robActions_motorDiff_on`
+  - missing field ACTORPORT (hidden in OR) — OR default ""
+- `robActions_motorDiff_stop`
+  - missing field ACTORPORT (hidden in OR) — OR default ""
+- `robActions_motorDiff_turn_for`
+  - missing field ACTORPORT (hidden in OR) — OR default ""
+  - field DIRECTION default — OR "RIGHT" vs sim "LEFT"
+- `robActions_motorDiff_turn`
+  - missing field ACTORPORT (hidden in OR) — OR default ""
+  - field DIRECTION default — OR "RIGHT" vs sim "LEFT"
+- `robActions_motorDiff_curve_for`
+  - missing field ACTORPORT (hidden in OR) — OR default ""
+  - field DIRECTION options differ — OR [FOREWARD,BACKWARDS] vs sim [FOREWARD,BACKWARD]
+- `robActions_motorDiff_curve`
+  - missing field ACTORPORT (hidden in OR) — OR default ""
+- `robActions_println`
+  - missing field ACTORPORT (hidden in OR) — OR default ""
+- `robActions_display_clear`
+  - missing field ACTORPORT (hidden in OR) — OR default ""
+- `mbedActions_play_tone`
+  - missing field ACTORPORT (hidden in OR) — OR default ""
+- `mbedActions_play_note`
+  - missing field ACTORPORT (hidden in OR) — OR default ""
+  - field DURATION options differ — OR [2000,1000,500,250,125] vs sim [8,4,2,1]
+  - field DURATION default — OR "2000" vs sim "8"
+  - missing field FREQUENCE — OR default "261.626"
+  - extra field NOTE in sim (not in OR)
+- `actions_rgbLed_hidden_on_mbot2`
+  - missing field SLOT — OR default "1"
+  - extra field LED in sim (not in OR)
+- `actions_rgbLed_hidden_off_mbot2`
+  - missing field SLOT — OR default "1"
+  - extra field LED in sim (not in OR)
+- `robActions_led_setBrightness`
+  - missing field ACTORPORT (hidden in OR) — OR default ""
+- `robSensors_ultrasonic_getSample`
+  - missing field MODE — OR default "DISTANCE"
+  - field SENSORPORT options differ — OR [U] vs sim [1]
+  - field SENSORPORT default — OR "U" vs sim "1"
+  - missing field SLOT (hidden in OR) — OR default ""
+- `robSensors_quadrgb_getSample`
+  - field MODE options differ — OR [COLOUR,LIGHT,AMBIENTLIGHT,RGB] vs sim [COLOUR,LIGHT,RGB]
+  - field SENSORPORT options differ — OR [Q] vs sim [1]
+  - field SENSORPORT default — OR "Q" vs sim "1"
+  - field SLOT options differ — OR [L1,L2,R1,R2] vs sim [1,2,3,4]
+  - field SLOT default — OR "L1" vs sim "1"
+- `robSensors_sound_getSample`
+  - missing field MODE — OR default "SOUND"
+  - missing field SENSORPORT (hidden in OR) — OR default ""
+  - missing field SLOT (hidden in OR) — OR default ""
+- `robSensors_joystickKeys_getSample`
+  - missing field MODE (hidden in OR) — OR default "PRESSED"
+  - missing field SENSORPORT (hidden in OR) — OR default ""
+  - missing field SLOT — OR default "UP"
+  - extra field DIRECTION in sim (not in OR)
+- `robSensors_key_getSample`
+  - missing field MODE (hidden in OR) — OR default "PRESSED"
+  - missing field SENSORPORT — OR default "A"
+  - missing field SLOT (hidden in OR) — OR default ""
+  - extra field KEY in sim (not in OR)
+- `robSensors_gyro_getSample`
+  - missing field MODE — OR default "ANGLE"
+  - missing field SENSORPORT (hidden in OR) — OR default ""
+  - field SLOT options differ — OR [X,Y,Z] vs sim [ANGLE,RATE]
+  - field SLOT default — OR "X" vs sim "ANGLE"
+  - extra field AXIS in sim (not in OR)
+- `robSensors_gyro_reset_axis`
+  - missing field SLOT — OR default "X"
+  - missing field SENSORPORT (hidden in OR) — OR default ""
+  - extra field AXIS in sim (not in OR)
+- `robSensors_timer_getSample`
+  - missing field MODE — OR default "VALUE"
+  - field SENSORPORT options differ — OR [1,2,3,4,5] vs sim [1,2]
+  - missing field SLOT (hidden in OR) — OR default ""
+- `robSensors_timer_reset`
+  - field SENSORPORT options differ — OR [1,2,3,4,5] vs sim [1,2]
+- `robSensors_encoder_getSample`
+  - field MODE options differ — OR [DEGREE,ROTATION] vs sim [ROTATION,DEGREE,DISTANCE]
+  - field MODE default — OR "DEGREE" vs sim "ROTATION"
+  - missing field SENSORPORT — OR default "R"
+  - missing field SLOT (hidden in OR) — OR default ""
+  - extra field MOTORPORT in sim (not in OR)
+- `robSensors_encoder_reset`
+  - missing field SENSORPORT — OR default "R"
+  - extra field MOTORPORT in sim (not in OR)
+- `robControls_loopForever`
+  - missing field TITLE_FOREVER — OR default "repetir para sempre"
+- `text_comment`
+  - missing field TEXT — OR default ""
+  - extra field COMMENT in sim (not in OR)
+
+## expert
+
+- Toolbox order matches (shared blocks): yes
+- In OR but missing from sim toolbox: none
+- In sim toolbox but not in OR: none
+
+### Block mismatches (59)
+
+- `robActions_motor_on`
+  - field MOTORPORT options differ — OR [R,L] vs sim [EM1,EM2]
+  - field MOTORPORT default — OR "R" vs sim "EM1"
+- `robActions_motor_on_for`
+  - field MOTORPORT options differ — OR [R,L] vs sim [EM1,EM2]
+  - field MOTORPORT default — OR "R" vs sim "EM1"
+  - missing field RPM — OR default "speed RPM"
+- `robActions_motor_stop`
+  - field MOTORPORT options differ — OR [R,L] vs sim [EM1,EM2]
+  - field MOTORPORT default — OR "R" vs sim "EM1"
+- `robActions_motorDiff_on_for`
+  - missing field ACTORPORT (hidden in OR) — OR default ""
+  - field DIRECTION options differ — OR [FOREWARD,BACKWARDS] vs sim [FOREWARD,BACKWARD]
+- `robActions_motorDiff_on`
+  - missing field ACTORPORT (hidden in OR) — OR default ""
+- `robActions_motorDiff_stop`
+  - missing field ACTORPORT (hidden in OR) — OR default ""
+- `robActions_motorDiff_turn_for`
+  - missing field ACTORPORT (hidden in OR) — OR default ""
+  - field DIRECTION default — OR "RIGHT" vs sim "LEFT"
+- `robActions_motorDiff_turn`
+  - missing field ACTORPORT (hidden in OR) — OR default ""
+  - field DIRECTION default — OR "RIGHT" vs sim "LEFT"
+- `robActions_motorDiff_curve_for`
+  - missing field ACTORPORT (hidden in OR) — OR default ""
+  - field DIRECTION options differ — OR [FOREWARD,BACKWARDS] vs sim [FOREWARD,BACKWARD]
+- `robActions_motorDiff_curve`
+  - missing field ACTORPORT (hidden in OR) — OR default ""
+- `robActions_display_text`
+  - missing field ACTORPORT (hidden in OR) — OR default ""
+- `robActions_println`
+  - missing field ACTORPORT (hidden in OR) — OR default ""
+- `robActions_display_set_colour`
+  - missing field ACTORPORT (hidden in OR) — OR default ""
+- `robActions_display_clear`
+  - missing field ACTORPORT (hidden in OR) — OR default ""
+- `mbedActions_play_tone`
+  - missing field ACTORPORT (hidden in OR) — OR default ""
+- `robActions_play_getVolume`
+  - missing field ACTORPORT (hidden in OR) — OR default ""
+- `mbedActions_play_note`
+  - missing field ACTORPORT (hidden in OR) — OR default ""
+  - field DURATION options differ — OR [2000,1000,500,250,125] vs sim [8,4,2,1]
+  - field DURATION default — OR "2000" vs sim "8"
+  - missing field FREQUENCE — OR default "261.626"
+  - extra field NOTE in sim (not in OR)
+- `robActions_play_recording`
+  - missing field ACTORPORT (hidden in OR) — OR default ""
+  - extra field FILENAME in sim (not in OR)
+- `actions_rgbLed_hidden_on_mbot2`
+  - missing field SLOT — OR default "1"
+  - extra field LED in sim (not in OR)
+- `actions_rgbLed_hidden_off_mbot2`
+  - missing field SLOT — OR default "1"
+  - extra field LED in sim (not in OR)
+- `robActions_led_setBrightness`
+  - missing field ACTORPORT (hidden in OR) — OR default ""
+- `robActions_ultrasonic2_led`
+  - field LED options differ — OR [LED1,LED2,LED3,LED4,LED5,LED6,LED7,LED8,LEDALL] vs sim [ALL,1,2]
+  - field LED default — OR "LED1" vs sim "ALL"
+  - missing field ACTORPORT — OR default "U"
+- `robActions_quadRGB_led_on`
+  - missing field ACTORPORT — OR default "Q"
+- `robActions_quadRGB_led_off`
+  - missing field ACTORPORT — OR default "Q"
+- `robSensors_ultrasonic_getSample`
+  - missing field MODE — OR default "DISTANCE"
+  - field SENSORPORT options differ — OR [U] vs sim [1]
+  - field SENSORPORT default — OR "U" vs sim "1"
+  - missing field SLOT (hidden in OR) — OR default ""
+- `robSensors_quadrgb_getSample`
+  - field MODE options differ — OR [COLOUR,LIGHT,AMBIENTLIGHT,RGB] vs sim [COLOUR,LIGHT,RGB]
+  - field SENSORPORT options differ — OR [Q] vs sim [1]
+  - field SENSORPORT default — OR "Q" vs sim "1"
+  - field SLOT options differ — OR [L1,L2,R1,R2] vs sim [1,2,3,4]
+  - field SLOT default — OR "L1" vs sim "1"
+- `robSensors_sound_getSample`
+  - missing field MODE — OR default "SOUND"
+  - missing field SENSORPORT (hidden in OR) — OR default ""
+  - missing field SLOT (hidden in OR) — OR default ""
+- `robSensors_sound_record`
+  - missing field MODE — OR default "START"
+  - missing field SENSORPORT (hidden in OR) — OR default ""
+  - extra field CMD in sim (not in OR)
+  - inputs differ — OR [] vs sim [DURATION]
+- `robSensors_joystickKeys_getSample`
+  - missing field MODE (hidden in OR) — OR default "PRESSED"
+  - missing field SENSORPORT (hidden in OR) — OR default ""
+  - missing field SLOT — OR default "UP"
+  - extra field DIRECTION in sim (not in OR)
+- `robSensors_key_getSample`
+  - missing field MODE (hidden in OR) — OR default "PRESSED"
+  - missing field SENSORPORT — OR default "A"
+  - missing field SLOT (hidden in OR) — OR default ""
+  - extra field KEY in sim (not in OR)
+- `robSensors_light_getSample`
+  - missing field MODE — OR default "VALUE"
+  - missing field SENSORPORT (hidden in OR) — OR default ""
+  - missing field SLOT (hidden in OR) — OR default ""
+- `robSensors_gyro_getSample`
+  - missing field MODE — OR default "ANGLE"
+  - missing field SENSORPORT (hidden in OR) — OR default ""
+  - field SLOT options differ — OR [X,Y,Z] vs sim [ANGLE,RATE]
+  - field SLOT default — OR "X" vs sim "ANGLE"
+  - extra field AXIS in sim (not in OR)
+- `robSensors_gyro_reset_axis`
+  - missing field SLOT — OR default "X"
+  - missing field SENSORPORT (hidden in OR) — OR default ""
+  - extra field AXIS in sim (not in OR)
+- `robSensors_accelerometer_getSample`
+  - missing field MODE — OR default "VALUE"
+  - missing field SENSORPORT (hidden in OR) — OR default ""
+  - missing field SLOT — OR default "X"
+  - extra field AXIS in sim (not in OR)
+- `robSensors_timer_getSample`
+  - missing field MODE — OR default "VALUE"
+  - field SENSORPORT options differ — OR [1,2,3,4,5] vs sim [1,2]
+  - missing field SLOT (hidden in OR) — OR default ""
+- `robSensors_timer_reset`
+  - field SENSORPORT options differ — OR [1,2,3,4,5] vs sim [1,2]
+- `robSensors_encoder_getSample`
+  - field MODE options differ — OR [DEGREE,ROTATION] vs sim [ROTATION,DEGREE,DISTANCE]
+  - field MODE default — OR "DEGREE" vs sim "ROTATION"
+  - missing field SENSORPORT — OR default "R"
+  - missing field SLOT (hidden in OR) — OR default ""
+  - extra field MOTORPORT in sim (not in OR)
+- `robSensors_encoder_reset`
+  - missing field SENSORPORT — OR default "R"
+  - extra field MOTORPORT in sim (not in OR)
+- `robSensors_line_getSample`
+  - field MODE options differ — OR [LINE] vs sim [L,R,ALL,CODE]
+  - field MODE default — OR "LINE" vs sim "L"
+  - field SENSORPORT options differ — OR [Q] vs sim [1]
+  - field SENSORPORT default — OR "Q" vs sim "1"
+  - missing field SLOT (hidden in OR) — OR default ""
+- `robControls_loopForever`
+  - missing field TITLE_FOREVER — OR default "repetir para sempre"
+- `controls_whileUntil`
+  - field MODE default — OR "UNTIL" vs sim "WHILE"
+- `robControls_for`
+  - field VAR default — OR "j" vs sim "aQQ)(hY([zPkaIJxR^oy"
+  - inputs differ — OR [FROM,TO,TO,BY,DO] vs sim [FROM,TO,BY,DO]
+- `robControls_forEach`
+  - missing field TYPE — OR default "Number"
+  - field VAR default — OR "item4" vs sim "aQQ)(hY([zPkaIJxR^oy"
+- `robControls_wait`
+  - inputs differ — OR [WAIT0] vs sim []
+- `math_single`
+  - field OP options differ — OR [ROOT,SQUARE,ABS,NEG,LN,LOG10,EXP,POW10] vs sim [ROOT,ABS,NEG,LN,LOG10,EXP,POW10]
+- `robMath_change`
+  - extra field VAR in sim (not in OR)
+  - inputs differ — OR [VAR,DELTA] vs sim [DELTA]
+- `math_on_list`
+  - field OP options differ — OR [SUM,MIN,MAX,AVERAGE,MEDIAN,STD_DEV,RANDOM] vs sim [SUM,MIN,MAX,AVERAGE,MEDIAN,MODE,STD_DEV,RANDOM]
+- `math_cast_toString`
+  - inputs differ — OR [VALUE] vs sim [NUM]
+- `math_cast_toChar`
+  - inputs differ — OR [VALUE] vs sim [NUM]
+- `text_comment`
+  - missing field TEXT — OR default ""
+  - extra field COMMENT in sim (not in OR)
+- `robText_append`
+  - extra field VAR in sim (not in OR)
+  - inputs differ — OR [VAR,TEXT] vs sim [TEXT]
+- `text_cast_string_toNumber`
+  - inputs differ — OR [VALUE] vs sim [TEXT]
+- `text_cast_char_toNumber`
+  - inputs differ — OR [VALUE,AT] vs sim [CHAR]
+- `robLists_create_with`
+  - missing field LIST_TYPE — OR default "Number"
+  - inputs differ — OR [] vs sim [ADD0,ADD1,ADD2]
+- `robLists_repeat`
+  - missing field LIST_TYPE — OR default "Number"
+- `robLists_indexOf`
+  - missing field END — OR default "FIRST"
+- `robLists_getIndex`
+  - missing field MODE — OR default "GET"
+  - missing field SPACE — OR default ""
+  - field WHERE options differ — OR [FROM_START,FROM_END,FIRST,LAST] vs sim [FIRST,LAST,FROM_START,FROM_END,RANDOM]
+  - field WHERE default — OR "FROM_START" vs sim "FIRST"
+- `robLists_setIndex`
+  - missing field MODE — OR default "SET"
+  - missing field SPACE — OR default ""
+  - field WHERE options differ — OR [FROM_START,FROM_END,FIRST,LAST] vs sim [FIRST,LAST,FROM_START,FROM_END,RANDOM]
+  - field WHERE default — OR "FROM_START" vs sim "FIRST"
+  - inputs differ — OR [LIST,AT,TO] vs sim [VALUE,AT,TO]
+- `robLists_getSublist`
+  - field WHERE1 options differ — OR [FROM_START,FROM_END,FIRST] vs sim [FIRST_FROM_START,FROM_START,FROM_END,LAST]
+  - field WHERE1 default — OR "FROM_START" vs sim "FIRST_FROM_START"
+  - field WHERE2 options differ — OR [FROM_START,FROM_END,LAST] vs sim [FIRST_FROM_START,FROM_START,FROM_END,LAST]
+  - field WHERE2 default — OR "FROM_START" vs sim "FIRST_FROM_START"
+  - inputs differ — OR [LIST,AT1,AT2] vs sim [VALUE,AT1,AT2]
+
+**Total problems: 200**
