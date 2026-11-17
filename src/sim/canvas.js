@@ -1,6 +1,4 @@
 import { robot, resetRobot, ROBOT_CONSTANTS } from './robot.js';
-import { step } from './kinematics.js';
-import { advanceClock } from './clock.js';
 import { PX_PER_CM, worldToScreen } from './world.js';
 import { DISPLAY_SCALE, ROBOT_LENGTH_PX, ROBOT_WIDTH_PX } from './constants.js';
 import { drawMap, hasMap, getMapSizeCm } from './map.js';
@@ -18,8 +16,12 @@ let ctx    = null;
 let canvas = null;
 let lastTime = 0;
 let paused   = false;
+let frameHook = null;
 
-const MAX_DT = 1 / 30;
+/** Called once per animation frame (unless paused) with the frame's time in seconds. */
+export function setFrameHook(fn) { frameHook = fn; }
+
+const MAX_DT = 1 / 30;   // frame time cap: absorbs tab-suspend lag (CLAUDE.md §8)
 
 const camera = { offsetX: 0, offsetY: 0, scale: 1 };
 
@@ -113,10 +115,9 @@ function loop(now) {
   lastTime   = now;
   const dt   = Math.min(dtMs / 1000, MAX_DT);
 
-  if (!paused) {
-    step(robot, dt);
-    advanceClock(dt);
-  }
+  // The world advances in fixed ticks owned by the run loop (src/runtime/runLoop.js);
+  // this loop only hands it the frame's time and then draws.
+  if (!paused && frameHook) frameHook(dt);
 
   // Clear per-tick sensor cache every frame so visualisations (cone, quad-RGB dots)
   // always reflect current robot position, even when no interpreter is running.

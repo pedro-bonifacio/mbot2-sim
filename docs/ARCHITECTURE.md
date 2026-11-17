@@ -200,18 +200,23 @@ Because the `resolveCondition` is checked once per frame (at 60 fps), the robot 
 const STEP_BUDGET_PER_FRAME = 1000;
 ```
 
-Each RAF frame, the run loop calls `tickProgram()` (`src/runtime/programTick.js`), which checks collision, resumes a finished async robot call, and calls `interpreter.step()` up to 1000 times. `tickProgram()` is UI-free; `runLoop.js` turns its result into run states and console messages, and the headless runner uses the same function. This prevents a tight loop in user code (e.g. `while(true) {}`) from freezing the browser tab. The physics sim and canvas render still happen in the canvas RAF loop regardless.
+Each simulation tick, the run loop calls `tickProgram()` (`src/runtime/programTick.js`), which checks collision, resumes a finished async robot call, and calls `interpreter.step()` up to 1000 times. `tickProgram()` is UI-free; `runLoop.js` turns its result into run states and console messages, and the headless runner uses the same function. This prevents a tight loop in user code (e.g. `while(true) {}`) from freezing the browser tab.
 
 ### Interaction with async tickets
 
 When an async API call is active, the interpreter's `paused_` flag is `true` and `step()` returns without advancing execution. The run loop detects this and enters `PAUSED_ASYNC` state, which skips the step budget loop and just polls the async ticket each frame.
 
-### The two RAF loops
+### Fixed ticks: one clock for browser and headless
 
-- **Canvas loop** (`src/sim/canvas.js → initSim → loop()`): always running; calls `kinematics.step()` and `draw()` every frame. It also calls `resetTickCache()` to clear sensor caches.
-- **Run loop** (`src/runtime/runLoop.js → _tick()`): started only when a program is running; checks the async ticket, runs the step budget, then re-schedules itself.
+Decision [0004](decisions/0004-deterministic-simulation.md). The world advances only in **ticks of 1/60 s of simulated time**, and each tick does the same two things in the same order everywhere:
 
-Both loops use `requestAnimationFrame` independently. They do not share a single RAF callback.
+1. `tickProgram()` (`programTick.js`), if a program is running: collision check, async ticket, step budget;
+2. `physicsTick()` (`simTick.js`): `kinematics.step(robot, 1/60)`, then `advanceClock(1/60)`.
+
+- **Browser:** the canvas loop (`canvas.js → loop()`, the only `requestAnimationFrame` loop) passes each frame's time, capped at 1/30 s, to `runLoop.advanceFrame()` through `setFrameHook`. That function accumulates it and runs the whole ticks it covers (none, one, or two per frame), then the canvas loop draws. Pausing (space bar, only while no program runs) skips the hook, so time stops.
+- **Headless** (`headless.js`): a plain loop of ticks, with no frames.
+
+So a program's path depends only on the program and the map: at 60 fps, at 30 fps on a school laptop, or with uneven frames, the robot goes exactly where the headless runner says. `npm run sim:test` checks every test program through the real `runLoop.js` at 30 fps and with uneven 8–40 ms frames (`simulateBrowser` in `scripts/lib/sim.mjs`). Before this, the browser stepped physics with each frame's real `dt` in a loop separate from the program, and `teste-3` crashed into a wall at 30–45 fps but not at 60.
 
 ---
 

@@ -9,12 +9,18 @@ import path from 'path';
 
 console.log = () => {};   // silence developer logs from the sim
 const print = (s) => process.stdout.write(s + '\n');
-const { simulate, ROOT } = await import('./lib/sim.mjs');
+const { simulate, simulateBrowser, ROOT } = await import('./lib/sim.mjs');
 
 const verbose = process.argv.includes('--verbose');
 const filter = process.argv.slice(2).find((a) => !a.startsWith('--'));
 const { tests } = JSON.parse(fs.readFileSync(path.join(ROOT, 'scripts/fixtures/sim-tests.json'), 'utf8'));
 const POSE_TOL = { forward: 0.5, right: 0.5, turned: 1 };
+
+// Synthetic animation frames for the browser run loop: a slow laptop, and an uneven
+// frame rate (seeded, so the test is repeatable).
+let seed = 1;
+const jitter = () => 0.008 + ((seed = (seed * 16807) % 2147483647) / 2147483647) * 0.032;
+const FRAME_RATES = [['30 fps', () => 1 / 30], ['uneven 8–40 ms frames', jitter]];
 
 let failed = 0;
 for (const t of tests.filter((x) => !filter || x.name.includes(filter))) {
@@ -33,6 +39,16 @@ for (const t of tests.filter((x) => !filter || x.name.includes(filter))) {
   if (e.distance !== undefined && Math.abs(r.distance - e.distance) > 0.5) problems.push(`distance ${r.distance}, expected ${e.distance}`);
   for (const k of ['display', 'leds']) {
     if (e[k] && JSON.stringify(r[k]) !== JSON.stringify(e[k])) problems.push(`${k} ${JSON.stringify(r[k])}, expected ${JSON.stringify(e[k])}`);
+  }
+  // The browser's run loop must give the same result at any frame rate (decision 0004):
+  // compare with a headless run stopped at the same simulated time.
+  for (const [rate, frameS] of FRAME_RATES) {
+    const b = await simulateBrowser({ program: t.program, map: t.map, maxSeconds: t.maxSeconds ?? 60, keys: t.keys ?? [], frameS });
+    const h = b.status === r.status && b.time === r.time ? r
+      : simulate({ program: t.program, map: t.map, maxSeconds: b.time - 1e-9, keys: t.keys ?? [] });
+    if (b.status !== h.status || JSON.stringify(b.pose) !== JSON.stringify(h.pose)) {
+      problems.push(`browser at ${rate}: ${b.status} ${JSON.stringify(b.pose)}, headless ${h.status} ${JSON.stringify(h.pose)}`);
+    }
   }
   if (problems.length) failed++;
   print(`${problems.length ? 'FAIL' : 'ok  '} ${t.name}${problems.length ? '\n       ' + problems.join('\n       ') : ''}`);

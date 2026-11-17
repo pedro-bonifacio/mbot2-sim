@@ -67,17 +67,17 @@ Code generation target is **JavaScript**, executed via **JS-Interpreter**. The p
 ## 7. Execution Model
 
 - Code generator: **JavaScript** (Blockly's built-in JS generator, customised in `src/codegen/`).
-- Runtime: **JS-Interpreter** (`src/runtime/`), with `interpreter.step()` driven by `requestAnimationFrame`.
-- **STEP_BUDGET_PER_FRAME = 1000** — the run loop calls `step()` at most 1000 times per RAF frame to prevent browser hangs from tight user loops.
-- Async robot calls (`drive_for`, `turn_for`, `wait_ms`, etc.) use the **async ticketing pattern**: the robotAPI method sets `asyncTicket.pending = true` and a `resolveCondition` closure; the run loop polls the condition each frame and fires the JS-Interpreter resume callback when it returns `true`. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#the-async-ticketing-pattern).
-- Stop button = cancel RAF, destroy interpreter, call `resetMotors()`.
+- Runtime: **JS-Interpreter** (`src/runtime/`), with `interpreter.step()` driven by the fixed simulation tick (§8).
+- **STEP_BUDGET_PER_FRAME = 1000** — each program tick calls `step()` at most 1000 times to prevent browser hangs from tight user loops.
+- Async robot calls (`drive_for`, `turn_for`, `wait_ms`, etc.) use the **async ticketing pattern**: the robotAPI method sets `asyncTicket.pending = true` and a `resolveCondition` closure; the run loop polls the condition each tick and fires the JS-Interpreter resume callback when it returns `true`. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#the-async-ticketing-pattern).
+- Stop button = destroy interpreter, clear the async ticket, call `resetMotors()` (ticks keep running; nothing moves).
 - Generated code must be valid **ES5**. Do not emit `let`, `const`, arrow functions, template literals, or other ES6+ syntax.
 
 ## 8. Sim Loop
 
-- Fixed 60 fps (`requestAnimationFrame`), `dt = 1/60 s` nominal; capped at `1/30 s` to absorb tab-suspend lag.
+- **Fixed tick of 1/60 s simulated time** ([decision 0004](docs/decisions/0004-deterministic-simulation.md)). Each tick = `tickProgram()` then `physicsTick()` (`src/runtime/simTick.js`), in that order, in the browser and the headless runner alike. Never step physics or the clock with a frame's real `dt`.
+- One `requestAnimationFrame` loop (`canvas.js`): it hands the frame's time, capped at `1/30 s` to absorb tab-suspend lag, to `runLoop.advanceFrame`, which runs the whole ticks it covers, then draws. A slow computer draws fewer frames (and runs slower than real time below 30 fps); it never changes the result. `npm run sim:test` checks this at 30 fps and with uneven frames.
 - Sensor reads are synchronous against current sim state (no I/O latency simulated).
-- The canvas render loop and the interpreter run loop are **separate** RAF callbacks.
 
 ## 9. Reserved Map Colours (DO NOT USE for sensor zones)
 

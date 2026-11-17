@@ -2,10 +2,10 @@ import { createInterpreter, destroyInterpreter } from './interpreter.js';
 import { tickProgram } from './programTick.js';
 import { asyncTicket } from './runState.js';
 import { robot, respawnRobot, resetMotors } from '../sim/robot.js';
-import { step } from '../sim/kinematics.js';
+import { TICK_S, physicsTick } from './simTick.js';
 import { resetSensors } from '../sim/sensors.js';
 import { setMapData } from '../sim/map.js';
-import { simNow, advanceClock, resetClock } from '../sim/clock.js';
+import { simNow, resetClock } from '../sim/clock.js';
 import { robotAPI } from '../sim/robotAPI.js';
 import { ledState, resetLeds } from '../sim/leds.js';
 import { resetDisplay, getDisplayState } from '../ui/display.js';
@@ -14,10 +14,11 @@ import { setConsoleSink } from '../ui/console.js';
 
 // Headless run: the same interpreter, robotAPI, sensors and physics as the browser,
 // stepped in fixed ticks of simulated time (decision 0004) with no rendering.
-// One tick = one program tick (tickProgram, as one browser frame) + one physics step.
+// One tick = one program tick + one physics tick (src/runtime/simTick.js), exactly as
+// the browser run loop does it.
 // Used by scripts/sim-run.mjs and the sim test suite; later by level checks.
 
-export const TICK_S = 1 / 60;
+export { TICK_S };
 
 const round = (x, n = 1) => Math.round(x * 10 ** n) / 10 ** n;
 const deg = (rad) => rad * 180 / Math.PI;
@@ -76,8 +77,7 @@ export function runHeadless({ code, map, maxSeconds = 60, keys = [], sampleEvery
       }
       const r = tickProgram();
       if (r.status !== 'running') { status = r.status; error = r.error || null; break; }
-      step(robot, TICK_S);
-      advanceClock(TICK_S);
+      physicsTick();
     }
   } catch (e) {
     status = 'error';   // e.g. syntax error while creating the interpreter
