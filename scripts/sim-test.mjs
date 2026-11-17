@@ -20,7 +20,7 @@ const POSE_TOL = { forward: 0.5, right: 0.5, turned: 1 };
 // frame rate (seeded, so the test is repeatable).
 let seed = 1;
 const jitter = () => 0.008 + ((seed = (seed * 16807) % 2147483647) / 2147483647) * 0.032;
-const FRAME_RATES = [['30 fps', () => 1 / 30], ['uneven 8–40 ms frames', jitter]];
+const FRAME_RATES = [['30 fps', () => 1 / 30], ['uneven 8–40 ms frames', jitter], ['×4 fast-forward at 30 fps', () => 1 / 30, 4]];
 
 let failed = 0;
 for (const t of tests.filter((x) => !filter || x.name.includes(filter))) {
@@ -42,8 +42,8 @@ for (const t of tests.filter((x) => !filter || x.name.includes(filter))) {
   }
   // The browser's run loop must give the same result at any frame rate (decision 0004):
   // compare with a headless run stopped at the same simulated time.
-  for (const [rate, frameS] of FRAME_RATES) {
-    const b = await simulateBrowser({ program: t.program, map: t.map, maxSeconds: t.maxSeconds ?? 60, keys: t.keys ?? [], frameS, seed: t.seed ?? 1 });
+  for (const [rate, frameS, speed = 1] of FRAME_RATES) {
+    const b = await simulateBrowser({ program: t.program, map: t.map, maxSeconds: t.maxSeconds ?? 60, keys: t.keys ?? [], frameS, seed: t.seed ?? 1, speed });
     const h = b.status === r.status && b.time === r.time ? r
       : simulate({ program: t.program, map: t.map, maxSeconds: b.time - 1e-9, keys: t.keys ?? [], seed: t.seed ?? 1 });
     const same = (x) => JSON.stringify([x.status, x.pose, x.display]);

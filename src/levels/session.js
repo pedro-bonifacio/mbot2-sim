@@ -95,6 +95,7 @@ const observer = {
   onStart() {
     state.referee = createReferee(state.prepared);
     state.lastVerdict = null;
+    state.allVariants = null;   // the panel shows this run's result from now on
     emit();
   },
   onTick({ timeS, ended }) {

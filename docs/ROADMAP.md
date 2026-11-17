@@ -16,6 +16,9 @@ Done this session (details in `CHANGELOG.md → Unreleased`):
 - **Progress saved** — stars and one program per level in localStorage;
   **Guardar progresso** / **Abrir progresso** file (`src/levels/progress.js`).
 - **★ Níveis** level selector — worlds, stars, free maps; a level opens with its toolbox.
+- **UI tidy-up** — one-row top bar with **Ficheiro ▾** menu, fast-forward ×1/×2/×4, result
+  line + **Próximo nível** in the level panel, reopen last level, tab title + icon,
+  all student messages in `pt.js`.
 - `docs/LEVEL_AUTHORING.md`. (`levels:mat` PDF mats were built, then removed: the teacher builds
   evaluation maps by hand from cardboard and boxes, using `levels/_previews/`.)
 - Earlier sessions: Open Roberta export, real-footprint collision, fixed ticks, seeded
@@ -43,6 +46,9 @@ Done this session (details in `CHANGELOG.md → Unreleased`):
          (id, title, ☆☆ / ★☆ / ★★, the open one outlined in blue) and the free maps; a click
          opens it. Is it clear and big enough for the class?
    - [ ] **Read `docs/LEVEL_AUTHORING.md`** — is the workflow how you'd want to make levels?
+   - [ ] **New top bar looks:** one row (▶ Executar in green, ×1/×2/×4, ★ Níveis + what is open,
+         **Ficheiro ▾** menu, toolbox); on a small school laptop screen too. Level panel: green/red
+         result line and **Próximo nível ›**. Tab icon.
    - [ ] **Robot in class:** `VERIFY_ON_ROBOT.md` (10 checks).
 2. **Build, level engine (Phase C), in this order:** ~~save stars and programs per level~~
    (done: each level keeps its own program and stars; **Guardar progresso** / **Abrir progresso**);

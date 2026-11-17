@@ -10,62 +10,36 @@ import { listLevels, loadLevel, clearLevel } from '../levels/session.js';
 import { setToolboxMode } from '../blockly/index.js';
 import { ptMessages as MSG } from '../i18n/pt.js';
 
-let _catalogue   = [];
-let _activeMapName = '';  // name of the currently loaded map
+// What is on the canvas: a level or a free map (chosen in "★ Níveis",
+// src/ui/levelSelector.js). Opens ?level=<id>, else whatever was open last time on
+// this computer, else the first free map. The top bar names what is open.
+
+const LAST_KEY = 'mbot2sim:lastOpen';   // "level:04-01" / "map:<name>", this browser only
+
+let _catalogue = [];
+let _active = '';   // "level:<id>" / "map:<name>"
+
+const fmt = (s, ...a) => a.reduce((t, v, i) => t.replace(`%${i + 1}`, v), s);
 
 export async function initMapSelector() {
-  const select = document.getElementById('map-select');
-  if (!select) return;
-
   _catalogue = await getMapCatalogue();
+  const levels = listLevels();
 
-  if (_catalogue.length === 0) {
-    console.warn('[mapSelector] No maps found in catalogue; using blank canvas');
-    appendConsoleMessage('Atenção: nenhum mapa encontrado em public/maps/.', 'warn');
-    return;
-  }
-
-  // Populate dropdown: levels first, then free maps. Values: "level:<id>" / "map:<name>".
-  select.innerHTML = '';
-  const group = (label) => { const g = document.createElement('optgroup'); g.label = label; select.appendChild(g); return g; };
-  const levelGroup = group(MSG.LEVEL_MENU_LEVELS);
-  for (const level of listLevels()) {
-    const opt = document.createElement('option');
-    opt.value = `level:${level.id}`;
-    opt.textContent = `${level.id} · ${level.title}`;
-    levelGroup.appendChild(opt);
-  }
-  const mapGroup = group(MSG.LEVEL_MENU_MAPS);
-  for (const { name } of _catalogue) {
-    const opt       = document.createElement('option');
-    opt.value       = `map:${name}`;
-    opt.textContent = name;
-    mapGroup.appendChild(opt);
-  }
-
-  // ?level=04-01 opens a level directly; otherwise the first free map.
   const wanted = new URLSearchParams(location.search).get('level');
-  if (wanted && listLevels().some((l) => l.id === wanted)) {
-    select.value = `level:${wanted}`;
-    _selectLevel(wanted);
-  } else {
-    select.value = `map:${_catalogue[0].name}`;
-    await _loadMap(_catalogue[0]);
-  }
+  let last = '';
+  try { last = localStorage.getItem(LAST_KEY) || ''; } catch (e) {}
+  const [kind, name] = split(last);
 
-  select.addEventListener('change', () => {
-    const [kind, name] = [select.value.slice(0, select.value.indexOf(':')), select.value.slice(select.value.indexOf(':') + 1)];
-    const entry = kind === 'map' ? _catalogue.find(m => m.name === name) : null;
-    if (kind === 'map' && !entry) return;
+  if (wanted && levels.some((l) => l.id === wanted)) return _selectLevel(wanted);
+  if (kind === 'level' && levels.some((l) => l.id === name)) return _selectLevel(name);
+  const entry = (kind === 'map' && _catalogue.find((m) => m.name === name)) || _catalogue[0];
+  if (entry) return _loadMap(entry);
 
-    if (!_stopIfRunning()) {
-      select.value = _activeMapName;  // revert dropdown to what is loaded
-      return;
-    }
-    if (kind === 'level') _selectLevel(name);
-    else _loadMap(entry);
-  });
+  console.warn('[mapSelector] No maps found in catalogue; using blank canvas');
+  appendConsoleMessage(MSG.MAP_NONE_FOUND, 'warn');
 }
+
+const split = (v) => { const i = v.indexOf(':'); return i < 0 ? ['', ''] : [v.slice(0, i), v.slice(i + 1)]; };
 
 /** Asks before stopping a running program; false = the student cancelled. */
 function _stopIfRunning() {
@@ -82,22 +56,15 @@ function _stopIfRunning() {
 export function listFreeMaps() { return _catalogue.slice(); }
 
 /**
- * Opens a level or a free map from the level selector, as the dropdown would
- * (asks before stopping a running program). Returns false if cancelled.
+ * Opens a level or a free map (level selector, "Próximo nível"); asks before
+ * stopping a running program. Returns false if cancelled.
  */
 export async function openFromSelector(kind, name) {
   if (!_stopIfRunning()) return false;
-  const select = document.getElementById('map-select');
-  if (kind === 'level') {
-    if (select) select.value = `level:${name}`;
-    _selectLevel(name);
-  } else {
-    const entry = _catalogue.find((m) => m.name === name);
-    if (!entry) return false;
-    if (select) select.value = `map:${entry.name}`;
-    await _loadMap(entry);
-  }
-  return true;
+  if (kind === 'level') return _selectLevel(name);
+  const entry = _catalogue.find((m) => m.name === name);
+  if (!entry) return false;
+  return _loadMap(entry);
 }
 
 /** The level's toolbox (beginner/expert) when it opens; the student can still switch. */
@@ -109,14 +76,24 @@ function _applyLevelToolbox(id) {
   if (sel) sel.value = level.toolbox;
 }
 
+function _setActive(value, label) {
+  _active = value;
+  try { localStorage.setItem(LAST_KEY, value); } catch (e) {}
+  const el = document.getElementById('current-map');
+  if (el) { el.textContent = label; el.title = label; }
+}
+
 function _selectLevel(id) {
   try {
     loadLevel(id);
     _applyLevelToolbox(id);
-    _activeMapName = `level:${id}`;
+    const level = listLevels().find((l) => l.id === id);
+    _setActive(`level:${id}`, fmt(MSG.CURRENT_LEVEL, id, level.title));
+    return true;
   } catch (err) {
     console.error('[mapSelector] Failed to load level:', err);
-    appendConsoleMessage(`Erro ao carregar o nível ${id}: ${err.message}`, 'error');
+    appendConsoleMessage(fmt(MSG.LEVEL_LOAD_ERROR, id, err.message), 'error');
+    return false;
   }
 }
 
@@ -124,20 +101,13 @@ function _selectLevel(id) {
 export async function loadMapByName(name) {
   const entry = _catalogue.find((m) => m.name === name || m.name === String(name).replace(/\.png$/i, ''));
   if (!entry) throw new Error(`No map "${name}" (have: ${_catalogue.map((m) => m.name).join(', ')})`);
-  const select = document.getElementById('map-select');
-  if (select) select.value = `map:${entry.name}`;
   await _loadMap(entry);
 }
 
 /** Opens a level by id (dev hooks). */
-export function loadLevelById(id) {
-  const select = document.getElementById('map-select');
-  if (select) select.value = `level:${id}`;
-  loadLevel(id);
-  _activeMapName = `level:${id}`;
-}
+export function loadLevelById(id) { _selectLevel(id); }
 
-export function getActiveMapName() { return _activeMapName; }
+export function getActiveMapName() { return _active; }
 
 async function _loadMap(entry) {
   try {
@@ -147,10 +117,12 @@ async function _loadMap(entry) {
     resizeCanvas(mapInfo);
     respawnRobot(mapInfo);
     resetCamera();
-    _activeMapName = `map:${entry.name}`;
+    _setActive(`map:${entry.name}`, fmt(MSG.CURRENT_MAP, entry.name));
     console.log(`[mapSelector] Loaded "${entry.name}" — ${mapInfo.width}×${mapInfo.height} cm, spawn (${mapInfo.spawnX.toFixed(1)}, ${mapInfo.spawnY.toFixed(1)}), heading ${(mapInfo.spawnHeading * 180 / Math.PI).toFixed(1)}°`);
+    return true;
   } catch (err) {
     console.error('[mapSelector] Failed to load map:', err);
-    appendConsoleMessage(`Erro ao carregar o mapa "${entry.name}": ${err.message}`, 'error');
+    appendConsoleMessage(fmt(MSG.MAP_LOAD_FAILED, entry.name, err.message), 'error');
+    return false;
   }
 }

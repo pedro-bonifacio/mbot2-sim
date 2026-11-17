@@ -10,6 +10,7 @@ import { seedProgramRandom, freshSeed } from '../sim/random.js';
 import { setFrameHook } from '../sim/canvas.js';
 import { TICK_S, physicsTick } from './simTick.js';
 import { simNow } from '../sim/clock.js';
+import { ptMessages as MSG } from '../i18n/pt.js';
 
 // The browser's world clock (decision 0004). Each animation frame the canvas loop
 // hands over its (capped) frame time; it is cut into fixed 1/60 s ticks, and each
@@ -18,6 +19,15 @@ import { simNow } from '../sim/clock.js';
 // drawn; it never changes where the robot goes.
 
 let _accS = 0;   // frame time not yet turned into ticks
+let _speed = 1;  // fast-forward: simulated seconds per real second (×1, ×2, ×4)
+
+/**
+ * Fast-forward. The (capped) frame time is multiplied before it is cut into ticks,
+ * so a faster speed only runs more of the same fixed ticks per frame: the result
+ * never changes (decision 0004; checked by sim-test.mjs).
+ */
+export function setSpeed(x) { _speed = x > 0 ? x : 1; }
+export function getSpeed() { return _speed; }
 let _runStartMs = 0;
 let _observer = null;
 
@@ -41,7 +51,7 @@ export function initRunLoop() {
 
 /** One animation frame's worth of simulation. Exported for the frame-rate test (sim-test.mjs). */
 export function advanceFrame(frameS) {
-  _accS += frameS;
+  _accS += frameS * _speed;
   // The small epsilon keeps a steady 60 fps at exactly one tick per frame despite
   // floating-point drift in the accumulated frame times.
   while (_accS >= TICK_S - 1e-9) {
@@ -89,7 +99,7 @@ export function runCode(jsCode, { seed = freshSeed() } = {}) {
     createInterpreter(jsCode);
   } catch (err) {
     console.error('[runLoop] Interpreter init error:', err);
-    appendConsoleMessage('Erro ao iniciar o programa: ' + err.message, 'error');
+    appendConsoleMessage(MSG.RUN_START_ERROR.replace('%1', err.message), 'error');
     setRunState(RunState.ERRORED);
     return;
   }
@@ -125,7 +135,7 @@ export function stop() {
   resetMotors();
 
   setRunState(RunState.STOPPED);
-  appendConsoleMessage('Programa interrompido.', 'warn');
+  appendConsoleMessage(MSG.RUN_STOPPED, 'warn');
 }
 
 /** Turns a program tick's result into run state and console messages. */
@@ -133,20 +143,20 @@ function _handle(result) {
   switch (result.status) {
     case 'collision':
       setRunState(RunState.STOPPED);
-      appendConsoleMessage('Colisão detectada.', 'error');
+      appendConsoleMessage(MSG.RUN_COLLISION, 'error');
       return;
     case 'finished':
       setRunState(RunState.IDLE);
-      appendConsoleMessage('Programa terminado.', 'info');
+      appendConsoleMessage(MSG.RUN_FINISHED, 'info');
       return;
     case 'error':
       console.error('[runLoop] Runtime error:', result.error);
-      appendConsoleMessage('Erro de execução: ' + result.error.message, 'error');
+      appendConsoleMessage(MSG.RUN_ERROR.replace('%1', result.error.message), 'error');
       setRunState(RunState.ERRORED);
       return;
     case 'internal':
       console.error('[runLoop]', result.error.message);
-      appendConsoleMessage('Erro interno: operação assíncrona sem retorno.', 'error');
+      appendConsoleMessage(MSG.RUN_INTERNAL_ERROR, 'error');
       setRunState(RunState.ERRORED);
       return;
     default: {

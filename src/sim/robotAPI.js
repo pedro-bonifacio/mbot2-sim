@@ -1,4 +1,5 @@
 import { appendConsoleMessage } from '../ui/console.js';
+import { ptMessages as MSG } from '../i18n/pt.js';
 import { robot, setWheelSpeeds } from './robot.js';
 import { asyncTicket } from '../runtime/runState.js';
 import { play_tone as _play_tone, set_volume as _set_volume, get_volume as _get_volume } from './audio.js';
@@ -195,8 +196,8 @@ export const robotAPI = {
 
   set_volume(v)    { _set_volume(v); },
   get_volume()     { return _get_volume(); },
-  play_recording() { appendConsoleMessage('(gravação: não disponível no simulador)', 'warn'); },
-  sound_record()   { appendConsoleMessage('(gravação: não disponível no simulador)', 'warn'); },
+  play_recording() { appendConsoleMessage(MSG.SOUND_RECORD_UNAVAILABLE, 'warn'); },
+  sound_record()   { appendConsoleMessage(MSG.SOUND_RECORD_UNAVAILABLE, 'warn'); },
 
   // ── Lights ────────────────────────────────────────────────────────────────
 
