@@ -295,7 +295,9 @@ If no cyan zone is found, spawn defaults to the canvas centre (half of map width
 
 ### Obstacle detection
 
-`isObstacle(x, y)` in `src/sim/map.js` checks if a circle of radius `BODY_RADIUS_CM = 4.5` centred at `(x, y)` intersects any magenta pixel `(R=255, G=0, B=255)`. Collision is detected via `isMagentaCollision()` which samples the robot's bounding circle at several points.
+`isObstacle(x, y)` in `src/sim/map.js` is a point test: a magenta pixel (classified by `getColorNameAt`) or anything outside the map. The ultrasonic raycast uses it directly.
+
+Robot–wall contact uses the real footprint (`src/sim/collision.js`): the 17.5 × 13 cm rectangle (`ROBOT_LENGTH_CM` × `ROBOT_WIDTH_CM`) centred on the robot and turned with its heading, the same rectangle the sprite is drawn in and the cyan spawn zone is painted as. `footprintHitsWall` samples its perimeter every 0.5 cm, below the 0.625 cm minimum wall thickness. Each physics step, `kinematics.step()` checks the new pose (translation and rotation, so corners swinging into a wall count); if it touches a wall, the robot moves only to the point of contact (bisection along the step) and `robot.collided` is set. `tickProgram()` sees the flag and halts the run ("Colisão detectada."). The flag stays set until `resetRobot()`, and the canvas outlines the footprint in red meanwhile. A robot that already overlaps a wall (a badly placed spawn) can still move, so it is reported rather than trapped; `npm run sim:test` checks that every map in the selector spawns clear. `BODY_RADIUS_CM` is no longer used for collision.
 
 ### Vite catalogue plugin
 
@@ -430,7 +432,7 @@ robot = {
   theta,               // radians; 0 = east, increases clockwise
   vL,                  // left wheel speed, RPM; range -200..200
   vR,                  // right wheel speed, RPM; range -200..200
-  collided,            // boolean; true for the frame of a collision
+  collided,            // boolean; set on wall contact, cleared by resetRobot()
   totalDistanceCm,     // cumulative absolute distance traveled since reset
   totalRotationRad,    // cumulative absolute rotation since reset
   encoderLeftAbs,      // cumulative left-motor rotations since reset

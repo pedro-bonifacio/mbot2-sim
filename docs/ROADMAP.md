@@ -21,7 +21,7 @@ back to the sim with the same behaviour (`scripts/fixtures/from-openroberta/`).
 
 1. **Teacher, with a robot in class:** `VERIFY_ON_ROBOT.md` (now 10 checks, incl. an exported file on the real robot).
 2. Rest of Phase A: fixed-timestep physics in the browser (the clock is done), seeded
-   PRNG, oriented collision footprint, levels/seeds in the headless runner.
+   PRNG, levels/seeds in the headless runner. (Collision footprint: done.)
 3. Then Phase B (running-block highlight, sensor panel) or the level engine (Phase C).
 
 **How we test** (decided 2026-11-17: the assistant tests itself; the teacher only checks looks):
@@ -62,7 +62,7 @@ Prerequisite for any evaluated level ([0003](decisions/0003-core-levels-use-real
 - [ ] Confirm Open Roberta licence before reusing any of its code
 - [ ] Fixed-timestep physics + single simulated clock (`wait_ms`, timer sensor, tones, time limits) — clock done (`src/sim/clock.js`); the browser still steps physics with the frame's `dt`
 - [ ] Seeded PRNG utility for all randomness
-- [ ] Collision uses the oriented 17.5 × 13 cm footprint (`kinematics.js` uses a point, `runLoop.js` a 4.5 cm circle)
+- [x] Collision uses the oriented 17.5 × 13 cm footprint (`src/sim/collision.js`): stops at the point of contact, corners count while turning, map edge counts
 - [ ] Headless runner: program + level + seed → result, no rendering — program + map + key presses done (`npm run sim`, `npm run sim:test`); levels and seeds still to come
 
 ## Phase B — QoL tier 1 (debugging & learning)

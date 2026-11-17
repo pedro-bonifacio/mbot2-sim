@@ -62,8 +62,13 @@ sensor-detectable floor markings.
 
 ### Collision
 
-Only **magenta** (`#ff00ff`) triggers a collision halt. Cyan and yellow are fully
-passable — the robot can spawn on the cyan zone and drive across it freely.
+Only **magenta** (`#ff00ff`) and the map edge trigger a collision halt. Cyan and yellow
+are fully passable — the robot can spawn on the cyan zone and drive across it freely.
+
+The robot collides with its whole **17.5 × 13 cm footprint** (the same rectangle as the
+cyan spawn zone), turned with its heading: the program stops the moment any edge of it
+touches magenta, including a corner swinging round while turning on the spot. Leave
+room around the spawn zone; the robot must not touch a wall where it starts.
 
 ### Sensor visibility
 
@@ -127,9 +132,9 @@ is logged.
   near cyan/yellow produce non-reserved fringe pixels, which is fine — only the pure-colour
   core pixels count for centroid computation.
 - **Magenta obstacles** can be any shape: lines, walls, filled regions. Obstacle borders
-  should be at least **5 px thick** (= 0.625 cm) so the robot collision circle reliably
-  contacts them. The robot stops when its bounding circle (radius 4.5 cm = 36 px) touches
-  any magenta pixel.
+  should be at least **5 px thick** (= 0.625 cm) so the robot's footprint reliably
+  contacts them (its outline is checked every 0.5 cm). The robot stops when its
+  17.5 × 13 cm footprint touches any magenta pixel.
 - **Black lines** for line-tracking tasks should be **10–20 px wide** (= 1.25–2.5 cm). The
   QuadRGB sensor sub-sensors are roughly 8–16 px apart laterally at 8 px/cm.
 - **Magenta perimeter border** — 5 px thick on all four edges — is the recommended default

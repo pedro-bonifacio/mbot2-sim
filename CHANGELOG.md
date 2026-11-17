@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### Changed
+- Collisions use the robot's real 17.5 × 13 cm outline, turned with its heading: the robot stops touching the wall instead of 4 cm inside it, corners hit walls while turning on the spot, and the map edge counts as a wall. The outline turns red after a collision.
 - Programs that went through Open Roberta load correctly even when Open Roberta stored the LED block's "todos" as an empty value.
 - Blocks are generated from the live Open Roberta Lab spec: labels, dropdowns, ports (R/L, U, Q, L1–R2), hidden fields and mutations now match Open Roberta field for field (`npm run check`).
 - Programs run only from the start block ("iniciar"); loose blocks are disabled.
