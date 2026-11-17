@@ -335,6 +335,10 @@ The generated code runs inside JS-Interpreter under ES5 semantics — do not emi
 - `npm run sim:test` runs `scripts/fixtures/sim-tests.json` (program + map + key presses → expected status/pose/display). Part of `npm run check`.
 - Node glue (DOM shim, PNG decoding with `pngjs`, Blockly loading) lives in `scripts/lib/sim.mjs`.
 
+### Dev hooks (`window.__dev`, dev server only)
+
+`src/dev/devHooks.js` drives the real page: it loads a program file from the dev server, clicks "+"/"−" with real pointer events, sets fields, undoes, opens toolbox categories and lists their flyouts, presses **Executar**, and reports state. Everything returns plain text/JSON (`__dev.tree()` prints the program as an indented outline with warnings), so it can be checked from DevTools or by page JS evaluation without screenshots. `main.js` imports it behind `import.meta.env.DEV`, so production builds don't contain it. The full API is listed at the top of the file. Runs happen in real time, so keep browser checks to short programs and use the headless runner for long ones.
+
 ## Typed variables and functions
 
 Variables follow Open Roberta, not Blockly's variable model. A variable exists because a block **declares** it (`getVarDecl()` / `getType()`):

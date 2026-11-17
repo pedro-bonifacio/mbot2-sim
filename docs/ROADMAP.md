@@ -21,7 +21,7 @@ and a real Open Roberta export imports and runs. See `CHANGELOG.md → Unrelease
    (how-to in `reference_openroberta/live/README.md`).
 4. **Teacher, with a robot in class:** `VERIFY_ON_ROBOT.md` (9 small checks).
 
-**How we test:** `npm run check` (fidelity, codegen, variables, sim tests). To see what a program does without a browser: `npm run sim -- <program.xml>`. New behaviour → add a case to `scripts/fixtures/sim-tests.json`.
+**How we test:** `npm run check` (fidelity, codegen, variables, sim tests). To see what a program does without a browser: `npm run sim -- <program.xml>`. New behaviour → add a case to `scripts/fixtures/sim-tests.json`. Editor and browser run loop: `window.__dev` on the dev server (`src/dev/devHooks.js`); the teacher's browser check is then only about looks.
 
 **How we work with Open Roberta Lab:** the assistant drives lab.open-roberta.org in a
 background browser tab (mBot 2, PT) to extract block data and to ask the server for the

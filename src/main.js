@@ -16,5 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initProgramIO();   // auto-restore + auto-save must come after Blockly is mounted
   initButtons();
   await initMapSelector();
+  // Dev server only (stripped from builds): window.__dev for automated UI checks.
+  if (import.meta.env.DEV) (await import('./dev/devHooks.js')).installDevHooks();
   console.log('[mbot2-sim] Ready.');
 });

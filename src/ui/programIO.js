@@ -114,43 +114,51 @@ export function loadProgramFromFile(file) {
 
   const reader = new FileReader();
   reader.onload = (evt) => {
-    const text = evt.target.result;
     try {
-      // Parse and validate before touching the workspace. Accepts the sim's own
-      // Blockly XML and programs exported from Open Roberta Lab.
-      let root;
-      if (isOpenRobertaXml(text)) {
-        root = openRobertaToBlocklyDom(text);
-      } else {
-        const doc = new DOMParser().parseFromString(text, 'application/xml');
-        if (doc.querySelector('parsererror')) throw new Error('XML parse error');
-        if (doc.documentElement.nodeName !== 'xml') throw new Error('Not a Blockly workspace XML');
-        root = doc.documentElement;
-      }
-
-      const xmlBlockCount = root.querySelectorAll('block').length;
-      ws.clear();
-      Blockly.Xml.domToWorkspace(root, ws);
-      ensureStartBlock(ws);
-      const wsBlockCount = ws.getAllBlocks(false).length;
-
-      if (wsBlockCount < xmlBlockCount) {
-        const msg = 'Aviso: Alguns blocos do ficheiro não são suportados e foram ignorados.';
-        consoleWarn(msg);
-        console.warn('[programIO]', msg);
-      }
-
-      try {
-        localStorage.setItem(STORAGE_KEY, _serialize(ws));
-      } catch (e) {
-        console.warn('[programIO] localStorage quota exceeded during load', e);
-      }
+      loadProgramText(evt.target.result);
     } catch (e) {
       console.error('[programIO] Load failed:', e);
       window.alert('Ficheiro inválido ou corrompido.');
     }
   };
   reader.readAsText(file);
+}
+
+/**
+ * Replaces the workspace with a program (the sim's Blockly XML or an Open Roberta
+ * export). No confirmations; throws on invalid input. Used by "Carregar" and the
+ * dev hooks.
+ */
+export function loadProgramText(text) {
+  const ws = getWorkspace();
+  // Parse and validate before touching the workspace.
+  let root;
+  if (isOpenRobertaXml(text)) {
+    root = openRobertaToBlocklyDom(text);
+  } else {
+    const doc = new DOMParser().parseFromString(text, 'application/xml');
+    if (doc.querySelector('parsererror')) throw new Error('XML parse error');
+    if (doc.documentElement.nodeName !== 'xml') throw new Error('Not a Blockly workspace XML');
+    root = doc.documentElement;
+  }
+
+  const xmlBlockCount = root.querySelectorAll('block').length;
+  ws.clear();
+  Blockly.Xml.domToWorkspace(root, ws);
+  ensureStartBlock(ws);
+  const wsBlockCount = ws.getAllBlocks(false).length;
+
+  if (wsBlockCount < xmlBlockCount) {
+    const msg = 'Aviso: Alguns blocos do ficheiro não são suportados e foram ignorados.';
+    consoleWarn(msg);
+    console.warn('[programIO]', msg);
+  }
+
+  try {
+    localStorage.setItem(STORAGE_KEY, _serialize(ws));
+  } catch (e) {
+    console.warn('[programIO] localStorage quota exceeded during load', e);
+  }
 }
 
 export function newProgram() {
