@@ -46,3 +46,22 @@ main { display: flex; height: calc(100vh - 56px); overflow: hidden; }
 .virtual-btn:hover { background: #e5e7eb; border-color: #6b7280; }
 .virtual-btn.active, .virtual-btn:active { background: #3b82f6; border-color: #1d4ed8; color: white; }
 .vbtn-label { font-size: 16px; line-height: 1; }
+
+/* On-block +/− buttons (FieldClickableLabel): pointer cursor and a hover
+   highlight, so students can see which button they're about to tap. */
+.blocklyRobPlusMinus {
+  cursor: pointer;
+}
+.blocklyRobPlusMinus > rect {
+  fill: transparent !important;
+  stroke: none !important;
+  transition: fill 0.1s;
+}
+.blocklyRobPlusMinus:hover > rect {
+  fill: rgba(255, 255, 255, 0.45) !important;
+  stroke: #fff !important;
+  stroke-width: 1.5 !important;
+}
+.blocklyRobPlusMinus:active > rect {
+  fill: rgba(255, 255, 255, 0.7) !important;
+}

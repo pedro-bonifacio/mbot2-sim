@@ -3,7 +3,7 @@ import { raycast as _raycast, getColorNameAt, getPixelAt, hasMap } from './map.j
 import { isPressed as _isButtonPressed } from '../ui/buttons.js';
 import { QUADRGB_FORWARD_OFFSET_CM, QUADRGB_LATERAL_OFFSETS_CM, QUADRGB_LIGHT_THRESHOLD } from './constants.js';
 
-const { WHEEL_CIRCUMFERENCE_CM, TRACK_WIDTH_CM, CHASSIS_FRONT_OFFSET_CM, ULTRASONIC_CONE_DEG } = ROBOT_CONSTANTS;
+const { CHASSIS_FRONT_OFFSET_CM, ULTRASONIC_CONE_DEG } = ROBOT_CONSTANTS;
 
 // ── Tick cache ─────────────────────────────────────────────────────────────────
 // Cleared once per interpreter tick so expensive reads (e.g. ultrasonic raycast)
@@ -15,17 +15,16 @@ export function resetTickCache() { _tickCache.clear(); }
 // ── Offset state (relative readings since last reset or program start) ─────────
 
 let _gyroZOffset   = 0; // robot.gyroCumulativeRad at last gyro Z reset
-let _encLOffset    = 0; // robot.encoderLeftAbs  at last EM1 reset
-let _encROffset    = 0; // robot.encoderRightAbs at last EM2 reset
-const _timerStart  = [0, 0]; // performance.now() at last reset for slots 1-2
+let _encLOffset    = 0; // robot.motorAngleEM1 at last reset (port L)
+let _encROffset    = 0; // robot.motorAngleEM2 at last reset (port R)
+const _timerStart  = [0, 0, 0, 0, 0]; // performance.now() at last reset, slots 1-5
 
 /** Reset all sensor state at program start. Sets offsets relative to current robot state. */
 export function resetSensors() {
   _gyroZOffset   = robot.gyroCumulativeRad;
-  _encLOffset    = robot.encoderLeftAbs;
-  _encROffset    = robot.encoderRightAbs;
-  _timerStart[0] = performance.now();
-  _timerStart[1] = performance.now();
+  _encLOffset    = robot.motorAngleEM1;
+  _encROffset    = robot.motorAngleEM2;
+  _timerStart.fill(performance.now());
   _tickCache.clear();
 }
 
@@ -37,7 +36,8 @@ export function resetSensors() {
 // behaviour (closest reflector wins). Corners narrower than the cone
 // can still be missed; this is faithful to real hardware limitations.
 
-const ULTRASONIC_MAX_CM = 50;
+// mBot 2 ultrasonic2 range is 3–300 cm; out of range reads the maximum.
+const ULTRASONIC_MAX_CM = 300;
 
 function _computeUltrasonicCone() {
   if (_tickCache.has('ultrasonic_cone')) return _tickCache.get('ultrasonic_cone');
@@ -100,46 +100,59 @@ export function getQuadRGBWorldPositions() {
   return [1, 2, 3, 4].map(_getProbeWorldPos);
 }
 
-/** Returns COLOUR name, LIGHT percentage, or RGB array for a specific probe (1..4). */
-export function sensorQuadRGBForProbe(property, probeIndex) {
+// Open Roberta / CyberPi probe names, left to right: L2, L1, R1, R2.
+// Probe index (1..4) follows QUADRGB_LATERAL_OFFSETS_CM (left..right).
+// ⚠ Verify on the real robot (docs/VERIFY_ON_ROBOT.md).
+export const QUADRGB_PROBE_INDEX = { L2: 1, L1: 2, R1: 3, R2: 4 };
+
+// The real quad RGB sensor classifies into these 8 colours only (the _colors table
+// in Open Roberta's generated MicroPython). There is no orange: an orange floor
+// reads as the nearest of the 8.
+const SENSOR_COLOURS = [
+  { hex: '#cc0000', r: 204, g:   0, b:   0 }, // red
+  { hex: '#ffff00', r: 255, g: 255, b:   0 }, // yellow
+  { hex: '#33cc00', r:  51, g: 204, b:   0 }, // green
+  { hex: '#33ffff', r:  51, g: 255, b: 255 }, // cyan
+  { hex: '#3366ff', r:  51, g: 102, b: 255 }, // blue
+  { hex: '#cc33cc', r: 204, g:  51, b: 204 }, // purple
+  { hex: '#ffffff', r: 255, g: 255, b: 255 }, // white
+  { hex: '#000000', r:   0, g:   0, b:   0 }, // black
+];
+
+function _nearestSensorColour(p) {
+  let best = SENSOR_COLOURS[0], bestD = Infinity;
+  for (const c of SENSOR_COLOURS) {
+    const d = (p.r - c.r) ** 2 + (p.g - c.g) ** 2 + (p.b - c.b) ** 2;
+    if (d < bestD) { bestD = d; best = c; }
+  }
+  return best.hex;
+}
+
+/** robSensors_quadrgb_getSample: mode COLOUR | LIGHT | AMBIENTLIGHT | RGB, slot L1/L2/R1/R2. */
+export function sensorQuadRGB(mode, slot) {
+  const idx = QUADRGB_PROBE_INDEX[String(slot)] || 1;
+  const p = _computeQuadRGBProbes()[idx - 1];
+  if (mode === 'LIGHT') return Math.round((p.brightness / 255) * 100);   // get_gray: reflected
+  if (mode === 'AMBIENTLIGHT') return Math.round((p.brightness / 255) * 100); // get_light (approx.)
+  if (mode === 'RGB') return [p.r, p.g, p.b];
+  // Reserved spawn-marker colours read as white floor (CLAUDE.md §9).
+  const pos = _getProbeWorldPos(idx);
+  if (getColorNameAt(pos.x, pos.y) === 'white') return '#ffffff';
+  return _nearestSensorColour(p);
+}
+
+/**
+ * robSensors_line_getSample → mbuild.quad_rgb_sensor.get_line_sta("all"): 0..15.
+ * Bit = 1 when the probe is over a dark line. Bit order: L2 = bit 3 … R2 = bit 0.
+ * ⚠ Bit order and polarity to verify on the real robot (docs/VERIFY_ON_ROBOT.md).
+ */
+export function sensorLineStatus() {
   const probes = _computeQuadRGBProbes();
-  const p = probes[probeIndex - 1] || _sampleProbe(probeIndex);
-  if (property === 'LIGHT') return Math.round((p.brightness / 255) * 100);
-  if (property === 'RGB')   return [p.r, p.g, p.b];
-  // COLOUR: use palette matcher (handles reserved spawn-zone colours → 'white')
-  const pos = _getProbeWorldPos(probeIndex);
-  return getColorNameAt(pos.x, pos.y) || 'none';
-}
-
-export function sensorQuadRGBColour() {
-  return sensorQuadRGBForProbe('COLOUR', 1);
-}
-
-export function sensorQuadRGBBrightness() {
-  return sensorQuadRGBForProbe('LIGHT', 1);
-}
-
-export function sensorQuadRGBRGB() {
-  return sensorQuadRGBForProbe('RGB', 1);
-}
-
-export function sensorQuadRGBLine() {
-  // 4-bit bitmask: bit0=probe1(LSB/leftmost) .. bit3=probe4(MSB/rightmost)
-  // bit=1 → light surface (off line), bit=0 → dark surface (on line)
-  const probes = _computeQuadRGBProbes();
-  return probes.reduce((acc, p, i) => acc | ((p.brightness > QUADRGB_LIGHT_THRESHOLD ? 1 : 0) << i), 0);
-}
-
-// ── Line sensor (quadRGB re-interpreted as binary line detection) ───────────────
-
-export function sensorLine(mode) {
-  const probes = _computeQuadRGBProbes();
-  const isDark = (p) => p.brightness <= QUADRGB_LIGHT_THRESHOLD;
-  if (mode === 'L')    return isDark(probes[0]) || isDark(probes[1]);
-  if (mode === 'R')    return isDark(probes[2]) || isDark(probes[3]);
-  if (mode === 'ALL')  return probes.some(isDark);
-  if (mode === 'CODE') return sensorQuadRGBLine();
-  return false;
+  let v = 0;
+  for (let i = 0; i < 4; i++) {
+    if (probes[i].brightness <= QUADRGB_LIGHT_THRESHOLD) v |= 1 << (3 - i);
+  }
+  return v;
 }
 
 // ── Gyro ───────────────────────────────────────────────────────────────────────
@@ -159,13 +172,8 @@ export function sensorLine(mode) {
 //     step before wheels stop. totalRotationRad and robot.theta are corrected for the
 //     overshoot but gyroCumulativeRad deliberately is not (see turn_for resolveCondition).
 
-export function sensorGyro(slot, axis) {
+export function sensorGyro(axis) {
   if (String(axis).toUpperCase() !== 'Z') return 0; // X/Y not meaningful in 2D sim
-  if (String(slot) === 'RATE') {
-    const vR_cms = (robot.vR / 60) * WHEEL_CIRCUMFERENCE_CM;
-    const vL_cms = (robot.vL / 60) * WHEEL_CIRCUMFERENCE_CM;
-    return ((vL_cms - vR_cms) / TRACK_WIDTH_CM) * (180 / Math.PI);
-  }
   return (robot.gyroCumulativeRad - _gyroZOffset) * (180 / Math.PI);
 }
 
@@ -178,46 +186,53 @@ export function sensorGyroReset(axis) {
 // 2D sim: no acceleration model. Returns 0 for all axes.
 // mBot2 lessons typically do not branch on accelerometer readings.
 
-export function sensorAccelerometer(_axis) {
-  return 0;
+export function sensorAccelerometer(axis) {
+  // Flat robot at rest: gravity on Z only (in g). Not used by core levels (decision 0003).
+  return String(axis).toUpperCase() === 'Z' ? 1 : 0;
 }
 
-// ── Encoder ───────────────────────────────────────────────────────────────────
+// ── Encoder ───────────────────────────────────────────────────────────────
+// Ports: R = EM2 (right, mirrored), L = EM1 (left). mbot2.EM_get_angle() in degrees.
 
 export function sensorEncoder(port, mode) {
-  const rotations = String(port) === 'EM1'
-    ? robot.encoderLeftAbs  - _encLOffset
-    : robot.encoderRightAbs - _encROffset;
-  if (String(mode) === 'ROTATION') return rotations;
-  if (String(mode) === 'DEGREE')   return rotations * 360;
-  if (String(mode) === 'DISTANCE') return rotations * WHEEL_CIRCUMFERENCE_CM;
-  return rotations;
+  const deg = String(port) === 'L'
+    ? robot.motorAngleEM1 - _encLOffset
+    : robot.motorAngleEM2 - _encROffset;
+  return String(mode) === 'ROTATION' ? deg / 360 : deg;
 }
 
 export function sensorEncoderReset(port) {
-  if (String(port) === 'EM1') _encLOffset = robot.encoderLeftAbs;
-  else                        _encROffset = robot.encoderRightAbs;
+  if (String(port) === 'L') _encLOffset = robot.motorAngleEM1;
+  else                      _encROffset = robot.motorAngleEM2;
 }
 
 // ── Timer ─────────────────────────────────────────────────────────────────────
-// Uses wall-clock time (performance.now()). Consistent with wait_ms async calls.
+// Five timers (Open Roberta slots 1–5), in ms since program start or last reset.
+// Uses wall-clock time for now; moves to the simulated clock with decision 0004.
 
 export function sensorTimer(slot) {
   const idx = Number(slot) - 1;
-  if (idx < 0 || idx > 1) return 0;
+  if (!(idx >= 0 && idx < _timerStart.length)) return 0;
   return performance.now() - _timerStart[idx];
 }
 
 export function sensorTimerReset(slot) {
   const idx = Number(slot) - 1;
-  if (idx < 0 || idx > 1) return;
+  if (!(idx >= 0 && idx < _timerStart.length)) return;
   _timerStart[idx] = performance.now();
 }
 
 // ── Key / Joystick ────────────────────────────────────────────────────────────
+// Keys: A, B. Joystick: UP, DOWN, LEFT, RIGHT, CENTER (= middle press), ANY (any direction).
 
-export function sensorKey(key)       { return _isButtonPressed(String(key)); }
-export function sensorJoystick(dir)  { return _isButtonPressed(String(dir)); }
+export function sensorKey(key) { return _isButtonPressed(String(key)); }
+
+export function sensorJoystick(dir) {
+  const d = String(dir);
+  if (d === 'CENTER') return _isButtonPressed('MIDDLE');
+  if (d === 'ANY') return ['UP', 'DOWN', 'LEFT', 'RIGHT'].some(_isButtonPressed);
+  return _isButtonPressed(d);
+}
 
 // ── Ambient light ─────────────────────────────────────────────────────────────
 // Constant 50% — room brightness not simulated. Expose a UI slider in a later phase.

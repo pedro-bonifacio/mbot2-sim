@@ -20,8 +20,8 @@ export const robot = {
   collided: false,
   totalDistanceCm: 0,
   totalRotationRad: 0,
-  encoderLeftAbs: 0,
-  encoderRightAbs: 0,
+  motorAngleEM1: 0,   // degrees, signed (left motor)
+  motorAngleEM2: 0,   // degrees, signed (right motor, mirrored)
   gyroCumulativeRad: 0,
 };
 
@@ -45,8 +45,8 @@ export function resetRobot() {
   robot.collided        = false;
   robot.totalDistanceCm = 0;
   robot.totalRotationRad = 0;
-  robot.encoderLeftAbs  = 0;
-  robot.encoderRightAbs = 0;
+  robot.motorAngleEM1   = 0;
+  robot.motorAngleEM2   = 0;
   robot.gyroCumulativeRad = 0;
 }
 

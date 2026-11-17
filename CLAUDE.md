@@ -20,6 +20,8 @@ Read this **before every coding session**. Violating any rule below means rework
 - `reference_openroberta/program.toolbox.expert.xml` — expert toolbox structure
 - `reference_openroberta/configuration.default.xml` — robot constants
 - `reference_openroberta/configuration.toolbox.xml` — sensor configuration blocks
+- `reference_openroberta/live/or-mbot2-catalogue.json` (+ `or-mbot2-dynamic.json`) — **block definitions** (field names, dropdown values, defaults, hidden fields, PT labels, mutations) extracted from the live Open Roberta Lab. Blocks are generated from it (`npm run or:specs`); check with `npm run or:check` ([decision 0011](docs/decisions/0011-live-open-roberta-as-fidelity-oracle.md)).
+- `reference_openroberta/live/or-mbot2-semantics.json` — **behaviour**: the MicroPython Open Roberta generates for each block on the real mBot 2. Sim behaviour follows it; open questions live in `docs/VERIFY_ON_ROBOT.md`.
 
 If `openrobertambot2context.md` and an XML file conflict, **the XML wins** (it is the actual UI source).
 
@@ -48,6 +50,7 @@ Source: `src/sim/robot.js → ROBOT_CONSTANTS`.
 - **Tone frequency:** Hz
 - **Tone duration:** ms
 - **Display:** 128×128 px, addressable as text grid (0–7 cols × 0–7 rows for `display_text`)
+- **Ports (Open Roberta names):** motors/encoders `R` = EM2 (right, mirrored), `L` = EM1; ultrasonic `U`; quad RGB `Q` with probes `L2 L1 R1 R2` (left→right); keys `A`/`B`; timers `1–5`
 - **Wait time:** ms
 - **Volume:** 0–100
 - **LED brightness:** 0–100
@@ -90,14 +93,13 @@ Map PNGs use three reserved colours. They are invisible to all sensors and do NO
 **Sensors:** cyan and yellow pixels return `'white'` from `getColorNameAt`. For sensor-detectable cyan lines use `#33ffff`.
 **Authoring:** see `docs/MAP_AUTHORING.md` for the full guide.
 
-## 10. Sensor Color Palette (8 colours + black for "no detection")
+## 10. Sensor Colour Palette (8 colours — no orange)
 
-Quad RGB sensor returns one of: `red, orange, yellow, green, cyan, blue, purple, white, black`.
+The real quad RGB sensor classifies into exactly 8 colours (the `_colors` table in Open Roberta's generated MicroPython): `red #cc0000, yellow #ffff00, green #33cc00, cyan #33ffff, blue #3366ff, purple #cc33cc, white #ffffff, black #000000`. The sim returns the nearest of these 8 (`src/sim/sensors.js → sensorQuadRGB`). **There is no orange**: the toolbox's orange swatch (`#ff6600`) can never equal a sensor reading, so never use orange as a sensor colour in maps or levels.
 
-Hex swatches in toolbox (`robColour_picker`):
-`#cc0000, #ff6600, #ffff00, #33cc00, #33ffff, #3366ff, #cc33cc, #FFFF (white), #0000 (black)`.
+Colours are lowercase `"#rrggbb"` strings everywhere in generated code (picker, RGB block, sensor), so colour comparisons behave like Open Roberta's RGB tuples.
 
-Colour matching uses ±40 RGB Euclidean distance tolerance. Source: `src/sim/map.js → getColorNameAt`.
+Map pixel classification for collision/HUD still uses `src/sim/map.js → getColorNameAt` (±40 RGB tolerance).
 
 ## 11. UI Language
 
@@ -130,3 +132,10 @@ The following sample program runs end-to-end in the sim:
 4. Turn 90° at 30 RPM
 5. Drive forward until ultrasonic < 10 cm OR quad-RGB sees red
 6. Stop, display "Done"
+
+## 15. Documentation & Decision Log
+
+- Index of all docs: [docs/README.md](docs/README.md).
+- **Before proposing or implementing a design change, read [docs/decisions/README.md](docs/decisions/README.md).** `Accepted` records are binding like the rules above. To change one, write a new record that supersedes it. Never rewrite an old record.
+- New decisions: copy `docs/decisions/0000-template.md`, next free number, add to the index.
+- Work plan: [docs/ROADMAP.md](docs/ROADMAP.md) — tick items as they ship. Level content: [docs/CURRICULUM.md](docs/CURRICULUM.md).

@@ -1,208 +1,246 @@
 import * as Blockly from 'blockly';
+import { defineOrBlocks, orSpec, orMsg, initFromSpec, makeField } from './_orFactory.js';
+import { FieldClickableLabel } from './_plusMinusMutator.js';
 
-// Cast blocks and list blocks share this file.
-// Cast colours: math casts use '230' (math blue), text casts use '160' (teal).
-// List colour: '260' (purple).
+// TOOLBOX_LIST (Listas). Lists in Open Roberta are typed (Array_Number, …).
+// Mutation formats reproduce Open Roberta's exactly (see or-mbot2-dynamic.json sources).
 
-export function registerListBlocks() {
+const PLAIN_TYPES = ['robLists_length', 'robLists_isEmpty', 'robLists_indexOf'];
 
-  // ── Cast: Number → String ───────────────────────────────────────────────────
+function listTypeField(spec, block) {
+  const f = spec.inputs.flatMap(i => i.fields).find(x => x.name === 'LIST_TYPE');
+  const [field] = makeField({ ...f, value: block.listType_ }, (v) => { block.setListType_(v); return v; });
+  return field;
+}
 
-  Blockly.Blocks['math_cast_toString'] = {
-    init() {
-      this.appendDummyInput().appendField('converter');
-      this.appendValueInput('NUM').setCheck('Number');
-      this.appendDummyInput().appendField('em texto');
-      this.setInputsInline(true);
-      this.setOutput(true, 'String');
-      this.setColour('230');
-      this.setTooltip('Converter um número em texto.');
-      this.setHelpUrl('');
-    },
-  };
-
-  Blockly.Blocks['math_cast_toChar'] = {
-    init() {
-      this.appendDummyInput().appendField('converter');
-      this.appendValueInput('NUM').setCheck('Number');
-      this.appendDummyInput().appendField('em caractere');
-      this.setInputsInline(true);
-      this.setOutput(true, 'String');
-      this.setColour('230');
-      this.setTooltip('Converter um número no caractere Unicode correspondente.');
-      this.setHelpUrl('');
-    },
-  };
-
-  // ── Cast: String → Number ───────────────────────────────────────────────────
-
-  Blockly.Blocks['text_cast_string_toNumber'] = {
-    init() {
-      this.appendDummyInput().appendField('converter');
-      this.appendValueInput('TEXT').setCheck('String');
-      this.appendDummyInput().appendField('em número');
-      this.setInputsInline(true);
-      this.setOutput(true, 'Number');
-      this.setColour('160');
-      this.setTooltip('Converter texto em número.');
-      this.setHelpUrl('');
-    },
-  };
-
-  Blockly.Blocks['text_cast_char_toNumber'] = {
-    init() {
-      this.appendDummyInput().appendField('converter caractere');
-      this.appendValueInput('CHAR').setCheck('String');
-      this.appendDummyInput().appendField('em número');
-      this.setInputsInline(true);
-      this.setOutput(true, 'Number');
-      this.setColour('160');
-      this.setTooltip('Converter um caractere no seu código Unicode numérico.');
-      this.setHelpUrl('');
-    },
-  };
-
-  // ── Lists ───────────────────────────────────────────────────────────────────
-
-  // Fixed 3-slot form; also serves the empty (0-item) toolbox entry because
-  // the inputs are simply unconnected in that case.
+// ── create list with … ───────────────────────────────────────────────────────
+// <mutation items="N" list_type="Number"/>. N = 0 → "criar lista vazia : [tipo]".
+function defineCreateWith() {
+  const spec = orSpec('robLists_create_with');
   Blockly.Blocks['robLists_create_with'] = {
     init() {
-      this.appendDummyInput().appendField('criar lista com');
-      this.appendValueInput('ADD0');
-      this.appendValueInput('ADD1');
-      this.appendValueInput('ADD2');
-      this.setInputsInline(true);
-      this.setOutput(true, 'Array');
-      this.setColour('260');
-      this.setTooltip('Criar uma lista com os itens fornecidos.');
-      this.setHelpUrl('');
-      // TODO Phase 4 / future: mutator support for variable number of items
+      this.setColour(spec.colour);
+      this.setInputsInline(false);
+      this.itemCount_ = 0;
+      this.listType_ = 'Number';
+      this.updateShape_();
+    },
+    setListType_(t) {
+      this.listType_ = t;
+      for (let i = 0; i < this.itemCount_; i++) this.getInput('ADD' + i)?.setCheck(t);
+      this.setOutput(true, 'Array_' + t);
+    },
+    updateShape_() {
+      const saved = [];
+      for (let i = 0; this.getInput('ADD' + i); i++) saved.push(this.getInputTargetBlock('ADD' + i));
+      for (const name of ['EMPTY', 'BUTTONS']) if (this.getInput(name)) this.removeInput(name);
+      for (let i = 0; this.getInput('ADD' + i); i++) this.removeInput('ADD' + i);
+
+      if (this.itemCount_ === 0) {
+        this.appendDummyInput('EMPTY')
+          .appendField(orMsg('LISTS_CREATE_EMPTY_TITLE', 'criar lista vazia'))
+          .appendField(':').appendField(listTypeField(spec, this), 'LIST_TYPE');
+      } else {
+        for (let i = 0; i < this.itemCount_; i++) {
+          const inp = this.appendValueInput('ADD' + i).setCheck(this.listType_);
+          if (i === 0) {
+            inp.appendField(orMsg('LISTS_CREATE_TITLE', 'criar lista com')).appendField(':')
+              .appendField(listTypeField(spec, this), 'LIST_TYPE').appendField('←').appendField('0');
+          } else {
+            inp.setAlign(Blockly.inputs.Align.RIGHT).appendField(String(i));
+          }
+          const child = saved[i];
+          if (child && child.outputConnection) {
+            try { inp.connection.connect(child.outputConnection); } catch { /* type mismatch: leave floating */ }
+          }
+        }
+      }
+      const buttons = this.appendDummyInput('BUTTONS');
+      buttons.appendField(new FieldClickableLabel('+', 'blockly-rob-plus-minus', (b) => b.changeCount_(1)));
+      if (this.itemCount_ > 0) {
+        buttons.appendField(new FieldClickableLabel('−', 'blockly-rob-plus-minus', (b) => b.changeCount_(-1)));
+      }
+      this.setOutput(true, 'Array_' + this.listType_);
+    },
+    changeCount_(delta) {
+      const before = Blockly.Xml.domToText(this.mutationToDom());
+      this.itemCount_ = Math.max(0, this.itemCount_ + delta);
+      this.updateShape_();
+      Blockly.Events.fire(new Blockly.Events.BlockChange(
+        this, 'mutation', null, before, Blockly.Xml.domToText(this.mutationToDom())));
+    },
+    mutationToDom() {
+      const el = Blockly.utils.xml.createElement('mutation');
+      el.setAttribute('items', String(this.itemCount_));
+      el.setAttribute('list_type', this.listType_);
+      return el;
+    },
+    domToMutation(el) {
+      this.itemCount_ = parseInt(el.getAttribute('items'), 10) || 0;
+      this.listType_ = el.getAttribute('list_type') || 'Number';
+      this.updateShape_();
+    },
+    saveExtraState() { return { items: this.itemCount_, list_type: this.listType_ }; },
+    loadExtraState(s) {
+      this.itemCount_ = (s && s.items) || 0;
+      this.listType_ = (s && s.list_type) || 'Number';
+      this.updateShape_();
     },
   };
+}
 
+// ── create list with item repeated n times ──────────────────────────────────
+// <mutation list_type="Number"/>.
+function defineRepeat() {
+  const spec = orSpec('robLists_repeat');
   Blockly.Blocks['robLists_repeat'] = {
     init() {
-      this.appendDummyInput().appendField('criar lista com item');
-      this.appendValueInput('ITEM');
-      this.appendDummyInput().appendField('repetido');
-      this.appendValueInput('NUM').setCheck('Number');
-      this.appendDummyInput().appendField('vezes');
-      this.setInputsInline(true);
-      this.setOutput(true, 'Array');
-      this.setColour('260');
-      this.setTooltip('Criar uma lista com um item repetido um número de vezes.');
-      this.setHelpUrl('');
+      const block = this;
+      initFromSpec(this, spec, { LIST_TYPE(v) { block.setListType_(v); return v; } });
+      this.listType_ = this.getFieldValue('LIST_TYPE');
     },
-  };
-
-  Blockly.Blocks['robLists_length'] = {
-    init() {
-      this.appendDummyInput().appendField('comprimento de');
-      this.appendValueInput('VALUE').setCheck('Array');
-      this.setInputsInline(true);
-      this.setOutput(true, 'Number');
-      this.setColour('260');
-      this.setTooltip('Obter o número de itens numa lista.');
-      this.setHelpUrl('');
+    setListType_(t) {
+      this.listType_ = t;
+      this.getInput('ITEM').setCheck(t);
+      this.setOutput(true, 'Array_' + t);
     },
-  };
-
-  Blockly.Blocks['robLists_isEmpty'] = {
-    init() {
-      this.appendValueInput('VALUE').setCheck('Array');
-      this.appendDummyInput().appendField('está vazia');
-      this.setInputsInline(true);
-      this.setOutput(true, 'Boolean');
-      this.setColour('260');
-      this.setTooltip('Verificar se uma lista está vazia.');
-      this.setHelpUrl('');
+    mutationToDom() {
+      const el = Blockly.utils.xml.createElement('mutation');
+      el.setAttribute('list_type', this.listType_);
+      return el;
     },
+    domToMutation(el) { this.setListType_(el.getAttribute('list_type') || 'Number'); },
+    saveExtraState() { return { list_type: this.listType_ }; },
+    loadExtraState(s) { this.setListType_((s && s.list_type) || 'Number'); },
   };
+}
 
-  Blockly.Blocks['robLists_indexOf'] = {
-    init() {
-      this.appendDummyInput().appendField('na lista');
-      this.appendValueInput('VALUE').setCheck('Array');
-      this.appendDummyInput().appendField('encontrar primeira ocorrência de');
-      this.appendValueInput('FIND');
-      this.setInputsInline(true);
-      this.setOutput(true, 'Number');
-      this.setColour('260');
-      this.setTooltip('Encontrar a posição de um item numa lista (−1 se não encontrado).');
-      this.setHelpUrl('');
-    },
-  };
+// Shared: rebuild an index input (AT/AT1/AT2) as value input (FROM_START/FROM_END)
+// or as a dummy (FIRST/LAST), carrying its WHERE dropdown along.
+function rebuildAt(block, inputName, whereName, whereField, isAt, insertBefore, prefix = null) {
+  if (block.getInput(inputName)) block.removeInput(inputName);
+  const inp = isAt
+    ? block.appendValueInput(inputName).setCheck('Number')
+    : block.appendDummyInput(inputName);
+  if (prefix) inp.appendField(prefix);
+  const [dd] = makeField(whereField, function (value) {
+    const newAt = value === 'FROM_START' || value === 'FROM_END';
+    if (newAt !== isAt) {
+      const b = this.getSourceBlock();
+      rebuildAt(b, inputName, whereName, whereField, newAt, insertBefore, prefix);
+      b.setFieldValue(value, whereName);
+      return null;
+    }
+    return undefined;
+  });
+  inp.appendField(dd, whereName);
+  if (insertBefore && block.getInput(insertBefore)) block.moveInputBefore(inputName, insertBefore);
+}
 
-  const WHERE_OPTIONS = [
-    ['primeiro',   'FIRST'],
-    ['último',     'LAST'],
-    ['#',          'FROM_START'],
-    ['# do fim',   'FROM_END'],
-    ['aleatório',  'RANDOM'],
-  ];
+function whereSpec(spec, name) {
+  return spec.inputs.flatMap(i => i.fields).find(f => f.name === name);
+}
 
+// ── get / remove item ────────────────────────────────────────────────────────
+// <mutation statement="false" at="true" datatype="Number"/>. MODE=REMOVE turns the
+// block into a statement; WHERE FIRST/LAST drops the index socket.
+function defineGetIndex() {
+  const spec = orSpec('robLists_getIndex');
+  const where = whereSpec(spec, 'WHERE');
   Blockly.Blocks['robLists_getIndex'] = {
     init() {
-      this.appendDummyInput().appendField('obter');
-      this.appendDummyInput()
-        .appendField(new Blockly.FieldDropdown(WHERE_OPTIONS), 'WHERE');
-      this.appendDummyInput().appendField('da lista');
-      this.appendValueInput('VALUE').setCheck('Array');
-      this.appendDummyInput().appendField('em');
-      this.appendValueInput('AT').setCheck('Number');
-      this.setInputsInline(true);
-      this.setOutput(true, null);
-      this.setColour('260');
-      this.setTooltip('Obter um item de uma lista pela posição.');
-      this.setHelpUrl('');
+      const block = this;
+      const base = { ...spec, inputs: spec.inputs.filter(i => i.name !== 'AT') };
+      initFromSpec(this, base, { MODE(v) { block.updateStatement_(v === 'REMOVE'); return v; } });
+      this.dataType_ = 'Number';
+      rebuildAt(this, 'AT', 'WHERE', where, true, null);
+    },
+    updateStatement_(isStatement) {
+      if (isStatement === !this.outputConnection) return;
+      this.unplug(true);
+      if (isStatement) {
+        this.setOutput(false);
+        this.setPreviousStatement(true);
+        this.setNextStatement(true);
+      } else {
+        this.setPreviousStatement(false);
+        this.setNextStatement(false);
+        this.setOutput(true, this.dataType_);
+      }
+    },
+    mutationToDom() {
+      const el = Blockly.utils.xml.createElement('mutation');
+      el.setAttribute('statement', String(!this.outputConnection));
+      el.setAttribute('at', String(this.getInput('AT').type === Blockly.inputs.inputTypes.VALUE));
+      el.setAttribute('datatype', this.dataType_);
+      return el;
+    },
+    domToMutation(el) {
+      this.dataType_ = el.getAttribute('datatype') || 'Number';
+      if (this.outputConnection) this.setOutput(true, this.dataType_);
+      this.updateStatement_(el.getAttribute('statement') === 'true');
+      rebuildAt(this, 'AT', 'WHERE', where, el.getAttribute('at') !== 'false', null);
     },
   };
+}
 
+// ── set / insert item ────────────────────────────────────────────────────────
+// <mutation at="true"/>.
+function defineSetIndex() {
+  const spec = orSpec('robLists_setIndex');
+  const where = whereSpec(spec, 'WHERE');
   Blockly.Blocks['robLists_setIndex'] = {
     init() {
-      this.appendDummyInput().appendField('na lista');
-      this.appendValueInput('VALUE').setCheck('Array');
-      this.appendDummyInput()
-        .appendField('definir')
-        .appendField(new Blockly.FieldDropdown(WHERE_OPTIONS), 'WHERE')
-        .appendField('em');
-      this.appendValueInput('AT').setCheck('Number');
-      this.appendDummyInput().appendField('para');
-      this.appendValueInput('TO');
-      this.setInputsInline(true);
-      this.setPreviousStatement(true);
-      this.setNextStatement(true);
-      this.setColour('260');
-      this.setTooltip('Definir o valor de um item de uma lista pela posição.');
-      this.setHelpUrl('');
+      const base = { ...spec, inputs: spec.inputs.filter(i => i.name !== 'AT') };
+      initFromSpec(this, base);
+      rebuildAt(this, 'AT', 'WHERE', where, true, 'TO');
     },
+    mutationToDom() {
+      const el = Blockly.utils.xml.createElement('mutation');
+      el.setAttribute('at', String(this.getInput('AT').type === Blockly.inputs.inputTypes.VALUE));
+      return el;
+    },
+    domToMutation(el) { rebuildAt(this, 'AT', 'WHERE', where, el.getAttribute('at') !== 'false', 'TO'); },
   };
+}
 
-  const SUBLIST_WHERE_OPTIONS = [
-    ['primeiro',   'FIRST_FROM_START'],
-    ['#',          'FROM_START'],
-    ['# do fim',   'FROM_END'],
-    ['último',     'LAST'],
-  ];
-
+// ── get sub-list ─────────────────────────────────────────────────────────────
+// <mutation at1="true" at2="true"/>.
+function defineGetSublist() {
+  const spec = orSpec('robLists_getSublist');
+  const w1 = whereSpec(spec, 'WHERE1');
+  const w2 = whereSpec(spec, 'WHERE2');
+  // AT1 carries the "obtem sublista" label; it is passed through every rebuild.
+  const at1Label = spec.inputs.find(i => i.name === 'AT1').fields.find(f => f.t === 'label');
   Blockly.Blocks['robLists_getSublist'] = {
     init() {
-      this.appendDummyInput().appendField('obter sublista de');
-      this.appendValueInput('VALUE').setCheck('Array');
-      this.appendDummyInput()
-        .appendField('de')
-        .appendField(new Blockly.FieldDropdown(SUBLIST_WHERE_OPTIONS), 'WHERE1');
-      this.appendValueInput('AT1').setCheck('Number');
-      this.appendDummyInput()
-        .appendField('a')
-        .appendField(new Blockly.FieldDropdown(SUBLIST_WHERE_OPTIONS), 'WHERE2');
-      this.appendValueInput('AT2').setCheck('Number');
-      this.setInputsInline(true);
-      this.setOutput(true, 'Array');
-      this.setColour('260');
-      this.setTooltip('Obter uma sublista de uma lista, entre duas posições.');
-      this.setHelpUrl('');
+      const base = { ...spec, inputs: spec.inputs.filter(i => i.name !== 'AT1' && i.name !== 'AT2') };
+      initFromSpec(this, base);
+      this.setAt_(1, true);
+      this.setAt_(2, true);
+    },
+    setAt_(n, isAt) {
+      rebuildAt(this, 'AT' + n, 'WHERE' + n, n === 1 ? w1 : w2, isAt, n === 1 ? 'AT2' : null,
+        n === 1 && at1Label ? at1Label.text : null);
+    },
+    mutationToDom() {
+      const el = Blockly.utils.xml.createElement('mutation');
+      el.setAttribute('at1', String(this.getInput('AT1').type === Blockly.inputs.inputTypes.VALUE));
+      el.setAttribute('at2', String(this.getInput('AT2').type === Blockly.inputs.inputTypes.VALUE));
+      return el;
+    },
+    domToMutation(el) {
+      this.setAt_(1, el.getAttribute('at1') === 'true');
+      this.setAt_(2, el.getAttribute('at2') === 'true');
     },
   };
+}
+
+export function registerListBlocks() {
+  defineOrBlocks(PLAIN_TYPES);
+  defineCreateWith();
+  defineRepeat();
+  defineGetIndex();
+  defineSetIndex();
+  defineGetSublist();
 }

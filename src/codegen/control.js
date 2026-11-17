@@ -1,56 +1,62 @@
 import { javascriptGenerator, Order } from 'blockly/javascript';
 
-// Codegen for all control-flow and wait blocks.
-// Imported after stubs.js so these entries override the TODO stubs.
+// Codegen for TOOLBOX_CONTROL blocks + the program start block.
+// Loop/wait semantics follow the MicroPython Open Roberta generates for the mBot 2.
+
+const v = (block, name, fallback) => javascriptGenerator.valueToCode(block, name, Order.NONE) || fallback;
+const stmt = (block, name) => javascriptGenerator.statementToCode(block, name) || '';
+const loopVar = (name) => javascriptGenerator.nameDB_.getName(name, 'VARIABLE');
 
 export function registerControlCodegen() {
+  const G = javascriptGenerator.forBlock;
 
-  // ── Decision ─────────────────────────────────────────────────────────────────
+  // Start block emits nothing itself; the chain under it is the program.
+  G['robControls_start'] = () => '';
 
-  // robControls_if: inputs IF0 (Boolean), DO0 (statement) — matches controls_if shape
-  javascriptGenerator.forBlock['robControls_if'] = javascriptGenerator.forBlock['controls_if'];
+  // if / if-else: same input names as Blockly's controls_if (IFn, DOn, ELSE).
+  G['robControls_if'] = G['controls_if'];
+  G['robControls_ifElse'] = G['controls_if'];
 
-  // robControls_ifElse: inputs IF0, DO0, ELSE — also matches controls_if shape
-  javascriptGenerator.forBlock['robControls_ifElse'] = javascriptGenerator.forBlock['controls_if'];
+  G['robControls_loopForever'] = (b) => `while (true) {\n${stmt(b, 'DO')}}\n`;
 
-  // ── Loops ─────────────────────────────────────────────────────────────────────
-
-  // robControls_loopForever: body via statement input 'DO', no exit condition
-  javascriptGenerator.forBlock['robControls_loopForever'] = function (block) {
-    const body = javascriptGenerator.statementToCode(block, 'DO') || '';
-    return `while (true) {\n${body}}\n`;
+  // "contar com j de A até B em S" → Python range(A, B, S): B is exclusive.
+  G['robControls_for'] = (b) => {
+    const name = loopVar(b.getFieldValue('VAR'));
+    const from = v(b, 'FROM', '0');
+    const to = v(b, 'TO', '0');
+    const by = v(b, 'BY', '1');
+    const end = javascriptGenerator.nameDB_.getDistinctName(name + '_end', 'VARIABLE');
+    const step = javascriptGenerator.nameDB_.getDistinctName(name + '_step', 'VARIABLE');
+    return `var ${end} = Math.floor(${to}), ${step} = Math.floor(${by});\n` +
+      `for (var ${name} = Math.floor(${from}); ${step} > 0 ? ${name} < ${end} : ${name} > ${end}; ${name} += ${step}) {\n` +
+      `${stmt(b, 'DO')}}\n`;
   };
 
-  // robControls_for: fields VAR; inputs FROM, TO, BY, DO — matches controls_for shape
-  javascriptGenerator.forBlock['robControls_for'] = javascriptGenerator.forBlock['controls_for'];
-
-  // robControls_forEach: field VAR; inputs LIST, DO — matches controls_forEach shape
-  javascriptGenerator.forBlock['robControls_forEach'] = javascriptGenerator.forBlock['controls_forEach'];
-
-  // ── Wait ──────────────────────────────────────────────────────────────────────
-
-  // robControls_wait: yield to sim for one frame (0 ms async pause)
-  javascriptGenerator.forBlock['robControls_wait'] = function (_block) {
-    return `robotAPI.wait_ms(0);\n`;
+  G['robControls_forEach'] = (b) => {
+    const name = loopVar(b.getFieldValue('VAR'));
+    const list = v(b, 'LIST', '[]');
+    const lv = javascriptGenerator.nameDB_.getDistinctName(name + '_list', 'VARIABLE');
+    const iv = javascriptGenerator.nameDB_.getDistinctName(name + '_index', 'VARIABLE');
+    return `var ${lv} = ${list};\n` +
+      `for (var ${iv} = 0; ${iv} < ${lv}.length; ${iv}++) {\n` +
+      `  var ${name} = ${lv}[${iv}];\n${stmt(b, 'DO')}}\n`;
   };
 
-  // robControls_wait_time: pause for N ms — async ticket pattern
-  javascriptGenerator.forBlock['robControls_wait_time'] = function (block) {
-    const ms = javascriptGenerator.valueToCode(block, 'WAIT', Order.NONE) || '0';
-    return `robotAPI.wait_ms(${ms});\n`;
-  };
+  // ── Waits ────────────────────────────────────────────────────────────────
+  G['robControls_wait_time'] = (b) => `robotAPI.wait_ms(${v(b, 'WAIT', '0')});\n`;
 
-  // robControls_wait_for: busy-loop until ANY condition is true. Iterates all
-  // WAITn inputs (the +/− mutator can add WAIT1, WAIT2, …) and ORs them.
-  // The empty-body while spins for up to 1000 steps per frame, then yields; the
-  // sim advances one frame, sensors update, and the condition is re-evaluated
-  // next frame.
-  javascriptGenerator.forBlock['robControls_wait_for'] = function (block) {
-    const conds = [];
-    for (let i = 0; block.getInput('WAIT' + i); i++) {
-      conds.push(javascriptGenerator.valueToCode(block, 'WAIT' + i, Order.LOGICAL_OR) || 'false');
+  // Busy-wait: the run loop's step budget yields to the sim each frame, so sensor
+  // values update between checks (same polling loop as the robot's MicroPython).
+  G['robControls_wait'] = (b) => `while (!(${v(b, 'WAIT0', 'false')})) {}\n`;
+
+  // "espera até C0 (faça D0) ou C1 faça D1 …": the first condition to become true
+  // runs its own branch.
+  G['robControls_wait_for'] = (b) => {
+    if (!b.getInput('DO0')) return `while (!(${v(b, 'WAIT0', 'false')})) {}\n`;
+    let code = 'while (true) {\n';
+    for (let n = 0; b.getInput('WAIT' + n); n++) {
+      code += `  if (${v(b, 'WAIT' + n, 'false')}) {\n${javascriptGenerator.prefixLines(stmt(b, 'DO' + n), '  ')}    break;\n  }\n`;
     }
-    const cond = conds.length ? conds.join(' || ') : 'false';
-    return `while (!(${cond})) {}\n`;
+    return code + '}\n';
   };
 }

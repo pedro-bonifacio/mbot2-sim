@@ -3,8 +3,10 @@ import { getWorkspace } from '../blockly/index.js';
 import { RunState, getRunState, onRunStateChange } from '../runtime/runState.js';
 import { stop as stopProgram } from '../runtime/runLoop.js';
 import { warn as consoleWarn } from './console.js';
+import { ensureStartBlock } from '../blockly/startBlock.js';
+import { isOpenRobertaXml, openRobertaToBlocklyDom } from '../blockly/orFormat.js';
 
-const STORAGE_KEY = 'mbot2sim:lastProgram';
+const STORAGE_KEY = 'mbot2sim:lastProgram:v2';  // v2: Open Roberta block format (decision 0011)
 const DEBOUNCE_MS = 500;
 
 let _debounceTimer = null;
@@ -54,6 +56,7 @@ export function initProgramIO() {
   if (saved) {
     try {
       _deserialize(ws, saved);
+      ensureStartBlock(ws);
       console.log('[programIO] Workspace restored from localStorage');
     } catch (e) {
       console.error('[programIO] Auto-restore failed; clearing corrupt entry', e);
@@ -81,7 +84,7 @@ export function saveProgram() {
   const ws = getWorkspace();
   if (!ws) return;
 
-  if (ws.getAllBlocks(false).length === 0) {
+  if (ws.getAllBlocks(false).length <= 1) {
     if (!window.confirm('O espaço de trabalho está vazio. Guardar mesmo assim?')) return;
   }
 
@@ -105,7 +108,7 @@ export function loadProgramFromFile(file) {
     stopProgram();
   }
 
-  if (ws.getAllBlocks(false).length > 0) {
+  if (ws.getAllBlocks(false).length > 1) {
     if (!window.confirm('Carregar este ficheiro irá substituir o programa atual. Continuar?')) return;
   }
 
@@ -113,15 +116,22 @@ export function loadProgramFromFile(file) {
   reader.onload = (evt) => {
     const text = evt.target.result;
     try {
-      // Parse and validate before touching the workspace
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(text, 'application/xml');
-      if (doc.querySelector('parsererror')) throw new Error('XML parse error');
-      if (doc.documentElement.nodeName !== 'xml') throw new Error('Not a Blockly workspace XML');
+      // Parse and validate before touching the workspace. Accepts the sim's own
+      // Blockly XML and programs exported from Open Roberta Lab.
+      let root;
+      if (isOpenRobertaXml(text)) {
+        root = openRobertaToBlocklyDom(text);
+      } else {
+        const doc = new DOMParser().parseFromString(text, 'application/xml');
+        if (doc.querySelector('parsererror')) throw new Error('XML parse error');
+        if (doc.documentElement.nodeName !== 'xml') throw new Error('Not a Blockly workspace XML');
+        root = doc.documentElement;
+      }
 
-      const xmlBlockCount = doc.querySelectorAll('block').length;
+      const xmlBlockCount = root.querySelectorAll('block').length;
       ws.clear();
-      Blockly.Xml.domToWorkspace(doc.documentElement, ws);
+      Blockly.Xml.domToWorkspace(root, ws);
+      ensureStartBlock(ws);
       const wsBlockCount = ws.getAllBlocks(false).length;
 
       if (wsBlockCount < xmlBlockCount) {
@@ -131,7 +141,7 @@ export function loadProgramFromFile(file) {
       }
 
       try {
-        localStorage.setItem(STORAGE_KEY, text);
+        localStorage.setItem(STORAGE_KEY, _serialize(ws));
       } catch (e) {
         console.warn('[programIO] localStorage quota exceeded during load', e);
       }
@@ -148,6 +158,7 @@ export function newProgram() {
   if (!ws) return;
   if (!window.confirm('Apagar programa atual? Isto não pode ser desfeito.')) return;
   ws.clear();
+  ensureStartBlock(ws);
   try {
     localStorage.removeItem(STORAGE_KEY);
   } catch (e) {}

@@ -14,6 +14,15 @@ export class FieldClickableLabel extends Blockly.FieldLabel {
     this.onClick_ = onClick;
   }
 
+  // FieldLabel renders text only. Add the border rect Blockly uses for
+  // editable fields (drawn behind the text) so the button gets a padded hit
+  // area and a hover highlight; see .blocklyRobPlusMinus in src/styles.css.
+  initView() {
+    this.createBorderRect_();
+    super.initView();
+    Blockly.utils.dom.addClass(this.fieldGroup_, 'blocklyRobPlusMinus');
+  }
+
   // FieldLabel has no editor; hijack the showEditor_ path that
   // Blockly's bindEvents_ triggers on click for EDITABLE fields.
   showEditor_() {
@@ -60,6 +69,11 @@ export function makePlusMinusMutator(config) {
     hasTrailing = false,
     addTrailing = null,
     trailingInputs = [],
+    // Optional Open Roberta mutation mapping. toAttrs(count) returns the attributes
+    // to write; fromDom(el) returns the count. Defaults: mutationAttr = count, omitted at 0.
+    toAttrs = null,
+    fromDom = null,
+    onShapeChanged = null,
   } = config;
 
   return {
@@ -67,12 +81,19 @@ export function makePlusMinusMutator(config) {
 
     // ── Serialisation (XML — legacy and current file format) ────────────────
     mutationToDom() {
+      const attrs = toAttrs
+        ? toAttrs(this.extraCount_, this)
+        : (this.extraCount_ ? { [mutationAttr]: String(this.extraCount_) } : {});
+      const keys = Object.keys(attrs);
+      if (!keys.length) return null;
       const el = Blockly.utils.xml.createElement('mutation');
-      if (this.extraCount_) el.setAttribute(mutationAttr, String(this.extraCount_));
+      for (const k of keys) el.setAttribute(k, String(attrs[k]));
       return el;
     },
     domToMutation(xmlEl) {
-      this.extraCount_ = parseInt(xmlEl.getAttribute(mutationAttr), 10) || 0;
+      this.extraCount_ = fromDom
+        ? fromDom(xmlEl, this)
+        : (parseInt(xmlEl.getAttribute(mutationAttr), 10) || 0);
       this.updateShape_();
     },
 
@@ -89,10 +110,10 @@ export function makePlusMinusMutator(config) {
     plus_() {
       Blockly.Events.setGroup(true);
       try {
-        const oldMutation = Blockly.Xml.domToText(this.mutationToDom());
+        const oldMutation = _mutationText(this);
         this.extraCount_++;
         this.updateShape_();
-        const newMutation = Blockly.Xml.domToText(this.mutationToDom());
+        const newMutation = _mutationText(this);
         Blockly.Events.fire(new Blockly.Events.BlockChange(
           this, 'mutation', null, oldMutation, newMutation));
       } finally {
@@ -103,10 +124,10 @@ export function makePlusMinusMutator(config) {
       if (this.extraCount_ <= 0) return;
       Blockly.Events.setGroup(true);
       try {
-        const oldMutation = Blockly.Xml.domToText(this.mutationToDom());
+        const oldMutation = _mutationText(this);
         this.extraCount_--;
         this.updateShape_();
-        const newMutation = Blockly.Xml.domToText(this.mutationToDom());
+        const newMutation = _mutationText(this);
         Blockly.Events.fire(new Blockly.Events.BlockChange(
           this, 'mutation', null, oldMutation, newMutation));
       } finally {
@@ -186,6 +207,12 @@ export function makePlusMinusMutator(config) {
           new FieldClickableLabel('−', 'blockly-rob-plus-minus',
             (block) => block.minus_()));
       }
+      if (onShapeChanged) onShapeChanged(this);
     },
   };
+}
+
+function _mutationText(block) {
+  const dom = block.mutationToDom();
+  return dom ? Blockly.Xml.domToText(dom) : '';
 }

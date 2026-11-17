@@ -51,6 +51,9 @@ export function step(robot, dt) {
 
   robot.totalDistanceCm += Math.abs(vLinear) * dt;
   robot.totalRotationRad += Math.abs(dTheta);
-  robot.encoderLeftAbs  += Math.abs((robot.vL / 60) * dt);
-  robot.encoderRightAbs += Math.abs((robot.vR / 60) * dt);
+  // Signed motor angles in degrees, as read by mbot2.EM_get_angle(). EM2 (right) is
+  // mounted mirrored: Open Roberta drives it with drive_speed(l, -r), so it counts
+  // down while the robot drives forward.
+  robot.motorAngleEM1 += (robot.vL / 60) * 360 * dt;
+  robot.motorAngleEM2 -= (robot.vR / 60) * 360 * dt;
 }

@@ -1,45 +1,58 @@
 import * as Blockly from 'blockly';
 import * as Pt from 'blockly/msg/pt';
 import { ptMessages } from '../i18n/pt.js';
-import { beginnerToolbox } from './toolboxes/beginner.js';
-import { expertToolbox } from './toolboxes/expert.js';
+import { orToolbox } from './toolboxes/index.js';
 import { registerActionBlocks } from './blocks/action.js';
 import { registerSensorBlocks } from './blocks/sensor.js';
 import { registerControlBlocks } from './blocks/control.js';
+import { registerLogicBlocks } from './blocks/logic.js';
+import { registerMathBlocks } from './blocks/math.js';
+import { registerTextBlocks } from './blocks/text.js';
 import { registerListBlocks } from './blocks/list.js';
 import { registerColourBlocks } from './blocks/colour.js';
 import { registerCommunicationBlocks } from './blocks/communication.js';
-import { registerUnknownStubs } from './blocks/_unknownStub.js';
+import { ensureStartBlock } from './startBlock.js';
 
-// Apply official Blockly PT locale as base, then overlay our PT-PT overrides.
+// Apply official Blockly PT locale as base, then overlay our PT-PT overrides
+// (context menus, variable dialogs). Block labels come from the Open Roberta spec.
 Blockly.setLocale(Pt);
 Object.assign(Blockly.Msg, ptMessages);
 
 let workspace = null;
 
-export function initBlockly() {
+export function registerAllBlocks() {
   registerActionBlocks();
   registerSensorBlocks();
   registerControlBlocks();
+  registerLogicBlocks();
+  registerMathBlocks();
+  registerTextBlocks();
   registerListBlocks();
   registerColourBlocks();
   registerCommunicationBlocks();
-  registerUnknownStubs();   // must remain LAST — skips any already-defined block
+}
+
+export function initBlockly() {
+  registerAllBlocks();
 
   workspace = Blockly.inject('blockly-area', {
-    toolbox: beginnerToolbox,
+    toolbox: orToolbox('beginner'),
     grid: { spacing: 20, length: 3, colour: '#ccc', snap: true },
     zoom: { controls: true, wheel: true, startScale: 1.0 },
     trashcan: true,
   });
 
-  console.log('[blockly] mounted — Phase 3B-4 (colour + communication blocks)');
+  // Open Roberta: blocks not connected to the start block don't run (greyed out).
+  workspace.addChangeListener(Blockly.Events.disableOrphans);
+  ensureStartBlock(workspace);
+
+  console.log('[blockly] mounted — blocks from the live Open Roberta spec');
   return workspace;
 }
 
 export function setToolboxMode(mode) {
   if (!workspace) return;
-  workspace.updateToolbox(mode === 'expert' ? expertToolbox : beginnerToolbox);
+  workspace.updateToolbox(orToolbox(mode === 'expert' ? 'expert' : 'beginner'));
 }
 
 export function getWorkspace() {
