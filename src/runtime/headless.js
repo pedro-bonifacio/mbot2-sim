@@ -7,6 +7,7 @@ import { resetSensors } from '../sim/sensors.js';
 import { setMapData } from '../sim/map.js';
 import { simNow, resetClock } from '../sim/clock.js';
 import { robotAPI } from '../sim/robotAPI.js';
+import { seedProgramRandom } from '../sim/random.js';
 import { ledState, resetLeds } from '../sim/leds.js';
 import { resetDisplay, getDisplayState } from '../ui/display.js';
 import { setPressed } from '../ui/buttons.js';
@@ -42,8 +43,9 @@ export function relativePose(map, x = robot.x, y = robot.y, theta = robot.theta)
  *         (mapLoader.parseMapPixels output + PNG pixel size)
  *   keys: [{ key: 'A', at: seconds, for: seconds }]  virtual button presses
  *   sampleEvery: seconds between path samples (0 = no path)
+ *   seed: the program's random-number seed (same seed → same run)
  */
-export function runHeadless({ code, map, maxSeconds = 60, keys = [], sampleEvery = 0 }) {
+export function runHeadless({ code, map, maxSeconds = 60, keys = [], sampleEvery = 0, seed = 1 }) {
   setMapData({ imageData: map.imageData, width: map.width, height: map.height,
     offscreenCanvas: { width: map.widthPx, height: map.heightPx } });
   respawnRobot(map);
@@ -62,6 +64,7 @@ export function runHeadless({ code, map, maxSeconds = 60, keys = [], sampleEvery
   let status = 'timeout';
   let error = null;
   try {
+    seedProgramRandom(seed);
     createInterpreter(code);
     resetSensors();
     robotAPI._resetMessageBus();
@@ -93,6 +96,7 @@ export function runHeadless({ code, map, maxSeconds = 60, keys = [], sampleEvery
   return {
     status,
     error: error ? error.message : undefined,
+    seed,
     time: round(simNow() / 1000, 2),
     pose: relativePose(map),
     world: { x: round(robot.x), y: round(robot.y), heading: round(deg(robot.theta)) },

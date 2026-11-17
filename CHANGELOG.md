@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### Changed
+- Random-number blocks use a seeded generator: each run still gets new numbers, but any run can be replayed exactly from its seed.
 - The simulation runs in fixed 1/60 s steps in the browser too, so a program does exactly the same thing on a slow school laptop as on a fast computer (before, a wall-following program could crash at 30 fps but not at 60).
 - Collisions use the robot's real 17.5 × 13 cm outline, turned with its heading: the robot stops touching the wall instead of 4 cm inside it, corners hit walls while turning on the spot, and the map edge counts as a wall. The outline turns red after a collision.
 - Programs that went through Open Roberta load correctly even when Open Roberta stored the LED block's "todos" as an empty value.

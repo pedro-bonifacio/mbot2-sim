@@ -1,5 +1,5 @@
 {
-  "_doc": "Headless simulator tests (npm run sim:test). pose = relative to the spawn: forward/right cm, turned degrees (+ = right); tolerance 0.5 cm / 1 deg. Only listed fields are checked.",
+  "_doc": "Headless simulator tests (npm run sim:test). pose = relative to the spawn: forward/right cm, turned degrees (+ = right); tolerance 0.5 cm / 1 deg. Only listed fields are checked. seed = the program's random-number seed (default 1).",
   "tests": [
     {
       "name": "Open Roberta export 01-simples (waits for key A)",
@@ -154,6 +154,30 @@
           "right": 0,
           "turned": 90
         }
+      }
+    },
+    {
+      "name": "random blocks: seed 1 gives the same numbers every run",
+      "program": "scripts/fixtures/aleatorio.xml",
+      "seed": 1,
+      "expect": {
+        "status": "finished",
+        "display": [
+          "0 63",
+          "1 0.002735721180215478"
+        ]
+      }
+    },
+    {
+      "name": "random blocks: another seed gives other numbers",
+      "program": "scripts/fixtures/aleatorio.xml",
+      "seed": 7,
+      "expect": {
+        "status": "finished",
+        "display": [
+          "0 2",
+          "1 0.06195825757458806"
+        ]
       }
     }
   ]

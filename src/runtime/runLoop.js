@@ -6,6 +6,7 @@ import { appendConsoleMessage, clear as clearConsole } from '../ui/console.js';
 import { resetMotors } from '../sim/robot.js';
 import { resetSensors, getQuadRGBProbeData } from '../sim/sensors.js';
 import { robotAPI } from '../sim/robotAPI.js';
+import { seedProgramRandom, freshSeed } from '../sim/random.js';
 import { setFrameHook } from '../sim/canvas.js';
 import { TICK_S, physicsTick } from './simTick.js';
 
@@ -46,10 +47,15 @@ export function run(workspace) {
   runCode(jsCode);
 }
 
-/** Starts generated JavaScript; the next tick runs it. */
-export function runCode(jsCode) {
+/**
+ * Starts generated JavaScript; the next tick runs it. `seed` seeds the program's
+ * random numbers: a fresh one by default (each Executar differs, as on the robot);
+ * pass the recorded seed to replay a run (programSeed(), __dev.state().seed).
+ */
+export function runCode(jsCode, { seed = freshSeed() } = {}) {
   if (isActive()) return;
   clearConsole();
+  seedProgramRandom(seed);
 
   try {
     createInterpreter(jsCode);

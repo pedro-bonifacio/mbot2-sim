@@ -24,7 +24,7 @@ const FRAME_RATES = [['30 fps', () => 1 / 30], ['uneven 8–40 ms frames', jitte
 
 let failed = 0;
 for (const t of tests.filter((x) => !filter || x.name.includes(filter))) {
-  const r = simulate({ program: t.program, map: t.map, maxSeconds: t.maxSeconds ?? 60, keys: t.keys ?? [] });
+  const r = simulate({ program: t.program, map: t.map, maxSeconds: t.maxSeconds ?? 60, keys: t.keys ?? [], seed: t.seed ?? 1 });
   const e = t.expect;
   const problems = [];
   if (e.status && r.status !== e.status) problems.push(`status ${r.status}${r.error ? ' (' + r.error + ')' : ''}, expected ${e.status}`);
@@ -43,11 +43,12 @@ for (const t of tests.filter((x) => !filter || x.name.includes(filter))) {
   // The browser's run loop must give the same result at any frame rate (decision 0004):
   // compare with a headless run stopped at the same simulated time.
   for (const [rate, frameS] of FRAME_RATES) {
-    const b = await simulateBrowser({ program: t.program, map: t.map, maxSeconds: t.maxSeconds ?? 60, keys: t.keys ?? [], frameS });
+    const b = await simulateBrowser({ program: t.program, map: t.map, maxSeconds: t.maxSeconds ?? 60, keys: t.keys ?? [], frameS, seed: t.seed ?? 1 });
     const h = b.status === r.status && b.time === r.time ? r
-      : simulate({ program: t.program, map: t.map, maxSeconds: b.time - 1e-9, keys: t.keys ?? [] });
-    if (b.status !== h.status || JSON.stringify(b.pose) !== JSON.stringify(h.pose)) {
-      problems.push(`browser at ${rate}: ${b.status} ${JSON.stringify(b.pose)}, headless ${h.status} ${JSON.stringify(h.pose)}`);
+      : simulate({ program: t.program, map: t.map, maxSeconds: b.time - 1e-9, keys: t.keys ?? [], seed: t.seed ?? 1 });
+    const same = (x) => JSON.stringify([x.status, x.pose, x.display]);
+    if (same(b) !== same(h)) {
+      problems.push(`browser at ${rate}: ${same(b)}, headless ${same(h)}`);
     }
   }
   if (problems.length) failed++;

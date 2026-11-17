@@ -1,11 +1,20 @@
 import { robotAPI } from '../sim/robotAPI.js';
 import { appendConsoleMessage } from '../ui/console.js';
+import { programRandom } from '../sim/random.js';
 
 // Called once per run as the JS-Interpreter initFunc.
 // Injects robotAPI and console shims into the interpreter's global scope.
 export function initInterpreter(interpreter, globalObject) {
   _injectRobotAPI(interpreter, globalObject);
   _injectConsole(interpreter, globalObject);
+  _seedMathRandom(interpreter, globalObject);
+}
+
+// The random blocks compile to Math.random(); inside the sandbox it draws from the
+// run's seeded stream (src/sim/random.js), so a run can be replayed exactly.
+function _seedMathRandom(interpreter, globalObject) {
+  const math = interpreter.getProperty(globalObject, 'Math');
+  interpreter.setProperty(math, 'random', interpreter.createNativeFunction(() => programRandom()));
 }
 
 // js-interpreter reads asyncFunc.length to compute argLength = asyncFunc.length - 1.
