@@ -36,6 +36,10 @@ export function setSpawn(x, y, theta) {
   _spawnTheta = theta;
 }
 
+export function getSpawn() {
+  return { spawnX: _spawnX, spawnY: _spawnY, spawnHeading: _spawnTheta };
+}
+
 export function resetRobot() {
   robot.x               = _spawnX;
   robot.y               = _spawnY;

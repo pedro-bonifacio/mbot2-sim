@@ -1,6 +1,8 @@
 import * as Blockly from 'blockly';
 import { defineOrBlocks, orSpec, orMsg, initFromSpec } from './_orFactory.js';
-import { makePlusMinusMutator } from './_plusMinusMutator.js';
+import { makePlusMinusMutator, FieldClickableLabel } from './_plusMinusMutator.js';
+import { findLegalVarName, varNameValidator } from './_varScope.js';
+import { startDeclareMixin } from './variable.js';
 
 // TOOLBOX_CONTROL (Controlo): decisions, loops, waits — plus the program start block.
 // Plain blocks come straight from the Open Roberta spec; dynamic ones (+/− arms,
@@ -77,6 +79,23 @@ function defineWaitFor() {
   };
 }
 
+// ── Loop variables ───────────────────────────────────────────────────────────
+// for / for-each declare their loop variable (Open Roberta getVarDecl/getType), so it
+// shows up under Variáveis and can only be used inside the loop. Number for "contar",
+// the list's item type for "para cada".
+
+function loopVariable(fixedType) {
+  return {
+    initLoopVar_(base) {
+      const name = findLegalVarName(base, this);
+      this.nameOld_ = name;
+      this.setFieldValue(name, 'VAR');
+    },
+    getVarDecl() { return [this.getFieldValue('VAR')]; },
+    getType() { return fixedType || this.listType_; },
+  };
+}
+
 // ── count with j from … to … by … ────────────────────────────────────────────
 // Open Roberta's PT message for this block lists the TO input twice (a translation
 // bug that renders an extra empty socket). We keep the single, correct TO input.
@@ -92,8 +111,10 @@ function defineFor() {
     return true;
   });
   Blockly.Blocks['robControls_for'] = {
+    ...loopVariable('Number'),
     init() {
-      initFromSpec(this, { ...spec, inputs });
+      initFromSpec(this, { ...spec, inputs }, { VAR: varNameValidator(this) });
+      this.initLoopVar_(this.getFieldValue('VAR'));
     },
   };
 }
@@ -104,13 +125,16 @@ function defineFor() {
 function defineForEach() {
   const spec = orSpec('robControls_forEach');
   Blockly.Blocks['robControls_forEach'] = {
+    ...loopVariable(null),
     init() {
       const block = this;
       initFromSpec(this, spec, {
         TYPE(newValue) { block.updateType_(newValue); return newValue; },
+        VAR: varNameValidator(this),
       });
       // Like Open Roberta, LIST accepts any list type until a type is chosen/loaded.
       this.listType_ = this.getFieldValue('TYPE');
+      this.initLoopVar_(orMsg('VARIABLES_DEFAULT_NAME', 'item'));
     },
     updateType_(t) {
       this.listType_ = t;
@@ -133,14 +157,17 @@ function defineForEach() {
 
 // ── Program start ────────────────────────────────────────────────────────────
 // Open Roberta: every program hangs under one non-deletable start block
-// ("iniciar"). Only blocks connected to it run. Global variable declarations
-// (<mutation declare="true"/>) are added together with the variable system.
+// ("iniciar"). Only blocks connected to it run. "+" adds a global variable
+// declaration in the ST input (<mutation declare="true"/>); see variable.js.
 
 function defineStart() {
   const spec = orSpec('robControls_start');
   Blockly.Blocks['robControls_start'] = {
+    ...startDeclareMixin,
     init() {
       initFromSpec(this, spec);
+      // Open Roberta draws its "+" mutator icon at the left of the block.
+      this.inputList[0].insertFieldAt(0, new FieldClickableLabel('+', 'blockly-rob-plus-minus', (b) => b.plus_()));
       this.setDeletable(false);
       this.declare_ = false;
     },
@@ -150,10 +177,10 @@ function defineStart() {
       return el;
     },
     domToMutation(el) {
-      this.declare_ = el.getAttribute('declare') === 'true';
+      this.setDeclare_(el.getAttribute('declare') === 'true');
     },
     saveExtraState() { return { declare: !!this.declare_ }; },
-    loadExtraState(s) { this.declare_ = !!(s && s.declare); },
+    loadExtraState(s) { this.setDeclare_(!!(s && s.declare)); },
   };
 }
 

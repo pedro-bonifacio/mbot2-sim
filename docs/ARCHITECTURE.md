@@ -48,12 +48,15 @@ src/
 │   │   ├── control.js      Loop, wait, if, flow-control blocks
 │   │   ├── communication.js  send/receive message blocks
 │   │   ├── colour.js       Colour picker + RGB constructor blocks
-│   │   └── list.js         List operation blocks
+│   │   ├── list.js         List operation blocks
+│   │   ├── variable.js     Typed variable declarations + get/set (Variáveis)
+│   │   ├── procedure.js    robProcedures_* function blocks (Funções)
+│   │   └── _varScope.js    Shared: declarations, scopes, legal names, sync listener
 │   ├── generators/
 │   │   └── javascript.js   Bootstraps Blockly's built-in JS generator
 │   └── toolboxes/
-│       ├── beginner.js     Beginner toolbox JSON (mirrors program.toolbox.beginner.xml)
-│       └── expert.js       Expert toolbox JSON (mirrors program.toolbox.expert.xml)
+│       ├── index.js        Toolboxes built from Open Roberta's beginner/expert toolbox XML
+│       └── dynamic.js      Variáveis / Funções flyouts, built like Open Roberta's
 │
 ├── codegen/
 │   ├── index.js        Entry point: calls all registerXCodegen() and exports generateCode()
@@ -62,6 +65,7 @@ src/
 │   ├── control.js      Codegen for control blocks (wait, loops, if)
 │   ├── expr.js         Codegen for expression helpers (type casts, RGB constructor)
 │   ├── communication.js  Codegen for communication blocks
+│   ├── variables.js    Codegen for typed variables and functions
 │   ├── builtin.js      Overrides for standard Blockly blocks that need custom output
 │   └── stubs.js        Placeholder registrations (prevent "no generator" warnings)
 │
@@ -192,11 +196,11 @@ Because the `resolveCondition` is checked once per frame (at 60 fps), the robot 
 ## Run loop and step budget
 
 ```js
-// src/runtime/runLoop.js
+// src/runtime/programTick.js
 const STEP_BUDGET_PER_FRAME = 1000;
 ```
 
-Each RAF frame, the run loop calls `interpreter.step()` up to 1000 times. This prevents a tight loop in user code (e.g. `while(true) {}`) from freezing the browser tab. The physics sim and canvas render still happen in the canvas RAF loop regardless.
+Each RAF frame, the run loop calls `tickProgram()` (`src/runtime/programTick.js`), which checks collision, resumes a finished async robot call, and calls `interpreter.step()` up to 1000 times. `tickProgram()` is UI-free; `runLoop.js` turns its result into run states and console messages, and the headless runner uses the same function. This prevents a tight loop in user code (e.g. `while(true) {}`) from freezing the browser tab. The physics sim and canvas render still happen in the canvas RAF loop regardless.
 
 ### Interaction with async tickets
 
@@ -320,6 +324,34 @@ At runtime, `src/sim/mapCatalogue.js` fetches `/maps/catalogue.json` and populat
 3. For async behaviour, add the method to `robotAPI.js` and include its name in the `_async` list at the bottom of that file.
 
 The generated code runs inside JS-Interpreter under ES5 semantics — do not emit `let`, `const`, arrow functions, template literals, or any ES6+ syntax.
+
+---
+
+## Headless runner and sim tests
+
+`src/runtime/headless.js → runHeadless()` runs a program with the real interpreter, `robotAPI`, sensors and physics, in fixed ticks of simulated time (1/60 s: one `tickProgram()` + one physics `step()`), with no rendering. Time comes from `src/sim/clock.js` (`simNow()`), which in the browser advances with each physics step, so `wait_ms`, tones and timers behave the same in both ([decision 0004](decisions/0004-deterministic-simulation.md)).
+
+- `npm run sim -- <program.xml> [--map default.png] [--max 60] [--key A@1.5] [--path 0.5]` prints a short summary: status, simulated time, pose relative to the spawn (forward/right cm, turned °, + = right), display text, LEDs, console messages, block warnings.
+- `npm run sim:test` runs `scripts/fixtures/sim-tests.json` (program + map + key presses → expected status/pose/display). Part of `npm run check`.
+- Node glue (DOM shim, PNG decoding with `pngjs`, Blockly loading) lives in `scripts/lib/sim.mjs`.
+
+### Dev hooks (`window.__dev`, dev server only)
+
+`src/dev/devHooks.js` drives the real page: it loads a program file from the dev server, clicks "+"/"−" with real pointer events, sets fields, undoes, opens toolbox categories and lists their flyouts, presses **Executar**, and reports state. Everything returns plain text/JSON (`__dev.tree()` prints the program as an indented outline with warnings), so it can be checked from DevTools or by page JS evaluation without screenshots. `main.js` imports it behind `import.meta.env.DEV`, so production builds don't contain it. The full API is listed at the top of the file. Runs happen in real time, so keep browser checks to short programs and use the headless runner for long ones.
+
+## Typed variables and functions
+
+Variables follow Open Roberta, not Blockly's variable model. A variable exists because a block **declares** it (`getVarDecl()` / `getType()`):
+
+| Declaration | Where | Scope | JS |
+|---|---|---|---|
+| `robGlobalVariables_declare` | start block's `ST` input ("+" on *iniciar*) | whole program | `var x = <value>;` before the chain |
+| `robLocalVariables_declare` | a function's `ST` input ("+" on the definition) | that function | a parameter |
+| `robControls_for` / `robControls_forEach` | the loop itself | the loop body | the loop variable |
+
+`variables_get` / `variables_set` refer to a declaration by name and carry its type (`<mutation datatype="Number"/>`), which sets their connection checks. Names are unique across the workspace (case-insensitive), so they map 1:1 onto JS names. Renaming a declaration renames its references; "−" on a declaration removes it and all its references, as in Open Roberta.
+
+`_varScope.syncWorkspace` is the one change listener that keeps this consistent: reference types, out-of-scope warnings, call arguments (`robProcedures_call*` mirror their definition's parameters and return type), the shape of "se … retorna …", and free names for pasted blocks. It's idempotent. `npm run or:variables` (`scripts/variables-check.mjs`) imports an Open Roberta-format program, runs it, and drives +/−/rename/type changes headlessly. It also checks the browser test programs `scripts/fixtures/teste-*.xml` (load them with **Carregar**).
 
 ---
 

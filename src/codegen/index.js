@@ -4,15 +4,20 @@ import { registerSensorCodegen } from './sensor.js';
 import { registerControlCodegen } from './control.js';
 import { registerExprCodegen } from './expr.js';
 import { registerCommunicationCodegen } from './communication.js';
+import { registerVariableCodegen } from './variables.js';
 
 registerActionCodegen();
 registerSensorCodegen();
 registerControlCodegen();
 registerExprCodegen();
 registerCommunicationCodegen();
+registerVariableCodegen();
+
+// Sandbox globals (src/runtime/sandbox.js) must never be shadowed by user names.
+javascriptGenerator.addReservedWords('robotAPI,console');
 
 const START_TYPE = 'robControls_start';
-const isDefinition = (block) => /^(rob)?[Pp]rocedures_def/.test(block.type);
+const isDefinition = (block) => /^(rob)?[Pp]rocedures_def/.test(block.type) && block.isEnabled();
 
 /**
  * Generates the program as ES5 JavaScript. As in Open Roberta, only the chain under

@@ -139,3 +139,9 @@ The following sample program runs end-to-end in the sim:
 - **Before proposing or implementing a design change, read [docs/decisions/README.md](docs/decisions/README.md).** `Accepted` records are binding like the rules above. To change one, write a new record that supersedes it. Never rewrite an old record.
 - New decisions: copy `docs/decisions/0000-template.md`, next free number, add to the index.
 - Work plan: [docs/ROADMAP.md](docs/ROADMAP.md) — tick items as they ship. Level content: [docs/CURRICULUM.md](docs/CURRICULUM.md).
+
+## 16. Testing
+
+- `npm run check` must pass before every commit (fidelity, codegen, variables/functions, headless sim tests).
+- Test it yourself before asking the teacher: `npm run sim -- <program.xml>` for behaviour, `window.__dev` on the dev server for the editor and the browser run loop (no screenshots needed). See `docs/ARCHITECTURE.md → Headless runner and sim tests`.
+- New behaviour or a reported bug → add a case to `scripts/fixtures/sim-tests.json`. The teacher's browser checks are for looks only.

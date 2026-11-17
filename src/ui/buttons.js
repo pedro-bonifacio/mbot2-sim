@@ -5,6 +5,12 @@ export function isPressed(buttonId) {
   return _pressed.has(String(buttonId).toUpperCase());
 }
 
+/** Presses/releases a button without the DOM (headless runner, tests). */
+export function setPressed(buttonId, on) {
+  const id = String(buttonId).toUpperCase();
+  if (on) _pressed.add(id); else _pressed.delete(id);
+}
+
 export function initButtons() {
   const container = document.getElementById('button-row');
   if (!container) return;

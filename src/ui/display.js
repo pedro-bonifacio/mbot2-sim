@@ -102,6 +102,13 @@ export function println_display(text) {
   _redraw();
 }
 
+/** Text currently on the display (for the headless runner and tests). */
+export function getDisplayState() {
+  const text = [];
+  textGrid.forEach((cells, row) => cells.forEach((t, col) => { if (t) text.push({ row, col, text: t }); }));
+  return { text, printed: printLines.slice(), background: bgColour };
+}
+
 export function resetDisplay() {
   display_clear();
 }

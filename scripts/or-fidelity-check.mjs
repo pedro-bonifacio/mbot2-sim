@@ -32,6 +32,8 @@ const EXCEPTIONS = [
     'OR\'s PT translation lists the TO input twice (renders an empty socket); the sim keeps one TO.'],
   ['robControls_for', 'labels differ',
     'Follows from the duplicate TO input above.'],
+  ['robControls_forEach', 'serialised field VAR',
+    'Loop variable default is Open Roberta\'s findLegalName("item"): the first free name. The catalogue was extracted with item…item3 already taken.'],
 ];
 const isExcepted = (type, problem) =>
   EXCEPTIONS.some(([t, prefix]) => (t === type || t === '*') && problem.startsWith(prefix));

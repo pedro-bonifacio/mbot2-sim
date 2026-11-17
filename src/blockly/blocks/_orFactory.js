@@ -83,7 +83,8 @@ export function makeField(f, validator) {
     case 'number':
       return [new Blockly.FieldNumber(f.value), f.name];
     case 'text':
-      return [new Blockly.FieldTextInput(f.value), f.name];
+      // FieldTextInput attaches the validator after setting the initial value.
+      return [new Blockly.FieldTextInput(f.value, validator), f.name];
     case 'colour':
       return [new FieldColour(f.value), f.name];
     case 'note':

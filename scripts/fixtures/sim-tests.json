@@ -1,0 +1,44 @@
+{
+  "_doc": "Headless simulator tests (npm run sim:test). pose = relative to the spawn: forward/right cm, turned degrees (+ = right); tolerance 0.5 cm / 1 deg. Only listed fields are checked.",
+  "tests": [
+    {
+      "name": "Open Roberta export 01-simples (waits for key A)",
+      "program": "reference_openroberta/export-samples/openroberta/01-simples.xml",
+      "keys": [{ "key": "A", "at": 0.5 }],
+      "maxSeconds": 30,
+      "expect": { "status": "finished", "pose": { "forward": 20, "right": 76.1, "turned": 90 }, "display": ["0 Ola"],
+                  "leds": ["#33cc00", "#33cc00", "#33cc00", "#33cc00", "#33cc00"] }
+    },
+    {
+      "name": "01-simples without key A keeps waiting",
+      "program": "reference_openroberta/export-samples/openroberta/01-simples.xml",
+      "maxSeconds": 5,
+      "expect": { "status": "timeout", "pose": { "forward": 0, "right": 0, "turned": 0 } }
+    },
+    {
+      "name": "teste-1: typed globals, for-each over a list",
+      "program": "scripts/fixtures/teste-1-variaveis.xml",
+      "expect": { "status": "finished", "warnings": 0, "pose": { "forward": 20, "right": 20, "turned": -90 },
+                  "display": ["0 mBot volta 3", "1 terminou: true"] }
+    },
+    {
+      "name": "teste-2: function with a parameter (two squares)",
+      "program": "scripts/fixtures/teste-2-funcao.xml",
+      "expect": { "status": "finished", "warnings": 0, "pose": { "forward": 0, "right": 0, "turned": 0 }, "distance": 240,
+                  "display": ["0 Feito"] }
+    },
+    {
+      "name": "teste-3: return values; follows the walls clockwise",
+      "program": "scripts/fixtures/teste-3-retorno.xml",
+      "maxSeconds": 30,
+      "expect": { "status": "timeout", "warnings": 0, "pose": { "forward": 6.5, "right": 28.6, "turned": -90 },
+                  "display": ["0 42"] }
+    },
+    {
+      "name": "teste-4: scope errors warn and stop the run",
+      "program": "scripts/fixtures/teste-4-erros.xml",
+      "expect": { "status": "error", "error": "passos is not defined", "warnings": 4,
+                  "pose": { "forward": 10, "right": 0, "turned": 0 } }
+    }
+  ]
+}

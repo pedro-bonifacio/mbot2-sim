@@ -7,7 +7,7 @@ export const OR = {
   "lang": "pt",
   "extractedAt": "2026-11-17T13:01:18.282Z",
   "blocklyBlockTypes": 604,
-  "generatedAt": "2026-11-17T13:50:28.110Z"
+  "generatedAt": "2026-11-17T15:55:17.278Z"
  },
  "blocks": {
   "robActions_motorDiff_on_for": {
@@ -7192,7 +7192,21 @@ export const OR = {
   "MATH_IS_DIVISIBLE_BY": "é divisível por",
   "TEXT_JOIN_TITLE_CREATEWITH": "criar texto com",
   "START_PROGRAM": "iniciar",
-  "START_PROGRAM_DEBUG": "mostrar dados do sensor"
+  "START_PROGRAM_DEBUG": "mostrar dados do sensor",
+  "VARIABLES_DEFAULT_NAME": "item",
+  "VARIABLES_GLOBAL_DECLARE_TOOLTIP": "Declara uma variável global.",
+  "VARIABLES_LOCAL_DECLARE_TOOLTIP": "Declara uma variável local.",
+  "VARIABLES_GET_TOOLTIP": "Retorna o valor desta variável.",
+  "VARIABLES_SET_TOOLTIP": "Define esta variável para o valor inserido.",
+  "PROCEDURES_DEFNORETURN_PROCEDURE": "faz algo",
+  "PROCEDURES_BEFORE_PARAMS": "com:",
+  "PROCEDURES_DEFNORETURN_TOOLTIP": "Cria uma função que não tem retorno.",
+  "PROCEDURES_DEFRETURN_TOOLTIP": "Cria uma função que possui um valor de retorno.",
+  "PROCEDURES_CALLNORETURN_TOOLTIP": "Executa a função \"%1\".",
+  "PROCEDURES_CALLRETURN_TOOLTIP": "Executa a função \"%1\" e usa o seu retorno.",
+  "PROCEDURES_HIGHLIGHT_DEF": "Destacar definição da função",
+  "PROCEDURES_IFRETURN_TOOLTIP": "se o valor é verdadeiro, então retorna um segundo valor.",
+  "PROCEDURES_IFRETURN_WARNING": "Atenção: Este bloco só pode ser utilizado dentro da definição de uma função."
  },
  "configuration": "<block_set xmlns=\"http://de.fhg.iais.roberta.blockly\" robottype=\"mbot2\" xmlversion=\"3.1\" description=\"\" tags=\"\"><instance x=\"255\" y=\"163\"><block type=\"robConf_robot\" id=\"robot\" intask=\"true\"><field name=\"ROBOT\">undefined</field></block></instance><instance x=\"584\" y=\"221\"><block type=\"robConf_mbuild_port\" id=\"14\" intask=\"true\" deletable=\"false\"><field name=\"NAME\">_M</field><statement name=\"MBUILDSENSOR\"><block type=\"robBrick_mbuild_ultrasonic2\" id=\"15\" intask=\"true\"><field name=\"NAME\">U</field></block><block type=\"robBrick_mbuild_quadrgb\" id=\"16\" intask=\"true\"><field name=\"NAME\">Q</field></block></statement></block></instance><instance x=\"20\" y=\"315\"><block type=\"robConf_accelerometer\" id=\"13\" intask=\"true\" deletable=\"false\"><field name=\"NAME\">_A</field></block></instance><instance x=\"120\" y=\"357\"><block type=\"robConf_sound\" id=\"11\" intask=\"true\" deletable=\"false\"><field name=\"NAME\">_S</field></block></instance><instance x=\"585\" y=\"357\"><block type=\"robConf_gyro\" id=\"12\" intask=\"true\" deletable=\"false\"><field name=\"NAME\">_G</field></block></instance><instance x=\"101\" y=\"398\"><block type=\"robConf_light\" id=\"10\" intask=\"true\" deletable=\"false\"><field name=\"NAME\">_L</field></block></instance><instance x=\"741\" y=\"389\"><block type=\"robConf_key\" id=\"7\" intask=\"true\" deletable=\"false\"><field name=\"NAME\">A</field><field name=\"PIN1\">A</field></block></instance><instance x=\"122\" y=\"437\"><block type=\"robConf_joystick\" id=\"9\" intask=\"true\" deletable=\"false\"><field name=\"NAME\">_J</field></block></instance><instance x=\"741\" y=\"447\"><block type=\"robConf_key\" id=\"8\" intask=\"true\" deletable=\"false\"><field name=\"NAME\">B</field><field name=\"PIN1\">B</field></block></instance><instance x=\"102\" y=\"512\"><block type=\"robConf_rgbled\" id=\"4\" intask=\"true\" deletable=\"false\"><field name=\"NAME\">_R</field></block></instance><instance x=\"584\" y=\"501\"><block type=\"robConf_buzzer\" id=\"6\" intask=\"true\" deletable=\"false\"><field name=\"NAME\">_B</field></block></instance><instance x=\"684\" y=\"506\"><block type=\"robConf_encoder\" id=\"3\" intask=\"true\" deletable=\"false\"><field name=\"NAME\">R</field><field name=\"PORT1\">EM2</field></block></instance><instance x=\"120\" y=\"547\"><block type=\"robConf_lcd\" id=\"5\" intask=\"true\" deletable=\"false\"><field name=\"NAME\">_LCD</field></block></instance><instance x=\"475\" y=\"577\"><block type=\"robConf_encoder\" id=\"2\" intask=\"true\" deletable=\"false\"><field name=\"NAME\">L</field><field name=\"PORT1\">EM1</field></block></instance><instance x=\"654\" y=\"576\"><block type=\"robConf_differentialdrive\" id=\"1\" intask=\"true\" deletable=\"false\"><field name=\"NAME\">_D</field><field name=\"BRICK_WHEEL_DIAMETER\">6.5</field><field name=\"BRICK_TRACK_WIDTH\">11.5</field><field name=\"MOTOR_L\">EM1</field><field name=\"MOTOR_R\">EM2</field></block></instance></block_set>"
 };

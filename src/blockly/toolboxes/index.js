@@ -5,7 +5,12 @@ import { OR } from '../generated/orSpecs.js';
 // Category names are Open Roberta's PT translations; colours follow the first
 // block in each category.
 
+// Dynamic categories have no blocks in the XML; colour them like their blocks.
+const CUSTOM_COLOUR_TYPE = { VARIABLE: 'variables_get', PROCEDURE: 'robProcedures_defnoreturn' };
+
 function firstBlockColour(category) {
+  const custom = CUSTOM_COLOUR_TYPE[category.getAttribute('custom')];
+  if (custom) return OR.extraTypes[custom].colour;
   const b = category.querySelector('block');
   const spec = b && OR.blocks[b.getAttribute('type')];
   return spec ? spec.colour : null;

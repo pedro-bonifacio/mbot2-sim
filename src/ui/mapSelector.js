@@ -55,6 +55,17 @@ export async function initMapSelector() {
   });
 }
 
+/** Loads a catalogue map by file name (dev hooks). Resolves when it's on screen. */
+export async function loadMapByName(name) {
+  const entry = _catalogue.find((m) => m.name === name || m.name === String(name).replace(/\.png$/i, ''));
+  if (!entry) throw new Error(`No map "${name}" (have: ${_catalogue.map((m) => m.name).join(', ')})`);
+  const select = document.getElementById('map-select');
+  if (select) select.value = name;
+  await _loadMap(entry);
+}
+
+export function getActiveMapName() { return _activeMapName; }
+
 async function _loadMap(entry) {
   try {
     const mapInfo = await loadMapFromUrl(entry.url);
