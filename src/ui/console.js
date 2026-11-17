@@ -5,6 +5,7 @@ let sink = null;
 
 /** Also send every student-facing message to fn(text, level) (headless runner). */
 export function setConsoleSink(fn) { sink = fn; }
+export function getConsoleSink() { return sink; }
 
 export function initConsole() {
   panel = document.getElementById('console-panel');

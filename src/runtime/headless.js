@@ -11,7 +11,7 @@ import { seedProgramRandom } from '../sim/random.js';
 import { ledState, resetLeds } from '../sim/leds.js';
 import { resetDisplay, getDisplayState } from '../ui/display.js';
 import { setPressed } from '../ui/buttons.js';
-import { setConsoleSink } from '../ui/console.js';
+import { setConsoleSink, getConsoleSink } from '../ui/console.js';
 
 // Headless run: the same interpreter, robotAPI, sensors and physics as the browser,
 // stepped in fixed ticks of simulated time (decision 0004) with no rendering.
@@ -44,8 +44,9 @@ export function relativePose(map, x = robot.x, y = robot.y, theta = robot.theta)
  *   keys: [{ key: 'A', at: seconds, for: seconds }]  virtual button presses
  *   sampleEvery: seconds between path samples (0 = no path)
  *   seed: the program's random-number seed (same seed → same run)
+ *   referee: a level referee (src/levels/referee.js); its verdict ends the run
  */
-export function runHeadless({ code, map, maxSeconds = 60, keys = [], sampleEvery = 0, seed = 1 }) {
+export function runHeadless({ code, map, maxSeconds = 60, keys = [], sampleEvery = 0, seed = 1, referee = null }) {
   setMapData({ imageData: map.imageData, width: map.width, height: map.height,
     offscreenCanvas: { width: map.widthPx, height: map.heightPx } });
   respawnRobot(map);
@@ -58,6 +59,7 @@ export function runHeadless({ code, map, maxSeconds = 60, keys = [], sampleEvery
   for (const k of keys) setPressed(k.key, false);
 
   const messages = [];
+  const previousSink = getConsoleSink();   // the browser's ★★ check runs in a live page
   setConsoleSink((text, level) => messages.push({ t: round(simNow() / 1000, 2), level, text }));
 
   const path = [];
@@ -79,16 +81,21 @@ export function runHeadless({ code, map, maxSeconds = 60, keys = [], sampleEvery
         nextSample += sampleEvery;
       }
       const r = tickProgram();
-      if (r.status !== 'running') { status = r.status; error = r.error || null; break; }
+      if (r.status !== 'running') {
+        status = r.status; error = r.error || null;
+        if (referee) referee.tick({ timeS: simNow() / 1000, ended: status });
+        break;
+      }
       physicsTick();
+      if (referee && referee.tick({ timeS: simNow() / 1000 })) { status = 'judged'; break; }
     }
   } catch (e) {
     status = 'error';   // e.g. syntax error while creating the interpreter
     error = e;
   } finally {
-    if (status === 'timeout') destroyInterpreter();
+    if (status === 'timeout' || status === 'judged') destroyInterpreter();
     resetMotors();
-    setConsoleSink(null);
+    setConsoleSink(previousSink);
     for (const k of keys) setPressed(k.key, false);
   }
 
@@ -97,6 +104,7 @@ export function runHeadless({ code, map, maxSeconds = 60, keys = [], sampleEvery
     status,
     error: error ? error.message : undefined,
     seed,
+    verdict: referee ? referee.verdict || undefined : undefined,
     time: round(simNow() / 1000, 2),
     pose: relativePose(map),
     world: { x: round(robot.x), y: round(robot.y), heading: round(deg(robot.theta)) },

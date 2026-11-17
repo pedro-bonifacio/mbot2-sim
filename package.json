@@ -24,7 +24,8 @@
     "or:export": "node scripts/export-check.mjs",
     "sim": "node scripts/sim-run.mjs",
     "sim:test": "node scripts/sim-test.mjs",
-    "check": "node scripts/or-fidelity-check.mjs > /dev/null && node scripts/codegen-check.mjs > /dev/null && node scripts/variables-check.mjs > /dev/null && node scripts/export-check.mjs > /dev/null && node scripts/sim-test.mjs > /dev/null && echo 'all checks passed'"
+    "levels:check": "node scripts/levels-check.mjs",
+    "check": "node scripts/or-fidelity-check.mjs > /dev/null && node scripts/codegen-check.mjs > /dev/null && node scripts/variables-check.mjs > /dev/null && node scripts/export-check.mjs > /dev/null && node scripts/sim-test.mjs > /dev/null && node scripts/levels-check.mjs --no-preview > /dev/null && echo 'all checks passed'"
   },
   "dependencies": {
     "@blockly/field-colour": "5.0.19",
@@ -32,7 +33,9 @@
     "js-interpreter": "^4.0.0"
   },
   "devDependencies": {
+    "ajv": "^8.20.0",
     "pngjs": "^7.0.0",
-    "vite": "^5.4.0"
+    "vite": "^5.4.0",
+    "yaml": "^2.9.1"
   }
 }

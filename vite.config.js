@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite';
 import fs from 'fs';
 import path from 'path';
+import YAML from 'yaml';
+import Ajv from 'ajv';
 
 function mapCataloguePlugin() {
   function writeCatalogue(root) {
@@ -28,10 +30,33 @@ function mapCataloguePlugin() {
   };
 }
 
+// Level files (levels/**/*.yaml, decision 0009) become JSON modules for the browser:
+// validated against levels/level.schema.json (errors show in Vite's overlay), and
+// without `solution` / `antiSolutions`, so the answers never reach the page.
+function levelYamlPlugin() {
+  let validate = null;
+  return {
+    name: 'level-yaml',
+    configResolved(config) {
+      const schema = JSON.parse(fs.readFileSync(path.resolve(config.root, 'levels/level.schema.json'), 'utf8'));
+      validate = new Ajv({ allErrors: true, allowUnionTypes: true }).compile(schema);
+    },
+    transform(code, id) {
+      if (!id.endsWith('.yaml') || !id.includes(`${path.sep}levels${path.sep}`)) return null;
+      const level = YAML.parse(code);
+      if (!validate(level)) {
+        throw new Error(`${path.basename(id)}: ${validate.errors.map((e) => `${e.instancePath || '/'} ${e.message}`).join('; ')}`);
+      }
+      const { solution, antiSolutions, ...forBrowser } = level;
+      return { code: `export default ${JSON.stringify(forBrowser)};`, map: null };
+    },
+  };
+}
+
 export default defineConfig({
   root: '.',
   publicDir: 'public',
   server: { port: 5173, open: true },
   build: { outDir: 'dist', sourcemap: true },
-  plugins: [mapCataloguePlugin()],
+  plugins: [mapCataloguePlugin(), levelYamlPlugin()],
 });

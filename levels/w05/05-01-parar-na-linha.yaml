@@ -1,0 +1,48 @@
+# World 5: colour sensor. The line moves between variants.
+id: "05-01"
+world: 5
+kind: core
+title: Parar na linha
+objective: Anda em frente até encontrares a linha preta, pára em cima dela e acende os LEDs a verde.
+concepts: [sensor de cor, esperar até]
+assumes: [andar, LEDs]
+toolbox: beginner
+timeLimit: 30
+
+variants:
+  params:
+    lineX: { min: 70, max: 160, step: 10 }
+  seeds: [1, 2, 3, 4, 5, 6]
+
+map:
+  items:
+    - line: { points: [[lineX, 10], [lineX, 112.5]], width: 2, colour: black }
+
+spawn: { x: 30, y: 61.25, heading: 0 }
+
+zones:
+  - { id: linha, label: linha preta, x: lineX - 5, y: 10, w: 12, h: 102.5 }
+
+goals:
+  - robotStoppedIn: { zone: linha, probe: front }
+  - ledColour: { colour: green }
+  - noCollision
+
+solution: |
+  robotAPI.drive("FOREWARD", 30);
+  while (!(robotAPI.quadrgb("COLOUR", "L1") == "#000000")) {}
+  robotAPI.drive_stop();
+  robotAPI.led_on("ALL", "#33cc00");
+
+antiSolutions:
+  - name: distância fixa
+    why: A linha não está sempre à mesma distância.
+    code: |
+      robotAPI.drive_for("FOREWARD", 30, 60);
+      robotAPI.led_on("ALL", "#33cc00");
+  - name: esquece os LEDs
+    why: Pára na linha mas não acende os LEDs.
+    code: |
+      robotAPI.drive("FOREWARD", 30);
+      while (!(robotAPI.quadrgb("COLOUR", "L1") == "#000000")) {}
+      robotAPI.drive_stop();

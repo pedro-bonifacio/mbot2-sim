@@ -364,6 +364,21 @@ Variables follow Open Roberta, not Blockly's variable model. A variable exists b
 
 `_varScope.syncWorkspace` is the one change listener that keeps this consistent: reference types, out-of-scope warnings, call arguments (`robProcedures_call*` mirror their definition's parameters and return type), the shape of "se … retorna …", and free names for pasted blocks. It's idempotent. `npm run or:variables` (`scripts/variables-check.mjs`) imports an Open Roberta-format program, runs it, and drives +/−/rename/type changes headlessly. It also checks the browser test programs `scripts/fixtures/teste-*.xml` (load them with **Carregar**).
 
+## Levels
+
+Format and rules: [LEVEL_FORMAT.md](LEVEL_FORMAT.md). Code in `src/levels/`, one concern per file:
+
+| File | Role |
+|------|------|
+| `expr.js` | arithmetic on variant parameters (`wallX - 15`) |
+| `level.js` | level + seed → *prepared* level: parameters drawn (`createRng(seed)`), every number in cm, colours as RGB, zones and goals checked |
+| `raster.js` | prepared map → RGBA pixels at 8 px/cm, the same layout a PNG decodes to, so `map.js`, sensors and collision need nothing new |
+| `referee.js` | goals judged every tick → verdict |
+| `runLevel.js` | headless run of one variant (`runHeadless` with a referee) |
+| `catalogue.js`, `session.js` | browser only: levels from the Vite plugin; the level on screen, its referee (via `runLoop.setRunObserver`, called at the same points in a tick as the headless runner calls its referee) and the ★★ check |
+
+The level panel is `src/ui/levelPanel.js`; levels join free maps in `src/ui/mapSelector.js`.
+
 ## Open Roberta files (Carregar / Exportar para Open Roberta)
 
 The workspace is plain Blockly XML internally (`<next>` chains, hidden ports as fields). `src/blockly/orFormat.js` converts at the edges, both ways:

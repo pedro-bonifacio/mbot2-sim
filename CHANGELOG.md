@@ -13,6 +13,8 @@
 - On-block +/− buttons show a pointer cursor and hover highlight, with a larger tap area.
 - Waits, tones and the timer sensor use the simulated clock (advances with physics), not the computer's clock.
 ### Added
+- **Levels** (first version): choose one in the **Nível / mapa** menu. Each level has an objective, goals checked as the robot runs (✓ / ✗ with the reason in Portuguese), target zones drawn on the floor, and variants where walls or lines move. **Testar todas as variantes** checks the program on every variant (★★). Three sample levels.
+- `npm run levels:check`: every level's reference solution must pass all variants and its tempting-but-wrong programs must fail.
 - Open Roberta-style typed variables: declared with "+" on the start block (type Número, Booleano, Caractere, Cor or a list of these), removed with "−". The **Variáveis** category lists them, plus function parameters and loop variables.
 - Open Roberta functions (**Funções**, expert): with or without a return value, typed parameters, "se … retorna …". Calls follow the definition when it changes.
 - Load programs exported from Open Roberta Lab (**Carregar**).
