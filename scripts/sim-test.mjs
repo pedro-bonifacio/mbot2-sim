@@ -55,14 +55,12 @@ for (const t of tests.filter((x) => !filter || x.name.includes(filter))) {
   if (verbose) print(JSON.stringify({ ...r, code: undefined }));
 }
 // Every map in the selector must spawn the robot with its whole footprint clear of
-// walls, or the first move is a collision. spawning_area.png is the 19.5 × 13 cm
-// authoring stamp (docs/MAP_AUTHORING.md), not a playable map.
+// walls, or the first move is a collision.
 if (!filter) {
   const { loadMap } = await import('./lib/sim.mjs');
   const { setMapData } = await import(path.join(ROOT, 'src/sim/map.js'));
   const { footprintHitsWall } = await import(path.join(ROOT, 'src/sim/collision.js'));
-  const maps = JSON.parse(fs.readFileSync(path.join(ROOT, 'public/maps/catalogue.json'), 'utf8'))
-    .filter((m) => m !== 'spawning_area.png');
+  const maps = JSON.parse(fs.readFileSync(path.join(ROOT, 'public/maps/catalogue.json'), 'utf8'));
   const warn = console.warn;
   console.warn = () => {};   // mapLoader notes (e.g. no heading marker) aren't failures here
   const blocked = maps.filter((name) => {

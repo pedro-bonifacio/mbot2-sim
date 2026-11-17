@@ -97,6 +97,10 @@ swatch colour (exact or close enough — tolerance ±40 in RGB Euclidean distanc
 
 ## Designing the spawn marker
 
+A ready-made stamp (cyan robot footprint plus yellow heading marker) is in
+[`map-templates/spawning_area.png`](map-templates/spawning_area.png): paste it into your
+map. It lives outside `public/maps/` so it doesn't appear in the map menu.
+
 1. Paint a **cyan (`#00ffff`) rectangle** exactly the size of the robot footprint —
    **140×104 px** (= 17.5×13 cm, the mBot 2 physical footprint at 8 px/cm) — at the
    desired start location. The centroid of all cyan pixels becomes the robot's starting
