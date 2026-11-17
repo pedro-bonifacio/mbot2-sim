@@ -68,6 +68,7 @@ function reportRun(v, st) {
   if (v.passed) return appendConsoleMessage(fmt(MSG.LEVEL_PASSED, v.timeS), 'info');
   const why = v.reason === 'collision' ? MSG.LEVEL_FAILED_COLLISION
     : v.reason === 'timeLimit' ? fmt(MSG.LEVEL_FAILED_TIME, st.prepared.timeLimitS)
+    : v.reason === 'stalled' ? MSG.LEVEL_FAILED_STALLED
     : v.reason === 'error' ? MSG.LEVEL_FAILED_ERROR : MSG.LEVEL_FAILED;
   appendConsoleMessage(why, 'error');
   for (const g of v.goals.filter((x) => !x.passed)) appendConsoleMessage(`  ✗ ${g.label}`, 'error');

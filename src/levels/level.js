@@ -49,6 +49,8 @@ export function prepareLevel(level, seed = testSeeds(level)[0]) {
   const params = variantParams(level, seed);
   const where = (path) => (e) => { throw new Error(`${level.id}: ${path}: ${e.message}`); };
   const num = (v, path) => { try { return evalNumber(v, params); } catch (e) { return where(path)(e); } };
+  // settle / stall: seconds, "never" (→ Infinity) or absent (→ the referee's default)
+  const seconds = (v, path) => (v === undefined ? undefined : v === 'never' ? Infinity : num(v, path));
   const colour = (name, path) => {
     if (!FLOOR_COLOURS[name]) throw new Error(`${level.id}: ${path}: colour "${name}" is not one of ${Object.keys(FLOOR_COLOURS).join(', ')}`);
     return FLOOR_COLOURS[name];
@@ -113,6 +115,7 @@ export function prepareLevel(level, seed = testSeeds(level)[0]) {
   return {
     id: level.id, title: level.title, objective: level.objective, seed, params,
     timeLimitS: num(level.timeLimit ?? DEFAULT_TIME_LIMIT_S, 'timeLimit'),
+    settleS: seconds(level.settle, 'settle'), stallS: seconds(level.stall, 'stall'),
     size, items, spawn, zones, goals,
   };
 }

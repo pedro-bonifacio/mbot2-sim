@@ -1,0 +1,29 @@
+{
+  "_doc": "When a run passes or fails (src/levels/referee.js). Each case runs `code` on a level (seed 1 unless `seed`), with `patch` merged over the level file, and expects the verdict's `passed` and `reason`. Run by npm run levels:check.",
+  "cases": [
+    { "name": "sensor loop that never ends passes once the robot has stood still 2 s",
+      "level": "04-01",
+      "code": "robotAPI.drive(\"FOREWARD\", 30);\nwhile (true) {\n  if (robotAPI.ultrasonic() < 10) {\n    robotAPI.drive_stop();\n  }\n}",
+      "expect": { "passed": true, "reason": "settled" } },
+    { "name": "settle: never — the same loop is judged at the time limit",
+      "level": "04-01", "patch": { "settle": "never", "timeLimit": 12 },
+      "code": "robotAPI.drive(\"FOREWARD\", 30);\nwhile (true) {\n  if (robotAPI.ultrasonic() < 10) {\n    robotAPI.drive_stop();\n  }\n}",
+      "expect": { "passed": true, "reason": "timeLimit" } },
+    { "name": "stopped too far from the wall in a forever loop fails after 5 s still, not at the limit",
+      "level": "04-01",
+      "code": "robotAPI.drive(\"FOREWARD\", 30);\nwhile (true) {\n  if (robotAPI.ultrasonic() < 60) {\n    robotAPI.drive_stop();\n  }\n}",
+      "expect": { "passed": false, "reason": "stalled", "beforeS": 20 } },
+    { "name": "stall: never — the same program waits for the time limit",
+      "level": "04-01", "patch": { "stall": "never" },
+      "code": "robotAPI.drive(\"FOREWARD\", 30);\nwhile (true) {\n  if (robotAPI.ultrasonic() < 60) {\n    robotAPI.drive_stop();\n  }\n}",
+      "expect": { "passed": false, "reason": "timeLimit" } },
+    { "name": "a robot that has not moved yet does not stall (it may be waiting for a key)",
+      "level": "04-01", "patch": { "timeLimit": 10 },
+      "code": "while (true) {}",
+      "expect": { "passed": false, "reason": "timeLimit" } },
+    { "name": "touching a wall fails even when noCollision is not a goal and the other goals hold",
+      "level": "04-01", "patch": { "goals": [{ "reachZone": { "zone": "perto", "probe": "front" } }] },
+      "code": "robotAPI.drive(\"FOREWARD\", 30);\nwhile (true) {}",
+      "expect": { "passed": false, "reason": "collision" } }
+  ]
+}

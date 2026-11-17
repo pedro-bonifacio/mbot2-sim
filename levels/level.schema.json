@@ -43,6 +43,8 @@
     "assumes": { "type": "array", "items": { "type": "string" } },
     "toolbox": { "enum": ["beginner", "expert"] },
     "timeLimit": { "$ref": "#/definitions/num", "description": "simulated seconds (default 60)" },
+    "settle": { "anyOf": [{ "$ref": "#/definitions/num" }, { "const": "never" }], "description": "pass once every goal holds and the robot has stood still this long (default 2 s); never = only when the program ends or at the time limit" },
+    "stall": { "anyOf": [{ "$ref": "#/definitions/num" }, { "const": "never" }], "description": "fail once the robot, having moved, stands still this long with a goal unmet (default 5 s); never = wait for the time limit" },
     "variants": {
       "type": "object", "additionalProperties": false,
       "properties": {

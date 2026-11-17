@@ -31,6 +31,8 @@ concepts: [ultrassom, esperar até]
 assumes: [andar, comparação]
 toolbox: beginner          # beginner | expert
 timeLimit: 30              # simulated seconds (default 60)
+settle: 2                  # optional: pass after standing still this long with every goal met (default 2, or never)
+stall: 5                   # optional: fail after standing still this long, having moved, with a goal unmet (default 5, or never)
 
 variants:                  # optional: omit for levels with one fixed layout
   params:
@@ -95,11 +97,17 @@ Zones are not painted.
 `probe` is `centre` (default) or `front` (middle of the front bumper). Every goal takes
 an optional `label` (PT-PT) to replace the default wording.
 
-**When a run is judged** (`src/levels/referee.js`, every tick, browser and headless alike):
+**When a run is judged** (`src/levels/referee.js`, every tick, browser and headless alike;
+[decision 0013](decisions/0013-when-a-level-run-is-judged.md)):
 it **passes** as soon as every goal holds and either the program has ended or the robot
-has stood still for 2 s (so "repeat forever: if near, stop" programs pass without
-waiting for the limit). It **fails** when it ends — program over, error, collision (if
-`noCollision` is a goal), or `timeLimit` — without passing.
+has stood still for `settle` s (default 2 — so "repeat forever: if near, stop" programs
+pass without waiting for the limit), or at `timeLimit` with every goal holding. It
+**fails** at once when the robot touches a wall (on every level; `noCollision` just shows
+it as a goal), when the program ends or errors without passing, when the robot — after
+it has moved — stands still for `stall` s (default 5) with a goal unmet, or at `timeLimit`.
+Set `settle: never` for levels where the robot must stop and then carry on.
+
+The student sees the first seed first; **Outra variante** cycles through the seeds.
 
 ## Stars
 
@@ -115,7 +123,8 @@ waiting for the limit). It **fails** when it ends — program over, error, colli
 2. every seed prepares and spawns the robot clear of walls;
 3. solution and anti-solutions only call existing `robotAPI` functions;
 4. the solution passes every seed; 5. each anti-solution fails at least one;
-6. `levels/_previews/<id>.png`: seed 1, zones (blue), the solution's path (red), the
+6. the referee's rules on `scripts/fixtures/referee-cases.json` (whole check only);
+7. `levels/_previews/<id>.png`: seed 1, zones (blue), the solution's path (red), the
    robot at start (cyan) and end (red). `--verbose` prints every seed's verdict.
 
 Solutions are the ES5 the code generator writes; build the program in the editor and

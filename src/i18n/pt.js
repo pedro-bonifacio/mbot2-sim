@@ -87,6 +87,7 @@ export const ptMessages = {
   LEVEL_FAILED: '✗ Objetivo não cumprido.',
   LEVEL_FAILED_COLLISION: '✗ O robô tocou numa parede.',
   LEVEL_FAILED_TIME: '✗ O tempo acabou (%1 s).',
+  LEVEL_FAILED_STALLED: '✗ O robô parou sem cumprir o objetivo.',
   LEVEL_FAILED_ERROR: '✗ O programa parou com um erro.',
   LEVEL_ALL_PASSED: '★★ Funciona em todas as %1 variantes!',
   LEVEL_ALL_FAILED: 'Funciona em %1 de %2 variantes. Falha na variante %3.',
