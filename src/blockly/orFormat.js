@@ -8,7 +8,7 @@
 //     <config><block_set …> robot configuration </block_set></config>
 //   </export>
 // Statement inputs (<statement name="DO">) also hold sibling blocks, and blocks carry
-// Open Roberta-only markup (<hide>, intask=…). Blockly expects <next> chains.
+// Open Roberta-only markup (<hide>, <repetitions>, intask=…). Blockly expects <next> chains.
 
 const BLOCKLY_NS = 'https://developers.google.com/blockly/xml';
 
@@ -27,6 +27,12 @@ function chainSiblings(doc, container) {
 }
 
 function normaliseBlock(doc, block) {
+  // Open Roberta wraps some inputs in <repetitions> (e.g. robProcedures_defreturn):
+  // lift them up to the block, where Blockly expects them.
+  for (const rep of Array.from(block.children).filter((c) => c.localName === 'repetitions')) {
+    for (const c of Array.from(rep.children)) block.insertBefore(c, rep);
+    block.removeChild(rep);
+  }
   for (const child of Array.from(block.children)) {
     if (child.localName === 'hide') block.removeChild(child);
     else if (child.localName === 'statement') chainSiblings(doc, child);

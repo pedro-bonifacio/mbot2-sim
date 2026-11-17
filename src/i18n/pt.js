@@ -1,6 +1,11 @@
 // PT-PT overrides merged on top of blockly/msg/pt base locale.
 // Keys here take precedence over the official Blockly PT translations.
 export const ptMessages = {
+  // Typed variables (Open Roberta has no PT translation for the flyout hint).
+  ROB_FLYOUT_VARIABLE_TEXT: 'Precisas de uma variável? Declara-a primeiro\nno sinal + do bloco «iniciar».',
+  ROB_VARIABLE_NOT_DECLARED: 'A variável «%1» não está declarada.',
+  ROB_VARIABLE_LOCAL_SCOPE: 'A variável «%1» só pode ser usada dentro da função «%2».',
+  ROB_VARIABLE_LOOP_SCOPE: 'A variável «%1» só pode ser usada dentro do ciclo que a declara.',
   CONTROLS_IF_MSG_IF: 'se',
   CONTROLS_IF_MSG_THEN: 'então fazer',
   CONTROLS_IF_MSG_ELSE: 'senão',

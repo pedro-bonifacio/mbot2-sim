@@ -1,4 +1,5 @@
 import { javascriptGenerator, Order } from 'blockly/javascript';
+import { globalDeclarations } from './variables.js';
 
 // Codegen for TOOLBOX_CONTROL blocks + the program start block.
 // Loop/wait semantics follow the MicroPython Open Roberta generates for the mBot 2.
@@ -10,8 +11,8 @@ const loopVar = (name) => javascriptGenerator.nameDB_.getName(name, 'VARIABLE');
 export function registerControlCodegen() {
   const G = javascriptGenerator.forBlock;
 
-  // Start block emits nothing itself; the chain under it is the program.
-  G['robControls_start'] = () => '';
+  // Start block: global variable declarations; the chain under it is the program.
+  G['robControls_start'] = (b) => globalDeclarations(b);
 
   // if / if-else: same input names as Blockly's controls_if (IFn, DOn, ELSE).
   G['robControls_if'] = G['controls_if'];

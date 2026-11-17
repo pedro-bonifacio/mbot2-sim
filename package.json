@@ -20,7 +20,8 @@
     "or:check": "node scripts/or-fidelity-check.mjs",
     "or:specs": "node scripts/or-generate-specs.mjs",
     "or:codegen": "node scripts/codegen-check.mjs",
-    "check": "node scripts/or-fidelity-check.mjs > /dev/null && node scripts/codegen-check.mjs > /dev/null && echo 'all checks passed'"
+    "or:variables": "node scripts/variables-check.mjs",
+    "check": "node scripts/or-fidelity-check.mjs > /dev/null && node scripts/codegen-check.mjs > /dev/null && node scripts/variables-check.mjs > /dev/null && echo 'all checks passed'"
   },
   "dependencies": {
     "@blockly/field-colour": "5.0.19",

@@ -16,11 +16,7 @@ and a real Open Roberta export imports and runs. See `CHANGELOG.md → Unrelease
 **Start the next session with:**
 
 1. ~~**Teacher:** browser check of block rendering~~ — done 2026-11-17, all good; `or-fidelity` merged into `main`.
-2. **Next build task:** Open Roberta-style typed variables, functions and lists
-   (Phase A item below). Specs for `robControls_start` (declare mutation),
-   `robGlobalVariables_declare`, `robLocalVariables_declare`, `variables_get/set`
-   (datatype mutation) and `robProcedures_*` are already extracted in
-   `reference_openroberta/live/or-mbot2-dynamic.json` (`other.*` and `sources`).
+2. ~~**Next build task:** typed variables, functions and lists~~ — done 2026-11-17 (branch `typed-variables`). **Teacher:** browser check of +/− on *iniciar* and functions, the Variáveis/Funções categories, type changes.
 3. **Then:** "Exportar para Open Roberta", validated through Open Roberta's server
    (how-to in `reference_openroberta/live/README.md`).
 4. **Teacher, with a robot in class:** `VERIFY_ON_ROBOT.md` (9 small checks).
@@ -46,7 +42,7 @@ Prerequisite for any evaluated level ([0003](decisions/0003-core-levels-use-real
 - [x] HUD shows what each quad RGB probe reports (L2 L1 R1 R2)
 - [x] Open Open Roberta exports in the sim (**Carregar**) — tested with a real export
 - [ ] **Teacher:** run the checks in [`VERIFY_ON_ROBOT.md`](VERIFY_ON_ROBOT.md) with a real mBot 2
-- [ ] OR-style typed variables (declared on the start block), functions (`robProcedures_*`), lists inside variable declarations. The expert toolbox still offers Blockly's stock variables/functions, which Open Roberta can't import
+- [x] OR-style typed variables (declared on the start block), functions (`robProcedures_*`), lists inside variable declarations (`npm run or:variables`)
 - [ ] **"Exportar para Open Roberta"**: `<export>`/`<block_set>` wrapper, sibling blocks, `<hide>` tags, embedded mBot 2 configuration, filename `<Nome>_<levelId>.xml`; validated by Open Roberta's server (source generation)
 - [ ] Confirm Open Roberta licence before reusing any of its code
 - [ ] Fixed-timestep physics + single simulated clock (`wait_ms`, timer sensor, tones, time limits)
