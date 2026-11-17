@@ -1,6 +1,4 @@
 import { robot, resetRobot, ROBOT_CONSTANTS } from './robot.js';
-import { step } from './kinematics.js';
-import { advanceClock } from './clock.js';
 import { PX_PER_CM, worldToScreen } from './world.js';
 import { DISPLAY_SCALE, ROBOT_LENGTH_PX, ROBOT_WIDTH_PX } from './constants.js';
 import { drawMap, hasMap, getMapSizeCm } from './map.js';
@@ -18,8 +16,12 @@ let ctx    = null;
 let canvas = null;
 let lastTime = 0;
 let paused   = false;
+let frameHook = null;
 
-const MAX_DT = 1 / 30;
+/** Called once per animation frame (unless paused) with the frame's time in seconds. */
+export function setFrameHook(fn) { frameHook = fn; }
+
+const MAX_DT = 1 / 30;   // frame time cap: absorbs tab-suspend lag (CLAUDE.md §8)
 
 const camera = { offsetX: 0, offsetY: 0, scale: 1 };
 
@@ -113,10 +115,9 @@ function loop(now) {
   lastTime   = now;
   const dt   = Math.min(dtMs / 1000, MAX_DT);
 
-  if (!paused) {
-    step(robot, dt);
-    advanceClock(dt);
-  }
+  // The world advances in fixed ticks owned by the run loop (src/runtime/runLoop.js);
+  // this loop only hands it the frame's time and then draws.
+  if (!paused && frameHook) frameHook(dt);
 
   // Clear per-tick sensor cache every frame so visualisations (cone, quad-RGB dots)
   // always reflect current robot position, even when no interpreter is running.
@@ -168,21 +169,6 @@ function draw() {
   ctx.arc(coneFX, coneFY, cone.min * PX_PER_CM, robot.theta - halfRad, robot.theta + halfRad);
   ctx.stroke();
 
-  // Collision ring — drawn behind the sprite, slightly larger than the robot bounding box.
-  if (robot.collided) {
-    ctx.save();
-    ctx.translate(xPx, yPx);
-    ctx.rotate(robot.theta);
-    ctx.strokeStyle = 'red';
-    ctx.lineWidth   = Math.max(1, 0.5 * PX_PER_CM) / camera.scale;
-    const rX = ROBOT_LENGTH_PX / 2 + Math.max(2, 1 * PX_PER_CM);
-    const rY = ROBOT_WIDTH_PX  / 2 + Math.max(2, 1 * PX_PER_CM);
-    ctx.beginPath();
-    ctx.ellipse(0, 0, rX, rY, 0, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.restore();
-  }
-
   // Robot sprite (or fallback rectangle if sprite not yet loaded).
   ctx.save();
   ctx.translate(xPx, yPx);
@@ -195,6 +181,18 @@ function draw() {
     ctx.fillRect(-ROBOT_LENGTH_PX / 2, -ROBOT_WIDTH_PX / 2, ROBOT_LENGTH_PX, ROBOT_WIDTH_PX);
   }
   ctx.restore();
+
+  // Collision: outline the footprint that touched the wall (src/sim/collision.js).
+  // Stays until the robot is reset, so the student sees what hit.
+  if (robot.collided) {
+    ctx.save();
+    ctx.translate(xPx, yPx);
+    ctx.rotate(robot.theta);
+    ctx.strokeStyle = 'red';
+    ctx.lineWidth   = Math.max(1, 0.4 * PX_PER_CM) / camera.scale;
+    ctx.strokeRect(-ROBOT_LENGTH_PX / 2, -ROBOT_WIDTH_PX / 2, ROBOT_LENGTH_PX, ROBOT_WIDTH_PX);
+    ctx.restore();
+  }
 
   // LEDs — 5 dots positioned in the centre-rear of the robot body (close to centre, slightly behind).
   const ledR     = 0.7 * PX_PER_CM;  // world-space radius — scales with zoom

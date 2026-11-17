@@ -1,5 +1,6 @@
 import { initBlockly }     from './blockly/index.js';
 import { initSim }         from './sim/canvas.js';
+import { initRunLoop }     from './runtime/runLoop.js';
 import { initControls }    from './ui/controls.js';
 import { initConsole }     from './ui/console.js';
 import { initDisplay }     from './ui/display.js';
@@ -11,6 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initConsole();
   initDisplay();
   initSim();
+  initRunLoop();     // the world advances in fixed ticks driven by the canvas frames
   initBlockly();
   initControls();
   initProgramIO();   // auto-restore + auto-save must come after Blockly is mounted

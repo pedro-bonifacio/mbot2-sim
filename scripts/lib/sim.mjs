@@ -56,3 +56,54 @@ export function simulate({ program, map = 'default.png', ...opts }) {
   const result = runHeadless({ code, map: loadMap(map), ...opts });
   return { warnings, ...result, code };
 }
+
+/**
+ * Runs a program through the browser's own run loop (src/runtime/runLoop.js) with
+ * synthetic animation frames: frameS(i) is frame i's length in seconds (capped at
+ * 1/30 s, as canvas.js does). Key presses follow simulated time. Used to check that
+ * the browser gives the same result as runHeadless at any frame rate (decision 0004).
+ */
+export async function simulateBrowser({ program, map = 'default.png', maxSeconds = 60, keys = [], frameS }) {
+  globalThis.window ??= globalThis;
+  globalThis.Image ??= class { set src(v) {} };
+  const { runCode, advanceFrame, stop } = await imp('src/runtime/runLoop.js');
+  const { getRunState, RunState } = await imp('src/runtime/runState.js');
+  const { respawnRobot } = await imp('src/sim/robot.js');
+  const { setMapData } = await imp('src/sim/map.js');
+  const { simNow, resetClock } = await imp('src/sim/clock.js');
+  const { relativePose } = await imp('src/runtime/headless.js');
+  const { setConsoleSink } = await imp('src/ui/console.js');
+  const { setPressed } = await imp('src/ui/buttons.js');
+  const { resetDisplay } = await imp('src/ui/display.js');
+  const { resetLeds } = await imp('src/sim/leds.js');
+
+  const m = loadMap(map);
+  setMapData({ imageData: m.imageData, width: m.width, height: m.height,
+    offscreenCanvas: { width: m.widthPx, height: m.heightPx } });
+  respawnRobot(m);
+  resetClock();
+  resetDisplay();
+  resetLeds();
+  let last = null;
+  setConsoleSink((text) => { last = text; });
+  const devError = console.error;
+  console.error = () => {};   // runLoop logs program errors for DevTools
+  const active = () => [RunState.RUNNING, RunState.PAUSED_ASYNC].includes(getRunState());
+  try {
+    runCode(loadProgram(program).code);
+    for (let i = 0; active() && simNow() / 1000 < maxSeconds; i++) {
+      const t = simNow() / 1000;
+      for (const k of keys) setPressed(k.key, t >= k.at && t < k.at + (k.for ?? 0.2));
+      advanceFrame(Math.min(frameS(i), 1 / 30));
+    }
+    const timedOut = active();
+    if (timedOut) stop();
+    const status = timedOut ? 'timeout'
+      : { 'Programa terminado.': 'finished', 'Colisão detectada.': 'collision' }[last] || 'error';
+    return { status, time: simNow() / 1000, pose: relativePose(m) };
+  } finally {
+    setConsoleSink(null);
+    console.error = devError;
+    for (const k of keys) setPressed(k.key, false);
+  }
+}

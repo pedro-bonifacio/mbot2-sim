@@ -200,18 +200,23 @@ Because the `resolveCondition` is checked once per frame (at 60 fps), the robot 
 const STEP_BUDGET_PER_FRAME = 1000;
 ```
 
-Each RAF frame, the run loop calls `tickProgram()` (`src/runtime/programTick.js`), which checks collision, resumes a finished async robot call, and calls `interpreter.step()` up to 1000 times. `tickProgram()` is UI-free; `runLoop.js` turns its result into run states and console messages, and the headless runner uses the same function. This prevents a tight loop in user code (e.g. `while(true) {}`) from freezing the browser tab. The physics sim and canvas render still happen in the canvas RAF loop regardless.
+Each simulation tick, the run loop calls `tickProgram()` (`src/runtime/programTick.js`), which checks collision, resumes a finished async robot call, and calls `interpreter.step()` up to 1000 times. `tickProgram()` is UI-free; `runLoop.js` turns its result into run states and console messages, and the headless runner uses the same function. This prevents a tight loop in user code (e.g. `while(true) {}`) from freezing the browser tab.
 
 ### Interaction with async tickets
 
 When an async API call is active, the interpreter's `paused_` flag is `true` and `step()` returns without advancing execution. The run loop detects this and enters `PAUSED_ASYNC` state, which skips the step budget loop and just polls the async ticket each frame.
 
-### The two RAF loops
+### Fixed ticks: one clock for browser and headless
 
-- **Canvas loop** (`src/sim/canvas.js → initSim → loop()`): always running; calls `kinematics.step()` and `draw()` every frame. It also calls `resetTickCache()` to clear sensor caches.
-- **Run loop** (`src/runtime/runLoop.js → _tick()`): started only when a program is running; checks the async ticket, runs the step budget, then re-schedules itself.
+Decision [0004](decisions/0004-deterministic-simulation.md). The world advances only in **ticks of 1/60 s of simulated time**, and each tick does the same two things in the same order everywhere:
 
-Both loops use `requestAnimationFrame` independently. They do not share a single RAF callback.
+1. `tickProgram()` (`programTick.js`), if a program is running: collision check, async ticket, step budget;
+2. `physicsTick()` (`simTick.js`): `kinematics.step(robot, 1/60)`, then `advanceClock(1/60)`.
+
+- **Browser:** the canvas loop (`canvas.js → loop()`, the only `requestAnimationFrame` loop) passes each frame's time, capped at 1/30 s, to `runLoop.advanceFrame()` through `setFrameHook`. That function accumulates it and runs the whole ticks it covers (none, one, or two per frame), then the canvas loop draws. Pausing (space bar, only while no program runs) skips the hook, so time stops.
+- **Headless** (`headless.js`): a plain loop of ticks, with no frames.
+
+So a program's path depends only on the program and the map: at 60 fps, at 30 fps on a school laptop, or with uneven frames, the robot goes exactly where the headless runner says. `npm run sim:test` checks every test program through the real `runLoop.js` at 30 fps and with uneven 8–40 ms frames (`simulateBrowser` in `scripts/lib/sim.mjs`). Before this, the browser stepped physics with each frame's real `dt` in a loop separate from the program, and `teste-3` crashed into a wall at 30–45 fps but not at 60.
 
 ---
 
@@ -295,7 +300,9 @@ If no cyan zone is found, spawn defaults to the canvas centre (half of map width
 
 ### Obstacle detection
 
-`isObstacle(x, y)` in `src/sim/map.js` checks if a circle of radius `BODY_RADIUS_CM = 4.5` centred at `(x, y)` intersects any magenta pixel `(R=255, G=0, B=255)`. Collision is detected via `isMagentaCollision()` which samples the robot's bounding circle at several points.
+`isObstacle(x, y)` in `src/sim/map.js` is a point test: a magenta pixel (classified by `getColorNameAt`) or anything outside the map. The ultrasonic raycast uses it directly.
+
+Robot–wall contact uses the real footprint (`src/sim/collision.js`): the 17.5 × 13 cm rectangle (`ROBOT_LENGTH_CM` × `ROBOT_WIDTH_CM`) centred on the robot and turned with its heading, the same rectangle the sprite is drawn in and the cyan spawn zone is painted as. `footprintHitsWall` samples its perimeter every 0.5 cm, below the 0.625 cm minimum wall thickness. Each physics step, `kinematics.step()` checks the new pose (translation and rotation, so corners swinging into a wall count); if it touches a wall, the robot moves only to the point of contact (bisection along the step) and `robot.collided` is set. `tickProgram()` sees the flag and halts the run ("Colisão detectada."). The flag stays set until `resetRobot()`, and the canvas outlines the footprint in red meanwhile. A robot that already overlaps a wall (a badly placed spawn) can still move, so it is reported rather than trapped; `npm run sim:test` checks that every map in the selector spawns clear. `BODY_RADIUS_CM` is no longer used for collision.
 
 ### Vite catalogue plugin
 
@@ -430,7 +437,7 @@ robot = {
   theta,               // radians; 0 = east, increases clockwise
   vL,                  // left wheel speed, RPM; range -200..200
   vR,                  // right wheel speed, RPM; range -200..200
-  collided,            // boolean; true for the frame of a collision
+  collided,            // boolean; set on wall contact, cleared by resetRobot()
   totalDistanceCm,     // cumulative absolute distance traveled since reset
   totalRotationRad,    // cumulative absolute rotation since reset
   encoderLeftAbs,      // cumulative left-motor rotations since reset

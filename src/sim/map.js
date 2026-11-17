@@ -126,18 +126,6 @@ export function isObstacle(xCm, yCm) {
   return getColorNameAt(xCm, yCm) === 'magenta';
 }
 
-// Returns true if the robot's bounding circle overlaps at least one magenta pixel.
-export function isMagentaCollision(xCm, yCm, radiusCm) {
-  if (!pixels) return false;
-  if (getColorNameAt(xCm, yCm) === 'magenta') return true;
-  const SAMPLES = 8;
-  for (let i = 0; i < SAMPLES; i++) {
-    const a = (i / SAMPLES) * 2 * Math.PI;
-    if (getColorNameAt(xCm + Math.cos(a) * radiusCm, yCm + Math.sin(a) * radiusCm) === 'magenta') return true;
-  }
-  return false;
-}
-
 // Returns distance (cm) to nearest obstacle along heading ray, up to maxDistanceCm.
 export function raycast(originX, originY, headingRad, maxDistanceCm = 300) {
   if (!pixels) return maxDistanceCm;
