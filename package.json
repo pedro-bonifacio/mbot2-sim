@@ -21,9 +21,10 @@
     "or:specs": "node scripts/or-generate-specs.mjs",
     "or:codegen": "node scripts/codegen-check.mjs",
     "or:variables": "node scripts/variables-check.mjs",
+    "or:export": "node scripts/export-check.mjs",
     "sim": "node scripts/sim-run.mjs",
     "sim:test": "node scripts/sim-test.mjs",
-    "check": "node scripts/or-fidelity-check.mjs > /dev/null && node scripts/codegen-check.mjs > /dev/null && node scripts/variables-check.mjs > /dev/null && node scripts/sim-test.mjs > /dev/null && echo 'all checks passed'"
+    "check": "node scripts/or-fidelity-check.mjs > /dev/null && node scripts/codegen-check.mjs > /dev/null && node scripts/variables-check.mjs > /dev/null && node scripts/export-check.mjs > /dev/null && node scripts/sim-test.mjs > /dev/null && echo 'all checks passed'"
   },
   "dependencies": {
     "@blockly/field-colour": "5.0.19",

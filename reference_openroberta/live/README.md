@@ -38,3 +38,19 @@ const src = await call(M.showSourceProgram, 'probe', undefined,
   silently, so pair it with the client-side catalogue check.
 - Use the public server sparingly (it's a free Fraunhofer service). For automated
   test suites, run Open Roberta locally via its Docker images instead.
+
+### What the server changes on import (seen 2026-11-17)
+
+Harmless, but it means a file that went through Open Roberta is not byte-identical to
+what the sim exported:
+
+- adds a `<data>` blob (neural-network settings) to `robControls_start`;
+- writes the LED blocks' `SLOT` "ALL" as `""` (the MicroPython is still "all LEDs";
+  the sim's import maps it back);
+- drops `return_type` from `robProcedures_ifreturn` (the client writes it; the sim
+  re-derives it from the enclosing function).
+
+The Lab's *Importar programa* always names the imported program `NEPOprog`; the file
+name doesn't matter to Open Roberta. `scripts/fixtures/from-openroberta/` holds what the
+server stored for each test program; `npm run or:export` checks them.
+

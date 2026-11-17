@@ -7,26 +7,22 @@ Last reviewed: 2026-11-17
 
 ---
 
-## ▶ Where we left off (2026-11-17, end of day)
+## ▶ Where we left off (2026-11-17, evening)
 
-**State:** everything is on `main` (local only, not pushed). Done today: blocks generated
-from the live Open Roberta spec (`or-fidelity`), Open Roberta typed variables and functions,
-a headless simulator + sim test suite, and `window.__dev` hooks for the real editor
-(`typed-variables`). Teacher checked both in the browser. `npm run check` passes.
-See `CHANGELOG.md → Unreleased`.
+**State:** everything is on `main` (local only, not pushed). Latest: **"Exportar para
+Open Roberta"** (button in the top bar). A real Open Roberta export goes sim → export
+byte for byte; all 224 block shapes Open Roberta serialises (every toolbox block, sensor
+mode, mutation) export identically; the five test programs passed Open Roberta's server
+(import + MicroPython generation; `teste-4-erros` is rejected, as it should be) and come
+back to the sim with the same behaviour (`scripts/fixtures/from-openroberta/`).
+`npm run check` passes. See `CHANGELOG.md → Unreleased`.
 
 **Start the next session with:**
 
-1. **Next build task:** "Exportar para Open Roberta" — `<export>`/`<block_set>` wrapper,
-   sibling blocks, `<hide>` tags, embedded mBot 2 configuration (copy the `<config>` of
-   `reference_openroberta/export-samples/openroberta/01-simples.xml`), filename
-   `<Nome>_<levelId>.xml`. Validate through Open Roberta's server (how-to in
-   `reference_openroberta/live/README.md`), including the four `scripts/fixtures/teste-*.xml`
-   programs: they are hand-written in Open Roberta's format and have never been through
-   its server. Then a round trip: sim → export → Open Roberta → export → sim.
-2. **Teacher, with a robot in class:** `VERIFY_ON_ROBOT.md` (9 small checks).
-3. Then the rest of Phase A: fixed-timestep physics in the browser (the clock is done),
-   seeded PRNG, oriented collision footprint, levels/seeds in the headless runner.
+1. **Teacher, with a robot in class:** `VERIFY_ON_ROBOT.md` (now 10 checks, incl. an exported file on the real robot).
+2. Rest of Phase A: fixed-timestep physics in the browser (the clock is done), seeded
+   PRNG, oriented collision footprint, levels/seeds in the headless runner.
+3. Then Phase B (running-block highlight, sensor panel) or the level engine (Phase C).
 
 **How we test** (decided 2026-11-17: the assistant tests itself; the teacher only checks looks):
 - `npm run check` — fidelity, codegen, variables/functions, sim tests.
@@ -62,7 +58,7 @@ Prerequisite for any evaluated level ([0003](decisions/0003-core-levels-use-real
 - [x] Open Open Roberta exports in the sim (**Carregar**) — tested with a real export
 - [ ] **Teacher:** run the checks in [`VERIFY_ON_ROBOT.md`](VERIFY_ON_ROBOT.md) with a real mBot 2
 - [x] OR-style typed variables (declared on the start block), functions (`robProcedures_*`), lists inside variable declarations (`npm run or:variables`)
-- [ ] **"Exportar para Open Roberta"**: `<export>`/`<block_set>` wrapper, sibling blocks, `<hide>` tags, embedded mBot 2 configuration, filename `<Nome>_<levelId>.xml`; validated by Open Roberta's server (source generation)
+- [x] **"Exportar para Open Roberta"**: `<export>`/`<block_set>` wrapper, sibling blocks, `<hide>` tags, embedded mBot 2 configuration, filename `<Nome>_<levelId>.xml`; validated by Open Roberta's server (source generation) — `npm run or:export`; level id is `livre` until the level engine exists
 - [ ] Confirm Open Roberta licence before reusing any of its code
 - [ ] Fixed-timestep physics + single simulated clock (`wait_ms`, timer sensor, tones, time limits) — clock done (`src/sim/clock.js`); the browser still steps physics with the frame's `dt`
 - [ ] Seeded PRNG utility for all randomness

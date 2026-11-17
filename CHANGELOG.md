@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### Changed
+- Programs that went through Open Roberta load correctly even when Open Roberta stored the LED block's "todos" as an empty value.
 - Blocks are generated from the live Open Roberta Lab spec: labels, dropdowns, ports (R/L, U, Q, L1–R2), hidden fields and mutations now match Open Roberta field for field (`npm run check`).
 - Programs run only from the start block ("iniciar"); loose blocks are disabled.
 - Robot behaviour follows Open Roberta's generated MicroPython: colour sensor sees 8 colours (no orange), signed encoders with mirrored right motor, 5 timers, ultrasonic up to 300 cm, blocking tones, for-loop end is exclusive.
@@ -12,6 +13,7 @@
 - Open Roberta-style typed variables: declared with "+" on the start block (type Número, Booleano, Caractere, Cor or a list of these), removed with "−". The **Variáveis** category lists them, plus function parameters and loop variables.
 - Open Roberta functions (**Funções**, expert): with or without a return value, typed parameters, "se … retorna …". Calls follow the definition when it changes.
 - Load programs exported from Open Roberta Lab (**Carregar**).
+- **Exportar para Open Roberta**: asks for the student's name (remembered on this computer) and downloads `<Nome>_livre.xml` in Open Roberta's own format with the mBot 2 configuration, ready for *Importar programa* in Open Roberta Lab. Checked against Open Roberta's server.
 - Headless simulator for development: `npm run sim` runs a program without a browser and prints where the robot ended up; `npm run sim:test` checks a list of programs. On the dev server, `window.__dev` drives the real editor and run loop as text.
 - Docs: decision log, roadmap, curriculum, workflow, verify-on-robot checklist.
 

@@ -1,6 +1,6 @@
 import * as Blockly from 'blockly';
 import { getWorkspace, setToolboxMode } from '../blockly/index.js';
-import { loadProgramText } from '../ui/programIO.js';
+import { loadProgramText, exportOpenRobertaText } from '../ui/programIO.js';
 import { loadMapByName, getActiveMapName } from '../ui/mapSelector.js';
 import { RunState, getRunState } from '../runtime/runState.js';
 import { robot, getSpawn } from '../sim/robot.js';
@@ -28,6 +28,7 @@ import { syncBlocks } from '../blockly/blocks/_varScope.js';
 //   await __dev.run({ timeoutMs, keys: [{ key: 'A', at: 0.5 }] })   press Executar, wait for the end
 //   __dev.state()                    run state, pose, display, LEDs, console, errors
 //   await __dev.map('default.png')
+//   __dev.exportOR()                 the program as "Exportar para Open Roberta" writes it
 //
 // Everything after load() is cleared by load() / reset(): console capture and errors.
 
@@ -231,6 +232,7 @@ export function installDevHooks() {
     redo: () => { ws().undo(true); return settled(); },
     block: (id) => blockLine(block(id)),
     xml: () => Blockly.Xml.domToText(Blockly.Xml.workspaceToDom(ws())),
+    exportOR: () => exportOpenRobertaText(),
     sync: () => { syncBlocks(ws()); return tree(); },   // run the sync listener's work directly
     get ws() { return ws(); },
   };
