@@ -44,11 +44,14 @@ Done this session (details in `CHANGELOG.md → Unreleased`):
          (id, title, ☆☆ / ★☆ / ★★, the open one outlined in blue) and the free maps; a click
          opens it. Is it clear and big enough for the class?
    - [ ] **Read `docs/LEVEL_AUTHORING.md`** — is the workflow how you'd want to make levels?
+   - [ ] **Printable mat:** `npm run levels:mat 04-01`, open `levels/_mats/04-01-a4.pdf`: read the
+         assembly page; print one sheet at 100 % and measure the 10 cm bar. Are 55 A4 sheets
+         realistic, or will mats go to a print shop (`04-01-real.pdf`)?
    - [ ] **Robot in class:** `VERIFY_ON_ROBOT.md` (10 checks).
 2. **Build, level engine (Phase C), in this order:** ~~save stars and programs per level~~
    (done: each level keeps its own program and stars; **Guardar progresso** / **Abrir progresso**);
    ~~level selector~~ (done: **★ Níveis**); ~~`docs/LEVEL_AUTHORING.md`~~ (done; optional
-   `/new-level` skill still open); `levels:mat` printable mats;
+   `/new-level` skill still open); ~~`levels:mat` printable mats~~ (done);
    PNG `background` in levels.
 3. Then content: evaluation levels (Phase D), World 1–4 levels.
 
@@ -116,7 +119,7 @@ Format: [`LEVEL_FORMAT.md`](LEVEL_FORMAT.md); how-to: [`LEVEL_AUTHORING.md`](LEV
 - [x] Level selector: worlds, ★ status, kind badge (**no locks**) — `src/ui/levelSelector.js`; concepts per level still to show
 - [x] Per-level program save slots; progress export/import (file) — `src/levels/progress.js`, `npm run progress:check`
 - [x] `npm run levels:check`: schema, solution must pass all seeds, anti-solutions must fail, preview PNG per level
-- [ ] `npm run levels:mat <id>`: printable mat at real scale, tiled A4/A3, variant marks
+- [x] `npm run levels:mat <id>`: printable mat at real scale, tiled A4/A3, variant marks — `scripts/levels-mat.mjs`
 - [x] `?level=<id>` opens a level; editing its YAML reloads it on the dev server
 - [x] `docs/LEVEL_AUTHORING.md` (humans + LLMs)
 - [ ] Optional `/new-level` Claude Code skill
