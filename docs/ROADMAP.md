@@ -18,7 +18,8 @@ Done this session (details in `CHANGELOG.md → Unreleased`):
 - **★ Níveis** level selector — worlds, stars, free maps; a level opens with its toolbox.
 - **UI tidy-up** — one-row top bar with **Ficheiro ▾** menu, fast-forward ×1/×2/×4, result
   line + **Próximo nível** in the level panel, reopen last level, tab title + icon,
-  all student messages in `pt.js`.
+  all student messages in `pt.js`; resizable editor/robot split, running block outlined,
+  robot trail; single-layout levels give ★★ on a pass.
 - `docs/LEVEL_AUTHORING.md`. (`levels:mat` PDF mats were built, then removed: the teacher builds
   evaluation maps by hand from cardboard and boxes, using `levels/_previews/`.)
 - Earlier sessions: Open Roberta export, real-footprint collision, fixed ticks, seeded
@@ -49,6 +50,8 @@ Done this session (details in `CHANGELOG.md → Unreleased`):
    - [ ] **New top bar looks:** one row (▶ Executar in green, ×1/×2/×4, ★ Níveis + what is open,
          **Ficheiro ▾** menu, toolbox); on a small school laptop screen too. Level panel: green/red
          result line and **Próximo nível ›**. Tab icon.
+   - [ ] **Editor/robot divider, yellow running block, orange trail:** drag the divider (double-click
+         resets); run a program and watch the yellow outline move and the trail appear.
    - [ ] **Robot in class:** `VERIFY_ON_ROBOT.md` (10 checks).
 2. **Build, level engine (Phase C), in this order:** ~~save stars and programs per level~~
    (done: each level keeps its own program and stars; **Guardar progresso** / **Abrir progresso**);

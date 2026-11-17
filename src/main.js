@@ -9,6 +9,8 @@ import { initMapSelector } from './ui/mapSelector.js';
 import { initProgramIO }   from './ui/programIO.js';
 import { initLevelPanel }  from './ui/levelPanel.js';
 import { initLevelSelector } from './ui/levelSelector.js';
+import { initSplitter } from './ui/splitter.js';
+import { initBlockHighlight } from './ui/blockHighlight.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   initConsole();
@@ -21,6 +23,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   initButtons();
   initLevelPanel();
   initLevelSelector();
+  initSplitter();
+  initBlockHighlight();
   await initMapSelector();
   // Dev server only (stripped from builds): window.__dev for automated UI checks.
   if (import.meta.env.DEV) (await import('./dev/devHooks.js')).installDevHooks();
