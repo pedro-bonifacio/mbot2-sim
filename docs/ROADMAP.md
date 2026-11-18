@@ -3,58 +3,47 @@
 Living plan. Edit freely; tick items as they ship (and log them in `../CHANGELOG.md`).
 The *why* behind items lives in [`decisions/`](decisions/README.md).
 
-Last reviewed: 2026-11-18 (end of fourth session)
+Last reviewed: 2026-11-18 (end of fifth session)
 
 ---
 
-## ▶ Where we left off (2026-11-18, end of fourth session)
+## ▶ Where we left off (2026-11-18, end of fifth session)
 
-**State:** everything is on `main` (local only, not pushed); `npm run check` passes.
-Dev server left running for the teacher: http://100.114.196.108:5173/ (stops after 2 h at most).
+**State:** everything is on `main` **and pushed**; the site is live at https://mbot2.pbonifacio.dev
+(Cloudflare Pages deploys every push to `main`). `npm run check` passes.
+Push from this machine over SSH: `git push git@github.com:pedro-bonifacio/mbot2-sim.git main`
+(`origin` is HTTPS, which has no login here).
 Done this session (details in `CHANGELOG.md → Unreleased`):
-- **Course plan** in `CURRICULUM.md`: 10 worlds (~90 levels), each world ends with a **Prova**
-  (★★ = may skip the world), and 11 **random courses** P1–P11 for evaluation on the real robot
-  (0008 amended: all kept, students choose).
-- **World 1 built** (01-01 … 01-10) + **05-14**, a find-the-bug level (`starter:` program).
-- Yellow ring + green zones, 📏 Régua, brick walls, program carried into untouched levels.
-- Blocks: clearer PT-PT wording everywhere ([0014](decisions/0014-clearer-pt-wording-display-only.md)),
-  even spacing (custom renderer), trimmed beginner toolbox ([0015](decisions/0015-trimmed-beginner-toolbox.md));
-  calmer running-block outline; compact controller pad.
-- Tried and dropped: showing blocks world by world (it narrowed students' solutions).
+- **Class accounts** ([0016](decisions/0016-class-accounts-progress-sync.md), supersedes 0002):
+  login + automatic progress sync (Pages Function + D1 in the EU, `server/api.js`); usernames
+  `7b-12`, names never leave the teacher's drive. Nothing from outside enters an account (no
+  guest merge, no "Abrir progresso" while logged in).
+- **Class tool** on the shared drive `/mnt/nas/career/professor-tic/mbot2-turmas/`
+  (source `tools/turmas/`, reinstall with `npm run turmas:install`): one folder per class in
+  `turmas/`, commands in its `README.md`. Test class `TESTE` exists on the server.
+- 04-01 and 05-01 say the front of the robot (yellow ring) counts.
+- Teacher, World 1 playthrough up to 01-08: the distance-measuring levels repeat a lot, but
+  they stay (faster students skip them; ★★★ could later give them an extra goal).
 
 **Start the next session with:**
 
-0. **Class accounts (built 2026-11-18, [0016](decisions/0016-class-accounts-progress-sync.md)) —
-   only the teacher can do these:**
-   - [x] Cloudflare setup (2026-11-18): D1 `mbot2-sim` (EU jurisdiction), secrets, deployed to
-         https://mbot2.pbonifacio.dev, `config.json` on the shared drive; tested live with a
-         throwaway class. Pushing from this machine: `git push git@github.com:pedro-bonifacio/mbot2-sim.git main`
-         (no HTTPS login here; SSH works).
-   - [ ] Tell the school's data-protection officer (class + number + programs, no names).
+1. **Teacher** (looks and admin only):
+   - [ ] World 1 playthrough from 01-09 (01-01 … 01-08 seen, fine).
    - [ ] Looks: "👤 Entrar" box, "☁ Guardado" / "⚠ Sem ligação" in the top bar.
-   - [x] Test class `TESTE` created from Windows/Linux (`turmas/TESTE/`); delete it when done.
-   - [ ] Try `node turmas.mjs create` with a real class CSV exported from the school's system.
-   - Later: a class overview page (the API has `GET /api/teacher/turmas/<turma>` already;
-     `turmas show` prints it).
-1. **Teacher checks** (dev server, see "How we test"):
-   - [ ] **World 1 playthrough** (`?level=01-01` … `01-10`): angles, sizes, wording for 11-year-olds;
-         the Slalom and Z angles; the 5 s limit in 01-05; 01-06 is now "Dar a volta" (two turns).
-   - [ ] **Yellow ring and ✓ zones:** the ring on the robot, the dashed ring in the target, the
-         zone turning green with ✓; ring readable on a yellow floor (01-10).
-   - [ ] **📏 Régua:** looks of the line and label; drag from the robot gives "… cm · …° à direita".
-   - [ ] **Bricks:** walls and outside the map (zoom out); cardboard instead of bricks?
-   - [ ] **Block wording:** read the toolbox (Principiante and Avançado). Veto any of: "premido",
-         "Ação", "faz" in loops, "sen/tg", "R (direito)" — one line each in `src/blockly/ptClarity.js`.
-   - [ ] **Controller pad + layout** on a small laptop screen with a level open.
-   - [ ] **05-14:** opens with the broken program; "Novo programa" brings it back.
-   - [ ] Still open from last session: Open Roberta export on the robot (VERIFY_ON_ROBOT #10),
-         collision looks, `04-01` looks, progress file on another browser, `VERIFY_ON_ROBOT.md`.
-2. **Next build steps** (CURRICULUM.md → "Sim features needed", in order): goal values from
-   variants (text/colour/number ± tolerance) and layout choice → then Worlds 2–5; maze
-   generator + box scatter → World 6 and courses P5/P8/P9; event goals (tone, sequence,
+   - [ ] Tell the school's data-protection officer (class + number + programs, no names).
+   - [ ] Real class: CSV exported from the school's system into `turmas/<turma>/`, then
+         `node turmas.mjs create <turma>`. Delete `TESTE` when done (`node turmas.mjs delete TESTE`).
+   - [ ] Still open from before: ring/✓ zones, 📏 Régua, bricks (or cardboard?), block wording
+         vetoes (`src/blockly/ptClarity.js`), controller pad on a small laptop, 05-14 starter,
+         Open Roberta export on the robot (VERIFY_ON_ROBOT #10), collision and `04-01` looks.
+2. **Next build steps — the course** (CURRICULUM.md → "Sim features needed", in order):
+   goal values from variants (text/colour/number ± tolerance) and layout choice → **Worlds 2–5**;
+   maze generator + box scatter → World 6 and courses P5/P8/P9; event goals (tone, sequence,
    survive); ★★★; keys in tests; pushable boxes (P4).
-3. Optional: a `/new-level` skill; one-page teacher sheets for the random courses.
-4. `git push` only when the teacher says so (everything is local).
+3. Optional: a `/new-level` skill; one-page teacher sheets for the random courses; a class
+   overview page for the teacher (the API has `GET /api/teacher/turmas/<turma>`; `turmas show`
+   prints it).
+4. Pushing now deploys to the live site: push when a change is ready for students.
 
 **How we test** (decided 2026-11-17: the assistant tests itself; the teacher only checks looks):
 - `npm run check` — fidelity, codegen, variables/functions, sim tests.
@@ -64,7 +53,8 @@ Done this session (details in `CHANGELOG.md → Unreleased`):
 - Real editor and browser run loop: `window.__dev` on the dev server (`src/dev/devHooks.js`),
   via page JS evaluation in a background incognito tab. Runs are real time: short programs only.
 - Dev server for the teacher (remote via Tailscale): `npx vite --host 100.114.196.108 --open false`
-  → http://100.114.196.108:5173/ (background tasks stop after at most 2 h).
+  → http://100.114.196.108:5173/. Start it detached (`nohup setsid … &`) so it outlives the
+  2 h limit of background tasks. Login there needs `npm run api:dev` (local API, port 8788).
 - Test programs for the teacher: `scripts/fixtures/teste-*.xml` (generated by
   `scripts/fixtures/make-test-programs.py`), on map `default.png`; collision cases in
   `scripts/fixtures/collision/`; level programs in `scripts/fixtures/levels/`.
