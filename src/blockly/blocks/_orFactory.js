@@ -1,4 +1,5 @@
 import * as Blockly from 'blockly';
+import { clarifyOptions } from '../ptClarity.js';
 import * as fieldColourPkg from '@blockly/field-colour';
 import { OR } from '../generated/orSpecs.js';
 
@@ -75,7 +76,7 @@ export function makeField(f, validator) {
     case 'dropdown': {
       // Set the default before attaching the validator: Blockly runs validators on
       // setValue, and shape-changing validators must not fire during construction.
-      const dd = new Blockly.FieldDropdown(dropdownOptions(f.options));
+      const dd = new Blockly.FieldDropdown(dropdownOptions(clarifyOptions(f.name, f.options)));
       dd.setValue(f.value);
       if (validator) dd.setValidator(validator);
       return [dd, f.name];

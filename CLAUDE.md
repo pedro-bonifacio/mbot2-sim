@@ -10,7 +10,7 @@ Read this **before every coding session**. Violating any rule below means rework
 
 - Every block **type ID** must match Open Roberta exactly (e.g., `robActions_motorDiff_on_for`, `robSensors_ultrasonic_getSample`).
 - Every block **visual shape, dropdown options, default values, and argument order** must match the XML files in `reference_openroberta/`.
-- Block **labels** must match Open Roberta's PT-PT translation (e.g., `conduzir ◇ a velocidade ◇ % distância ◇ cm`).
+- Block **labels** must match Open Roberta's PT-PT translation (e.g., `conduzir ◇ a velocidade ◇ % distância ◇ cm`). Exception: clearer dropdown text from `src/blockly/ptClarity.js`, display only ([decision 0014](docs/decisions/0014-clearer-pt-wording-display-only.md)).
 - The **toolbox structure** (categories, subcategories, order) must match `program.toolbox.beginner.xml` and `program.toolbox.expert.xml`.
 
 ## 2. Source of Truth
