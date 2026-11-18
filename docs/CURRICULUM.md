@@ -96,7 +96,7 @@ world). For now a Prova is `kind: challenge` with a title starting "Prova:". Tit
 | 01-03 | C | Virar | turn 90° and drive into a box on the side | |
 | 01-04 | C | Em L | drive, turn, drive: an L-shaped route | |
 | 01-05 | C | Contra o relógio | same route, tight time limit: raise the RPM | |
-| 01-06 | C | Curva | go round a box with the curve block | |
+| 01-06 | C | Dar a volta | go round the end of a wall: a U-turn with two turns (curves are expert-only, 0015) | |
 | 01-07 | B | Ida e volta | drive to a box and come back to the start | |
 | 01-08 | B | Slalom | weave between three boxes | |
 | 01-09 | D | Garagem | turn into a garage 20 cm wide: precision | |

@@ -29,3 +29,4 @@ New record: copy [`0000-template.md`](0000-template.md) to the next free number.
 | [0012](0012-teacher-owns-guidance-and-sim-to-real.md) | The teacher owns hints and the sim-to-real gap | Accepted | pedagogy |
 | [0013](0013-when-a-level-run-is-judged.md) | When a level run passes or fails | Accepted | levels |
 | [0014](0014-clearer-pt-wording-display-only.md) | Clearer PT-PT wording where Open Roberta's translation confuses students | Accepted | blocks |
+| [0015](0015-trimmed-beginner-toolbox.md) | A trimmed beginner toolbox | Accepted | blocks |
