@@ -13,7 +13,9 @@ import {
 
 // Every level keeps its own program, saved in progress.js (decision 0002); free maps
 // share one, slot "livre". Opening a level saves the current program to its slot and
-// loads the level's.
+// loads the level's. A level not touched yet starts from its starter program if it has
+// one, otherwise from the program that was in the editor: students adapt their last
+// solution instead of rebuilding it.
 const DEBOUNCE_MS = 500;
 const NAME_KEY = 'mbot2sim:studentName';   // remembered on this computer only (decision 0002)
 
@@ -42,10 +44,13 @@ function _starter() {
   return (st.level && st.level.id === _slot && st.level.starter) || null;
 }
 
-/** Puts the slot's saved program in the editor (the level's starter, or an empty program, if none). */
-function _showSlot(ws) {
+/**
+ * Puts the slot's saved program in the editor; if none, the level's starter, else
+ * `carried` (the previous slot's program), else an empty program.
+ */
+function _showSlot(ws, carried = null) {
   ws.clear();
-  const saved = getProgram(_slot) || _starter();
+  const saved = getProgram(_slot) || _starter() || carried;
   if (saved) {
     try {
       _deserialize(ws, saved);
@@ -61,8 +66,9 @@ function _showSlot(ws) {
 function _switchSlot(ws, slot) {
   if (slot === _slot) return;
   _saveNow(ws);
+  const carried = _serialize(ws);
   _slot = slot;
-  _showSlot(ws);
+  _showSlot(ws, carried);
 }
 
 function _serialize(ws) {
