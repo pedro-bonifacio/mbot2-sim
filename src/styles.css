@@ -33,6 +33,7 @@ main { display: flex; flex: 1; min-height: 0; overflow: hidden; }
   overflow-y: auto;
 }
 #canvas-wrapper {
+  position: relative;
   width: 100%;
   height: auto;
   overflow: hidden;
@@ -41,6 +42,9 @@ main { display: flex; flex: 1; min-height: 0; overflow: hidden; }
   border-radius: 4px;
   flex-shrink: 0;
 }
+#btn-ruler { position: absolute; top: 8px; right: 8px; padding: 4px 10px; font-size: 13px; border: 1px solid #9ca3af; border-radius: 6px; background: rgba(255,255,255,0.92); cursor: pointer; }
+#btn-ruler:hover { background: #f3f4f6; }
+#btn-ruler[aria-pressed="true"] { background: #f59e0b; border-color: #b45309; color: #111; font-weight: 600; }
 #sim-canvas {
   display: block;
   /* Native resolution set by resizeCanvas() (mapInfo.width×DISPLAY_SCALE px).

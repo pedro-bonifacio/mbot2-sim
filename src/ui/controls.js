@@ -1,6 +1,7 @@
 import { resetSim, isPaused, pauseSim, resumeSim, resetCamera } from '../sim/canvas.js';
 import { appendConsoleMessage } from './console.js';
 import { setToolboxMode, getWorkspace } from '../blockly/index.js';
+import { isRulerOn, setRuler, onRulerChange } from '../sim/ruler.js';
 import { run as runProgram, stop as stopProgram, setSpeed, getSpeed } from '../runtime/runLoop.js';
 import { ptMessages as MSG } from '../i18n/pt.js';
 import { RunState, getRunState, onRunStateChange } from '../runtime/runState.js';
@@ -78,6 +79,14 @@ export function initControls() {
   const toolboxSelect = document.getElementById('toolbox-mode');
   if (toolboxSelect) {
     toolboxSelect.addEventListener('change', (e) => setToolboxMode(e.target.value));
+  }
+
+  // Ruler: the button toggles it; Esc turns it off.
+  const btnRuler = document.getElementById('btn-ruler');
+  if (btnRuler) {
+    btnRuler.addEventListener('click', () => setRuler(!isRulerOn()));
+    onRulerChange((on) => btnRuler.setAttribute('aria-pressed', String(on)));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && isRulerOn()) setRuler(false); });
   }
 
   onRunStateChange((state) => {

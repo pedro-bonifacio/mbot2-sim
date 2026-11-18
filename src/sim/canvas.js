@@ -1,4 +1,5 @@
 import { robot, resetRobot, robotProbePoint, ROBOT_CONSTANTS } from './robot.js';
+import { isRulerOn, rulerDown, rulerMove, rulerUp, rulerLabel, drawRulerLine, onRulerChange } from './ruler.js';
 import { PX_PER_CM, worldToScreen } from './world.js';
 import { DISPLAY_SCALE, ROBOT_LENGTH_PX, ROBOT_WIDTH_PX } from './constants.js';
 import { drawMap, hasMap, getMapSizeCm } from './map.js';
@@ -87,6 +88,7 @@ export function initSim() {
   canvas.addEventListener('mouseleave', onMouseUp);
 
   canvas.style.cursor = 'grab';
+  onRulerChange((on) => { canvas.style.cursor = on ? 'crosshair' : 'grab'; });
   requestAnimationFrame(loop);
   console.log('[sim] canvas initialised');
 }
@@ -144,8 +146,17 @@ function onWheel(e) {
   camera.scale   = newScale;
 }
 
+/** Mouse position → world cm (through the CSS scale and the camera). */
+function eventToWorldCm(e) {
+  const rect = canvas.getBoundingClientRect();
+  const bx = (e.clientX - rect.left) * (canvas.width / rect.width);
+  const by = (e.clientY - rect.top) * (canvas.height / rect.height);
+  return [(bx - camera.offsetX) / camera.scale / PX_PER_CM, (by - camera.offsetY) / camera.scale / PX_PER_CM];
+}
+
 function onMouseDown(e) {
   if (e.button !== 0) return;
+  if (isRulerOn()) { rulerDown(...eventToWorldCm(e)); return; }
   isPanning    = true;
   panStartX    = e.clientX;
   panStartY    = e.clientY;
@@ -155,6 +166,7 @@ function onMouseDown(e) {
 }
 
 function onMouseMove(e) {
+  if (isRulerOn()) { rulerMove(...eventToWorldCm(e)); return; }
   if (!isPanning) return;
   // Convert CSS pixel delta → canvas bitmap pixel delta to keep panning 1:1
   const rect  = canvas.getBoundingClientRect();
@@ -165,6 +177,7 @@ function onMouseMove(e) {
 }
 
 function onMouseUp() {
+  rulerUp();
   if (!isPanning) return;
   isPanning = false;
   canvas.style.cursor = 'grab';
@@ -310,6 +323,9 @@ function draw() {
     }
   }
 
+  // Ruler (src/sim/ruler.js): the line in world space, its label in screen space below.
+  const rulerAt = drawRulerLine(ctx, camera.scale);
+
   // HUD — screen space (reset transform so it's always top-left regardless of pan/zoom).
   // Font size is scaled up to compensate for CSS downscaling of the canvas, so the text
   // always appears at ~14 px visual size regardless of the native canvas resolution.
@@ -337,6 +353,25 @@ function draw() {
   if (paused) {
     ctx.fillStyle = '#f87171';
     ctx.fillText('PAUSADO', hudX, hudY0 + hudLine * 4);
+  }
+
+  // Ruler label, next to the middle of the line.
+  const label = rulerAt && rulerLabel();
+  if (label) {
+    const lx = rulerAt.x * camera.scale + camera.offsetX;
+    const ly = rulerAt.y * camera.scale + camera.offsetY;
+    const font = Math.round(15 / cssScale);
+    ctx.font = `bold ${font}px sans-serif`;
+    const w = ctx.measureText(label).width;
+    const pad = Math.round(5 / cssScale);
+    const bx = Math.min(Math.max(lx - w / 2 - pad, 0), canvas.width - w - 2 * pad);
+    const by = Math.max(ly - font - 3 * pad, 0);
+    ctx.fillStyle = 'rgba(17, 24, 39, 0.85)';
+    ctx.fillRect(bx, by, w + 2 * pad, font + 2 * pad);
+    ctx.fillStyle = '#fde68a';
+    ctx.textBaseline = 'top';
+    ctx.fillText(label, bx + pad, by + pad);
+    ctx.textBaseline = 'alphabetic';
   }
 }
 
