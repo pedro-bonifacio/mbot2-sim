@@ -30,6 +30,13 @@ it is the first sensor block beginners meet.
   place; the teacher may mention it once.
 - Fixed labels (not dropdowns) would need a fidelity-check exception per block; not done yet.
 
+## Amendments
+
+- **2026-11-18:** Extended to the whole block set after a sweep of every block: labels,
+  dropdown options, messages/tooltips and toolbox category names, from the tables in
+  `src/blockly/ptClarity.js` (conventions at its top). `or:check` applies the same
+  tables to Open Roberta's side before comparing, so it still guards shapes and values.
+
 ## Alternatives considered
 
 - **Keep OR's text exactly** — faithful, but the confusion lands on the youngest students.

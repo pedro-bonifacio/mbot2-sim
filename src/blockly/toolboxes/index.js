@@ -1,4 +1,5 @@
 import { OR } from '../generated/orSpecs.js';
+import { clarifyCategory } from '../ptClarity.js';
 
 // Builds the Blockly toolbox straight from Open Roberta's mBot 2 toolbox XML
 // (decision 0011), so categories, order, and default child blocks match exactly.
@@ -37,7 +38,7 @@ export function orToolbox(level) {
 
   for (const cat of root.querySelectorAll('category')) {
     const key = cat.getAttribute('name');
-    cat.setAttribute('name', OR.categoryNames[key] || key);
+    cat.setAttribute('name', clarifyCategory(key, OR.categoryNames[key] || key));
     cat.removeAttribute('svg');
     const colour = firstBlockColour(cat);
     if (colour) cat.setAttribute('colour', colour);
