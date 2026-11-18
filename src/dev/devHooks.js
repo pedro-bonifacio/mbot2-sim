@@ -1,5 +1,6 @@
 import * as Blockly from 'blockly';
-import { getWorkspace, setToolboxMode } from '../blockly/index.js';
+import { getWorkspace } from '../blockly/index.js';
+import { applyToolbox } from '../ui/toolboxMode.js';
 import { loadProgramText, exportOpenRobertaText } from '../ui/programIO.js';
 import { loadMapByName, getActiveMapName, loadLevelById } from '../ui/mapSelector.js';
 import { getLevelState, nextVariant } from '../levels/session.js';
@@ -239,7 +240,7 @@ export function installDevHooks() {
   window.__dev = {
     load, tree, click, setField, connect, flyout, fromFlyout, state, run, reset,
     map: loadMapByName,
-    mode: (m) => { setToolboxMode(m); document.getElementById('toolbox-mode').value = m; return m; },
+    mode: (m) => { applyToolbox(m); return document.getElementById('toolbox-mode').value; },   // level | beginner | expert
     undo: () => { ws().undo(false); return settled(); },
     redo: () => { ws().undo(true); return settled(); },
     block: (id) => blockLine(block(id)),

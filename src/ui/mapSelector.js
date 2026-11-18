@@ -7,7 +7,6 @@ import { stop as stopProgram } from '../runtime/runLoop.js';
 import { RunState, getRunState } from '../runtime/runState.js';
 import { appendConsoleMessage } from './console.js';
 import { listLevels, loadLevel, clearLevel } from '../levels/session.js';
-import { setToolboxMode } from '../blockly/index.js';
 import { ptMessages as MSG } from '../i18n/pt.js';
 
 // What is on the canvas: a level or a free map (chosen in "★ Níveis",
@@ -67,15 +66,6 @@ export async function openFromSelector(kind, name) {
   return _loadMap(entry);
 }
 
-/** The level's toolbox (beginner/expert) when it opens; the student can still switch. */
-function _applyLevelToolbox(id) {
-  const level = listLevels().find((l) => l.id === id);
-  if (!level || !level.toolbox) return;
-  setToolboxMode(level.toolbox);
-  const sel = document.getElementById('toolbox-mode');
-  if (sel) sel.value = level.toolbox;
-}
-
 function _setActive(value, label) {
   _active = value;
   try { localStorage.setItem(LAST_KEY, value); } catch (e) {}
@@ -86,7 +76,6 @@ function _setActive(value, label) {
 function _selectLevel(id) {
   try {
     loadLevel(id);
-    _applyLevelToolbox(id);
     const level = listLevels().find((l) => l.id === id);
     _setActive(`level:${id}`, fmt(MSG.CURRENT_LEVEL, id, level.title));
     return true;

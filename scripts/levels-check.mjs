@@ -46,6 +46,19 @@ function describe(r) {
 }
 
 let failedLevels = 0;
+
+// Every block type a world introduces must exist in Open Roberta's toolboxes.
+{
+  const { WORLD_BLOCKS } = await imp('src/levels/worldBlocks.js');
+  const { OR } = await imp('src/blockly/generated/orSpecs.js');
+  const all = OR.toolboxes.beginner + OR.toolboxes.expert;
+  for (const [w, types] of Object.entries(WORLD_BLOCKS)) {
+    for (const t of types) {
+      const ok = t === 'VARIABLE' || t === 'PROCEDURE' ? all.includes(`custom="${t}"`) : all.includes(`type="${t}"`);
+      if (!ok) { failedLevels++; print(`FAIL src/levels/worldBlocks.js: world ${w}: "${t}" is not in Open Roberta's toolboxes`); }
+    }
+  }
+}
 const ids = new Map();
 for (const file of levelFiles()) {
   const rel = path.relative(ROOT, file);

@@ -29,7 +29,8 @@ title: Parar antes da parede
 objective: Anda em frente e pára … (PT-PT, shown to the student)
 concepts: [ultrassom, esperar até]
 assumes: [andar, comparação]
-toolbox: beginner          # beginner | expert
+toolbox: beginner          # beginner | expert: the base toolbox. The level shows only the blocks its world
+                           #   and earlier worlds introduce (src/levels/worldBlocks.js; all from World 10)
 timeLimit: 30              # simulated seconds (default 60)
 settle: 2                  # optional: pass after standing still this long with every goal met (default 2, or never)
 stall: 5                   # optional: fail after standing still this long, having moved, with a goal unmet (default 5, or never)

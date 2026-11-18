@@ -53,6 +53,14 @@ Counts are targets. Contexts depend on [0007](decisions/0007-narrative-framing.m
 Expert toolbox needed from World 7 (variables) / 9 (procedures). The level declares
 which toolbox it opens with; the student can still switch.
 
+**Blocks appear as the course introduces them** (built 2026-11-18). A level opens with
+the toolbox "Deste nível": only the blocks of its world and the worlds before it, listed
+in [`src/levels/worldBlocks.js`](../src/levels/worldBlocks.js). World 1 shows 4 blocks
+(drive, turn, curve for a distance; wait); each motor on its own appears in World 8;
+from World 10 the whole toolbox. Principiante / Avançado stay in the selector for anyone
+curious; free maps use Principiante. When a world gets a level that needs a new block,
+add the block to that world's list.
+
 ## Random courses (evaluation)
 
 Evaluation is on the real robot ([0008](decisions/0008-evaluation-on-physical-robot.md)).

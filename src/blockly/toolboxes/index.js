@@ -16,7 +16,28 @@ function firstBlockColour(category) {
   return spec ? spec.colour : null;
 }
 
-export function orToolbox(level) {
+/**
+ * Keeps only the top-level blocks whose type is in `allowed` (nested child blocks come
+ * with their parent), and the dynamic categories named in it (VARIABLE, PROCEDURE).
+ * Categories left empty are removed.
+ */
+function filterToolbox(root, allowed) {
+  const prune = (parent) => {
+    for (const el of Array.from(parent.children)) {
+      if (el.tagName === 'block' && !allowed.has(el.getAttribute('type'))) el.remove();
+      else if (el.tagName === 'category') {
+        const custom = el.getAttribute('custom');
+        if (custom) { if (!allowed.has(custom)) el.remove(); continue; }
+        prune(el);
+        if (!el.querySelector('block, category[custom]')) el.remove();
+      }
+    }
+  };
+  prune(root);
+}
+
+/** Open Roberta's toolbox for `level` (beginner | expert), optionally only the `allowed` block types. */
+export function orToolbox(level, allowed = null) {
   const src = new DOMParser().parseFromString(OR.toolboxes[level], 'text/xml');
   const doc = document.implementation.createDocument(null, 'xml', null);
   const root = doc.documentElement;
@@ -29,5 +50,6 @@ export function orToolbox(level) {
     const colour = firstBlockColour(cat);
     if (colour) cat.setAttribute('colour', colour);
   }
+  if (allowed) filterToolbox(root, allowed);
   return root;
 }
