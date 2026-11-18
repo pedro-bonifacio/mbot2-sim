@@ -26,8 +26,10 @@ Done this session (details in `CHANGELOG.md → Unreleased`):
 
 0. **Class accounts (built 2026-11-18, [0016](decisions/0016-class-accounts-progress-sync.md)) —
    only the teacher can do these:**
-   - [ ] Cloudflare setup, steps 1–6 in `DEPLOYMENT.md → Class accounts` (wrangler login, D1,
-         two secrets, deploy, `config.json` on the shared drive).
+   - [x] Cloudflare setup (2026-11-18): D1 `mbot2-sim` (EU jurisdiction), secrets, deployed to
+         https://mbot2.pbonifacio.dev, `config.json` on the shared drive; tested live with a
+         throwaway class. Pushing from this machine: `git push git@github.com:pedro-bonifacio/mbot2-sim.git main`
+         (no HTTPS login here; SSH works).
    - [ ] Tell the school's data-protection officer (class + number + programs, no names).
    - [ ] Looks: "👤 Entrar" box, "☁ Guardado" / "⚠ Sem ligação" in the top bar.
    - [ ] Try `node turmas.mjs create` with a real class CSV exported from the school's system.
