@@ -1,0 +1,38 @@
+# World 1: turning on the spot.
+id: "01-03"
+world: 1
+kind: core
+title: Virar
+objective: O quadrado verde está à tua direita. Roda para ficares virado para ele, anda e pára com o centro do robô dentro dele.
+concepts: [rodar um ângulo]
+assumes: [andar uma distância]
+toolbox: beginner
+timeLimit: 20
+
+map:
+  items:
+    - patch: { x: 32.5, y: 87.5, w: 15, h: 15, colour: green }
+
+spawn: { x: 40, y: 50, heading: 0 }
+
+zones:
+  - { id: alvo, label: quadrado verde, x: 32.5, y: 87.5, w: 15, h: 15 }
+
+goals:
+  - robotStoppedIn: { zone: alvo, probe: centre }
+  - noCollision
+
+solution: |
+  robotAPI.turn_for("RIGHT", 30, 90);
+  robotAPI.drive_for("FOREWARD", 30, 45);
+
+antiSolutions:
+  - name: sem rodar
+    why: Anda em frente e nunca fica virado para o quadrado.
+    code: |
+      robotAPI.drive_for("FOREWARD", 30, 45);
+  - name: roda para o lado errado
+    why: Roda para a esquerda; o quadrado está à direita.
+    code: |
+      robotAPI.turn_for("LEFT", 30, 90);
+      robotAPI.drive_for("FOREWARD", 30, 45);

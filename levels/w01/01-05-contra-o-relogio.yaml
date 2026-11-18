@@ -1,0 +1,36 @@
+# World 1: speed (RPM). The distance is easy; the time limit forces a higher speed.
+id: "01-05"
+world: 1
+kind: core
+title: Contra o relógio
+objective: Chega ao quadrado verde em menos de 5 segundos e pára com o centro do robô dentro dele. A 30 RPM não chegas a tempo!
+concepts: [velocidade (RPM)]
+assumes: [andar uma distância]
+toolbox: beginner
+timeLimit: 5
+
+map:
+  items:
+    - patch: { x: 165, y: 51.25, w: 15, h: 20, colour: green }
+
+spawn: { x: 22.5, y: 61.25, heading: 0 }
+
+zones:
+  - { id: alvo, label: quadrado verde, x: 165, y: 51.25, w: 15, h: 20 }
+
+goals:
+  - robotStoppedIn: { zone: alvo, probe: centre }
+  - noCollision
+
+solution: |
+  robotAPI.drive_for("FOREWARD", 150, 150);
+
+antiSolutions:
+  - name: devagar
+    why: A 30 RPM o robô demora quase 15 s.
+    code: |
+      robotAPI.drive_for("FOREWARD", 30, 150);
+  - name: rápido mas curto
+    why: É rápido, mas pára antes do quadrado.
+    code: |
+      robotAPI.drive_for("FOREWARD", 150, 100);

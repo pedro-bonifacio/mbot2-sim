@@ -1,0 +1,42 @@
+# World 1: a two-part trip. reachZone latches the far square; the stop is checked at the start.
+id: "01-07"
+world: 1
+kind: bonus
+title: Ida e volta
+objective: Vai até ao quadrado azul e volta para o quadrado verde de onde partiste. Pára com o centro do robô dentro do verde.
+concepts: [sequência]
+assumes: [andar uma distância, rodar um ângulo]
+toolbox: beginner
+timeLimit: 45
+
+map:
+  items:
+    - patch: { x: 22.5, y: 51.25, w: 15, h: 20, colour: green }
+    - patch: { x: 150, y: 51.25, w: 15, h: 20, colour: blue }
+
+spawn: { x: 30, y: 61.25, heading: 0 }
+
+zones:
+  - { id: longe, label: quadrado azul, x: 150, y: 51.25, w: 15, h: 20 }
+  - { id: casa, label: quadrado verde, x: 22.5, y: 51.25, w: 15, h: 20 }
+
+goals:
+  - reachZone: { zone: longe, probe: centre }
+  - robotStoppedIn: { zone: casa, probe: centre }
+  - noCollision
+
+solution: |
+  robotAPI.drive_for("FOREWARD", 30, 127.5);
+  robotAPI.turn_for("RIGHT", 30, 180);
+  robotAPI.drive_for("FOREWARD", 30, 127.5);
+
+antiSolutions:
+  - name: só a ida
+    why: Chega ao azul mas não volta.
+    code: |
+      robotAPI.drive_for("FOREWARD", 30, 127.5);
+  - name: volta cedo
+    why: Volta antes de chegar ao quadrado azul.
+    code: |
+      robotAPI.drive_for("FOREWARD", 30, 90);
+      robotAPI.drive_for("BACKWARD", 30, 90);

@@ -1,0 +1,46 @@
+# World 1 test (Prova): a Z through three corners. Fast students start here.
+id: "01-10"
+world: 1
+kind: challenge
+title: "Prova: Percurso em Z"
+objective: "Desenha um Z: passa pelos quadrados azul e amarelo, por esta ordem, e pára no quadrado verde. Se conseguires à primeira, podes saltar o Mundo 1!"
+concepts: [sequência, ângulos]
+assumes: [andar uma distância, rodar um ângulo]
+toolbox: beginner
+timeLimit: 60
+
+map:
+  items:
+    - box:   { x: 45, y: 50, w: 50, h: 12, angle: -27.2 }
+    - box:   { x: 105, y: 60, w: 50, h: 12, angle: -27.2 }
+    - patch: { x: 160, y: 17.5, w: 15, h: 15, colour: blue }
+    - patch: { x: 22.5, y: 89.5, w: 15, h: 15, colour: yellow }
+    - patch: { x: 167.5, y: 89.5, w: 15, h: 15, colour: green }
+
+spawn: { x: 25, y: 25, heading: 0 }
+
+zones:
+  - { id: c1, label: quadrado azul, x: 160, y: 17.5, w: 15, h: 15 }
+  - { id: c2, label: quadrado amarelo, x: 22.5, y: 89.5, w: 15, h: 15 }
+  - { id: alvo, label: quadrado verde, x: 167.5, y: 89.5, w: 15, h: 15 }
+
+goals:
+  - reachZone: { zone: c1, probe: centre }
+  - reachZone: { zone: c2, probe: centre }
+  - robotStoppedIn: { zone: alvo, probe: centre }
+  - noCollision
+
+solution: |
+  robotAPI.drive_for("FOREWARD", 30, 142.5);
+  robotAPI.turn_for("RIGHT", 30, 152.2);
+  robotAPI.drive_for("FOREWARD", 30, 160.3);
+  robotAPI.turn_for("LEFT", 30, 152.2);
+  robotAPI.drive_for("FOREWARD", 30, 145);
+
+antiSolutions:
+  - name: em U
+    why: Desce pela direita em vez de fazer a diagonal; não passa pelo amarelo.
+    code: |
+      robotAPI.drive_for("FOREWARD", 30, 142.5);
+      robotAPI.turn_for("RIGHT", 30, 90);
+      robotAPI.drive_for("FOREWARD", 30, 72);
