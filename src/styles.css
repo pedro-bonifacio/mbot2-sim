@@ -90,6 +90,8 @@ main { display: flex; flex: 1; min-height: 0; overflow: hidden; }
 
 /* The block that is running (src/ui/blockHighlight.js) */
 .rob-running > .blocklyPath { stroke: #facc15 !important; stroke-width: 4px !important; }
+/* Loops / ifs around the running block: a steady, lighter outline */
+.rob-active > .blocklyPath { stroke: #fde047 !important; stroke-width: 3px !important; stroke-opacity: 0.8; }
 
 /* Level panel (src/ui/levelPanel.js) */
 #level-panel { background: #fff; border: 1px solid #d1d5db; border-radius: 4px; padding: 8px 12px; font-size: 14px; flex-shrink: 0; }
