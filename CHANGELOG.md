@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 ### Changed
+- **Clearer Portuguese on every block**: no more English leftovers ("speed RPM", "turn RGB LED on", "quad rgb sensor"), PT-PT forms ("premido", "devolve", "faz", "Ação"), units in parentheses ("distância (cm)"), sensors read "ler … do ultrassom / do sensor de cor". Display only: programs and the Open Roberta export are unchanged.
+- **Even spacing on blocks**: Open Roberta's hidden fields and empty labels no longer leave gaps ("mover   para").
+- **Simpler beginner toolbox**: the curve blocks (a speed per wheel), volume, LED brightness, microphone, gyro, timer and encoder blocks are only in Avançado.
+- A running loop stays outlined while its blocks run; the inner outline no longer flickers.
+- The controller buttons sit in a compact pad left of the robot screen; screen and console are shorter, so the robot side fits an 800 px-high laptop.
+- Walls are drawn as bricks, and so is everything outside the map.
+- A level not touched yet starts from the program that was in the editor, so students adapt their last solution.
 - Random-number blocks use a seeded generator: each run still gets new numbers, but any run can be replayed exactly from its seed.
 - The simulation runs in fixed 1/60 s steps in the browser too, so a program does exactly the same thing on a slow school laptop as on a fast computer (before, a wall-following program could crash at 30 fps but not at 60).
 - Collisions use the robot's real 17.5 × 13 cm outline, turned with its heading: the robot stops touching the wall instead of 4 cm inside it, corners hit walls while turning on the spot, and the map edge counts as a wall. The outline turns red after a collision.
@@ -13,6 +20,9 @@
 - On-block +/− buttons show a pointer cursor and hover highlight, with a larger tap area.
 - Waits, tones and the timer sensor use the simulated clock (advances with physics), not the computer's clock.
 ### Added
+- **World 1** (10 levels, 01-01 … 01-10) and **05-14 "O robô não pára!"**, a find-the-bug level that opens with a broken program. Levels can now have a `starter:` program.
+- **Yellow ring on the robot**: the point a level judges (centre or front); the target zone turns green with ✓ while the ring is inside.
+- **📏 Régua**: drag on the robot view to measure in cm; from the robot it also gives the turn ("65 cm · 90° à direita").
 - Tidier top bar: **Executar / Parar / Reiniciar**, speed, **★ Níveis** with the name of what is open, and one **Ficheiro ▾** menu for programs, Open Roberta export and progress. The "Nível / mapa" dropdown is gone (★ Níveis lists the free maps too).
 - **Fast-forward ×1 / ×2 / ×4**: the result is exactly the same at any speed.
 - **Resizable editor / robot split**: drag the divider (double-click resets); the map shrinks to fit. By default each side gets half the screen, so the block editor has room on school laptops.

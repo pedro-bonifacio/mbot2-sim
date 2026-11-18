@@ -1,4 +1,5 @@
 import * as Blockly from 'blockly';
+import { clarifyLabel } from '../ptClarity.js';
 import { defineOrBlocks, orSpec, orMsg, initFromSpec, makeField } from './_orFactory.js';
 import { FieldClickableLabel } from './_plusMinusMutator.js';
 
@@ -9,7 +10,7 @@ const PLAIN_TYPES = ['robLists_length', 'robLists_isEmpty', 'robLists_indexOf'];
 
 function listTypeField(spec, block) {
   const f = spec.inputs.flatMap(i => i.fields).find(x => x.name === 'LIST_TYPE');
-  const [field] = makeField({ ...f, value: block.listType_ }, (v) => { block.setListType_(v); return v; });
+  const [field] = makeField({ ...f, value: block.listType_ }, (v) => { block.setListType_(v); return v; }, block.type);
   return field;
 }
 
@@ -132,7 +133,7 @@ function rebuildAt(block, inputName, whereName, whereField, isAt, insertBefore, 
       return null;
     }
     return undefined;
-  });
+  }, block.type);
   inp.appendField(dd, whereName);
   if (insertBefore && block.getInput(insertBefore)) block.moveInputBefore(inputName, insertBefore);
 }
@@ -221,7 +222,7 @@ function defineGetSublist() {
     },
     setAt_(n, isAt) {
       rebuildAt(this, 'AT' + n, 'WHERE' + n, n === 1 ? w1 : w2, isAt, n === 1 ? 'AT2' : null,
-        n === 1 && at1Label ? at1Label.text : null);
+        n === 1 && at1Label ? clarifyLabel(this.type, at1Label.text) : null);
     },
     mutationToDom() {
       const el = Blockly.utils.xml.createElement('mutation');

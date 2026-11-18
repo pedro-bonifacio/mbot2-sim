@@ -1,0 +1,53 @@
+# World 1: slalom. The gate zones force passing above, below, above the three boxes.
+id: "01-08"
+world: 1
+kind: bonus
+title: Slalom
+objective: "Passa por cima da primeira caixa, por baixo da segunda e por cima da terceira (como no ecrã), e pára no quadrado verde."
+concepts: [sequência, ângulos]
+assumes: [andar uma distância, rodar um ângulo]
+toolbox: beginner
+timeLimit: 60
+
+map:
+  items:
+    - box:   { x: 65, y: 56, w: 10, h: 10 }
+    - box:   { x: 105, y: 56, w: 10, h: 10 }
+    - box:   { x: 145, y: 56, w: 10, h: 10 }
+    - patch: { x: 175, y: 53.75, w: 15, h: 15, colour: green }
+
+spawn: { x: 30, y: 61.25, heading: 0 }
+
+zones:
+  - { id: p1, label: por cima da caixa 1, x: 65, y: 1, w: 10, h: 55 }
+  - { id: p2, label: por baixo da caixa 2, x: 105, y: 66, w: 10, h: 55.5 }
+  - { id: p3, label: por cima da caixa 3, x: 145, y: 1, w: 10, h: 55 }
+  - { id: alvo, label: quadrado verde, x: 175, y: 53.75, w: 15, h: 15 }
+
+goals:
+  - reachZone: { zone: p1, probe: centre }
+  - reachZone: { zone: p2, probe: centre }
+  - reachZone: { zone: p3, probe: centre }
+  - robotStoppedIn: { zone: alvo, probe: centre }
+  - noCollision
+
+solution: |
+  robotAPI.turn_for("LEFT", 30, 37);
+  robotAPI.drive_for("FOREWARD", 30, 50);
+  robotAPI.turn_for("RIGHT", 30, 93);
+  robotAPI.drive_for("FOREWARD", 30, 72);
+  robotAPI.turn_for("LEFT", 30, 112);
+  robotAPI.drive_for("FOREWARD", 30, 72);
+  robotAPI.turn_for("RIGHT", 30, 99);
+  robotAPI.drive_for("FOREWARD", 30, 44);
+
+antiSolutions:
+  - name: sempre por cima
+    why: Passa as três caixas por cima; a segunda é por baixo.
+    code: |
+      robotAPI.turn_for("LEFT", 30, 45);
+      robotAPI.drive_for("FOREWARD", 30, 42);
+      robotAPI.turn_for("RIGHT", 30, 45);
+      robotAPI.drive_for("FOREWARD", 30, 120);
+      robotAPI.turn_for("RIGHT", 30, 45);
+      robotAPI.drive_for("FOREWARD", 30, 42);

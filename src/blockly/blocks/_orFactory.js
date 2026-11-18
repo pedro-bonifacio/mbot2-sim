@@ -1,4 +1,5 @@
 import * as Blockly from 'blockly';
+import { clarifyOptions, clarifyLabel, clarifyMsg } from '../ptClarity.js';
 import * as fieldColourPkg from '@blockly/field-colour';
 import { OR } from '../generated/orSpecs.js';
 
@@ -20,7 +21,7 @@ export function orSpec(type) {
 }
 
 export function orMsg(key, fallback = '') {
-  return OR.msg[key] !== undefined ? OR.msg[key] : fallback;
+  return clarifyMsg(key, OR.msg[key] !== undefined ? OR.msg[key] : fallback);
 }
 
 // ── Note picker ──────────────────────────────────────────────────────────────
@@ -60,14 +61,17 @@ function dropdownOptions(options) {
   return options.map(([label, value]) => [label === '' ? ' ' : label, value]);
 }
 
-/** Creates the Blockly field for one spec field. Returns [field, name|undefined]. */
-export function makeField(f, validator) {
+/**
+ * Creates the Blockly field for one spec field. Returns [field, name|undefined].
+ * `type` (the block type) picks the clearer PT-PT text (src/blockly/ptClarity.js).
+ */
+export function makeField(f, validator, type = '') {
   switch (f.t) {
     case 'label':
-      return [new Blockly.FieldLabel(f.text), undefined];
+      return [new Blockly.FieldLabel(clarifyLabel(type, f.text)), undefined];
     case 'namedLabel':
       // Visible, non-serialised (UNIT, SENSORTITLE, TITLE_FOREVER, RPM, SPACE, GET).
-      return [new Blockly.FieldLabel(f.text), f.name];
+      return [new Blockly.FieldLabel(clarifyLabel(type, f.text)), f.name];
     case 'hidden':
       // Serialised but invisible (ACTORPORT "_D", SENSORPORT "_S", …). appendSpecInput
       // hides it after attaching; callers appending it themselves must do the same.
@@ -75,7 +79,7 @@ export function makeField(f, validator) {
     case 'dropdown': {
       // Set the default before attaching the validator: Blockly runs validators on
       // setValue, and shape-changing validators must not fire during construction.
-      const dd = new Blockly.FieldDropdown(dropdownOptions(f.options));
+      const dd = new Blockly.FieldDropdown(dropdownOptions(clarifyOptions(type, f.name, f.options)));
       dd.setValue(f.value);
       if (validator) dd.setValidator(validator);
       return [dd, f.name];
@@ -102,7 +106,7 @@ export function appendSpecInput(block, input, validators = {}) {
   else inp = input.name ? block.appendDummyInput(input.name) : block.appendDummyInput();
   if (input.check && input.type !== 'dummy') inp.setCheck(input.check);
   for (const f of input.fields) {
-    const [field, name] = makeField(f, f.name ? validators[f.name] : undefined);
+    const [field, name] = makeField(f, f.name ? validators[f.name] : undefined, block.type);
     inp.appendField(field, name);
     // Visibility must be applied once the field is attached to the block.
     if (f.t === 'hidden') field.setVisible(false);
@@ -132,7 +136,7 @@ function modeMixin(spec) {
       if (!m) return;
       if (this.outputConnection) this.outputConnection.setCheck(m.output);
       const unit = this.getField('UNIT');
-      if (unit) unit.setValue(m.unit);
+      if (unit) unit.setValue(clarifyLabel(this.type, m.unit));
     },
     mutationToDom() {
       const el = Blockly.utils.xml.createElement('mutation');

@@ -40,7 +40,7 @@ function defineGenericGetSample() {
       const fields = variant.inputs[0].fields;
       const start = fields.findIndex(f => f.name === 'SENSORTYPE') + 1;
       for (const f of fields.slice(start)) {
-        const [field, name] = makeField(f);
+        const [field, name] = makeField(f, undefined, this.type);
         row.appendField(field, name);
         if (f.t === 'hidden') field.setVisible(false);
       }

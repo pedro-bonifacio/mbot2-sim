@@ -58,6 +58,10 @@ goals:
   - robotStoppedIn: { zone: perto, probe: front }
   - noCollision
 
+starter: |                 # optional: the program the level opens with (e.g. a bug to fix);
+  <xml …>…</xml>           #   Blockly XML as "Guardar programa" saves it, or an Open Roberta export.
+                           #   Must fail at least one seed. "Novo programa" goes back to it.
+
 solution: |                # must pass every seed
   robotAPI.drive("FOREWARD", 30);
   while (!(robotAPI.ultrasonic() < 10)) {}

@@ -1,0 +1,46 @@
+# World 1: going round the end of a wall: two turns the same way (a U-turn).
+id: "01-06"
+world: 1
+kind: core
+title: Dar a volta
+objective: O quadrado verde está do outro lado da parede. Dá a volta à ponta da parede e pára com o anel amarelo do robô dentro dele.
+concepts: [inversão de marcha]
+assumes: [andar uma distância, rodar um ângulo]
+toolbox: beginner
+timeLimit: 40
+
+map:
+  items:
+    - wall:  { x: 1, y: 55, w: 74, h: 12 }
+    - patch: { x: 32.5, y: 84.5, w: 15, h: 15, colour: green }
+
+spawn: { x: 40, y: 30, heading: 0 }
+
+zones:
+  - { id: alvo, label: quadrado verde, x: 32.5, y: 84.5, w: 15, h: 15 }
+
+goals:
+  - robotStoppedIn: { zone: alvo, probe: centre }
+  - noCollision
+
+solution: |
+  robotAPI.drive_for("FOREWARD", 30, 50);
+  robotAPI.turn_for("RIGHT", 30, 90);
+  robotAPI.drive_for("FOREWARD", 30, 62);
+  robotAPI.turn_for("RIGHT", 30, 90);
+  robotAPI.drive_for("FOREWARD", 30, 50);
+
+antiSolutions:
+  - name: a direito
+    why: Roda e anda a direito para o quadrado, mas a parede está no caminho.
+    code: |
+      robotAPI.turn_for("RIGHT", 30, 90);
+      robotAPI.drive_for("FOREWARD", 30, 62);
+  - name: vira cedo
+    why: Vira antes de passar a ponta da parede e bate nela.
+    code: |
+      robotAPI.drive_for("FOREWARD", 30, 25);
+      robotAPI.turn_for("RIGHT", 30, 90);
+      robotAPI.drive_for("FOREWARD", 30, 62);
+      robotAPI.turn_for("RIGHT", 30, 90);
+      robotAPI.drive_for("FOREWARD", 30, 25);

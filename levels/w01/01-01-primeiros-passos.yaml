@@ -3,19 +3,19 @@ id: "01-01"
 world: 1
 kind: core
 title: Primeiros passos
-objective: Anda 50 cm em frente e pára com o centro do robô dentro do quadrado verde.
+objective: Anda 50 cm em frente e pára com o anel amarelo do robô (o centro) dentro do quadrado verde. Quando o anel está dentro, aparece um ✓ no quadrado.
 concepts: [andar uma distância]
 toolbox: beginner
 timeLimit: 20
 
 map:
   items:
-    - patch: { x: 75, y: 51.25, w: 10, h: 20, colour: green }   # the target, painted on the mat
+    - patch: { x: 67.5, y: 48.75, w: 25, h: 25, colour: green }   # the target, painted on the mat
 
 spawn: { x: 30, y: 61.25, heading: 0 }   # heading in degrees, clockwise from east (→)
 
 zones:
-  - { id: alvo, label: quadrado verde, x: 75, y: 51.25, w: 10, h: 20 }
+  - { id: alvo, label: quadrado verde, x: 67.5, y: 48.75, w: 25, h: 25 }
 
 goals:
   - robotStoppedIn: { zone: alvo, probe: centre }

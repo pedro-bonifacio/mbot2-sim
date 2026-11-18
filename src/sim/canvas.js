@@ -1,7 +1,8 @@
-import { robot, resetRobot, ROBOT_CONSTANTS } from './robot.js';
+import { robot, resetRobot, robotProbePoint, ROBOT_CONSTANTS } from './robot.js';
+import { isRulerOn, rulerDown, rulerMove, rulerUp, rulerLabel, drawRulerLine, onRulerChange } from './ruler.js';
 import { PX_PER_CM, worldToScreen } from './world.js';
 import { DISPLAY_SCALE, ROBOT_LENGTH_PX, ROBOT_WIDTH_PX } from './constants.js';
-import { drawMap, hasMap, getMapSizeCm } from './map.js';
+import { drawMap, drawOutside, hasMap, getMapSizeCm } from './map.js';
 import { ledState, resetLeds } from './leds.js';
 import { resetDisplay } from '../ui/display.js';
 import { getQuadRGBWorldPositions, getQuadRGBProbeData, getUltrasonicConeRays, resetTickCache, sensorQuadRGB } from './sensors.js';
@@ -23,8 +24,39 @@ export function setFrameHook(fn) { frameHook = fn; }
 
 // Level zones (decision 0006): referee-only areas drawn as a translucent overlay.
 // Sensors never see them. [{ id, label?, type: 'rect'|'circle', … cm }] or null.
+// A zone with a `probe` ('centre' | 'front') is judged by that point of the robot: the
+// point is drawn on the robot as a yellow ring, an empty ring marks the zone's middle,
+// and the zone turns green while the point is inside (and stays ✓ if `latch`).
 let zoneOverlay = null;
-export function setZoneOverlay(zones) { zoneOverlay = zones; }
+const reachedZones = new Set();
+export function setZoneOverlay(zones) { zoneOverlay = zones; reachedZones.clear(); }
+
+const PROBE_RING_CM = 1.6;
+function probeRing(xPx, yPx, dashed) {
+  const r = PROBE_RING_CM * PX_PER_CM;
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(xPx, yPx, r, 0, Math.PI * 2);
+  if (dashed) {
+    ctx.setLineDash([0.6 * PX_PER_CM, 0.5 * PX_PER_CM]);
+    ctx.strokeStyle = 'rgba(30, 30, 30, 0.7)';
+    ctx.lineWidth = 0.35 * PX_PER_CM;
+    ctx.stroke();
+  } else {
+    ctx.strokeStyle = '#111';
+    ctx.lineWidth = 0.9 * PX_PER_CM;
+    ctx.stroke();
+    ctx.strokeStyle = '#facc15';
+    ctx.lineWidth = 0.55 * PX_PER_CM;
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function inOverlayZone(z, [x, y]) {
+  if (z.type === 'circle') return (x - z.cx) ** 2 + (y - z.cy) ** 2 <= z.r ** 2;
+  return x >= z.x && x <= z.x + z.w && y >= z.y && y <= z.y + z.h;
+}
 
 const MAX_DT = 1 / 30;   // frame time cap: absorbs tab-suspend lag (CLAUDE.md §8)
 
@@ -56,6 +88,7 @@ export function initSim() {
   canvas.addEventListener('mouseleave', onMouseUp);
 
   canvas.style.cursor = 'grab';
+  onRulerChange((on) => { canvas.style.cursor = on ? 'crosshair' : 'grab'; });
   requestAnimationFrame(loop);
   console.log('[sim] canvas initialised');
 }
@@ -113,8 +146,17 @@ function onWheel(e) {
   camera.scale   = newScale;
 }
 
+/** Mouse position → world cm (through the CSS scale and the camera). */
+function eventToWorldCm(e) {
+  const rect = canvas.getBoundingClientRect();
+  const bx = (e.clientX - rect.left) * (canvas.width / rect.width);
+  const by = (e.clientY - rect.top) * (canvas.height / rect.height);
+  return [(bx - camera.offsetX) / camera.scale / PX_PER_CM, (by - camera.offsetY) / camera.scale / PX_PER_CM];
+}
+
 function onMouseDown(e) {
   if (e.button !== 0) return;
+  if (isRulerOn()) { rulerDown(...eventToWorldCm(e)); return; }
   isPanning    = true;
   panStartX    = e.clientX;
   panStartY    = e.clientY;
@@ -124,6 +166,7 @@ function onMouseDown(e) {
 }
 
 function onMouseMove(e) {
+  if (isRulerOn()) { rulerMove(...eventToWorldCm(e)); return; }
   if (!isPanning) return;
   // Convert CSS pixel delta → canvas bitmap pixel delta to keep panning 1:1
   const rect  = canvas.getBoundingClientRect();
@@ -134,6 +177,7 @@ function onMouseMove(e) {
 }
 
 function onMouseUp() {
+  rulerUp();
   if (!isPanning) return;
   isPanning = false;
   canvas.style.cursor = 'grab';
@@ -169,7 +213,12 @@ function draw() {
 
   ctx.setTransform(camera.scale, 0, 0, camera.scale, camera.offsetX, camera.offsetY);
 
-  if (hasMap()) drawMap(ctx);
+  if (hasMap()) {
+    // Outside the map is wall (collision.js): fill the visible area with bricks first.
+    const x0 = -camera.offsetX / camera.scale, y0 = -camera.offsetY / camera.scale;
+    drawOutside(ctx, x0, y0, canvas.width / camera.scale, canvas.height / camera.scale);
+    drawMap(ctx);
+  }
 
   ctx.globalAlpha = hasMap() ? 0.25 : 1.0;
   drawGrid();
@@ -270,6 +319,18 @@ function draw() {
     ctx.stroke();
   }
 
+  // Level probe points: the part of the robot the goals judge (see zoneOverlay).
+  if (zoneOverlay) {
+    const probes = new Set(zoneOverlay.map((z) => z.probe).filter(Boolean));
+    for (const pr of probes) {
+      const [px, py] = robotProbePoint(pr);
+      probeRing(px * PX_PER_CM, py * PX_PER_CM, false);
+    }
+  }
+
+  // Ruler (src/sim/ruler.js): the line in world space, its label in screen space below.
+  const rulerAt = drawRulerLine(ctx, camera.scale);
+
   // HUD — screen space (reset transform so it's always top-left regardless of pan/zoom).
   // Font size is scaled up to compensate for CSS downscaling of the canvas, so the text
   // always appears at ~14 px visual size regardless of the native canvas resolution.
@@ -298,6 +359,25 @@ function draw() {
     ctx.fillStyle = '#f87171';
     ctx.fillText('PAUSADO', hudX, hudY0 + hudLine * 4);
   }
+
+  // Ruler label, next to the middle of the line.
+  const label = rulerAt && rulerLabel();
+  if (label) {
+    const lx = rulerAt.x * camera.scale + camera.offsetX;
+    const ly = rulerAt.y * camera.scale + camera.offsetY;
+    const font = Math.round(15 / cssScale);
+    ctx.font = `bold ${font}px sans-serif`;
+    const w = ctx.measureText(label).width;
+    const pad = Math.round(5 / cssScale);
+    const bx = Math.min(Math.max(lx - w / 2 - pad, 0), canvas.width - w - 2 * pad);
+    const by = Math.max(ly - font - 3 * pad, 0);
+    ctx.fillStyle = 'rgba(17, 24, 39, 0.85)';
+    ctx.fillRect(bx, by, w + 2 * pad, font + 2 * pad);
+    ctx.fillStyle = '#fde68a';
+    ctx.textBaseline = 'top';
+    ctx.fillText(label, bx + pad, by + pad);
+    ctx.textBaseline = 'alphabetic';
+  }
 }
 
 function drawGrid() {
@@ -324,16 +404,23 @@ function drawZones() {
   ctx.font = `${Math.max(12, 2 * s) / camera.scale}px sans-serif`;
   ctx.textBaseline = 'top';
   for (const z of zoneOverlay) {
+    const inside = z.probe ? inOverlayZone(z, robotProbePoint(z.probe)) : false;
+    if (inside && z.latch) reachedZones.add(z.id);
+    const done = inside || reachedZones.has(z.id);
     ctx.beginPath();
     if (z.type === 'circle') ctx.arc(z.cx * s, z.cy * s, z.r * s, 0, Math.PI * 2);
     else ctx.rect(z.x * s, z.y * s, z.w * s, z.h * s);
-    ctx.fillStyle = 'rgba(40, 110, 255, 0.16)';
+    ctx.fillStyle = done ? 'rgba(22, 163, 74, 0.30)' : 'rgba(40, 110, 255, 0.16)';
     ctx.fill();
-    ctx.strokeStyle = 'rgba(40, 110, 255, 0.85)';
+    ctx.strokeStyle = done ? 'rgba(21, 128, 61, 0.95)' : 'rgba(40, 110, 255, 0.85)';
     ctx.stroke();
     const [lx, ly] = z.type === 'circle' ? [(z.cx - z.r) * s, (z.cy - z.r) * s] : [z.x * s, z.y * s];
-    ctx.fillStyle = 'rgba(20, 70, 200, 0.95)';
-    ctx.fillText(z.label || z.id, lx + 4 / camera.scale, ly + 4 / camera.scale);
+    ctx.fillStyle = done ? 'rgba(21, 100, 50, 0.95)' : 'rgba(20, 70, 200, 0.95)';
+    ctx.fillText((done ? '✓ ' : '') + (z.label || z.id), lx + 4 / camera.scale, ly + 4 / camera.scale);
+    if (z.probe && !done) {
+      const [cx, cy] = z.type === 'circle' ? [z.cx, z.cy] : [z.x + z.w / 2, z.y + z.h / 2];
+      probeRing(cx * s, cy * s, true);
+    }
   }
   ctx.restore();
 }
@@ -344,6 +431,7 @@ export function togglePause(){ paused = !paused; }
 export function isPaused()   { return paused; }
 
 export function resetSim() {
+  reachedZones.clear();
   clearTrail();
   resetRobot();
   resetLeds();

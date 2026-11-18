@@ -10,8 +10,8 @@ Read this **before every coding session**. Violating any rule below means rework
 
 - Every block **type ID** must match Open Roberta exactly (e.g., `robActions_motorDiff_on_for`, `robSensors_ultrasonic_getSample`).
 - Every block **visual shape, dropdown options, default values, and argument order** must match the XML files in `reference_openroberta/`.
-- Block **labels** must match Open Roberta's PT-PT translation (e.g., `conduzir ◇ a velocidade ◇ % distância ◇ cm`).
-- The **toolbox structure** (categories, subcategories, order) must match `program.toolbox.beginner.xml` and `program.toolbox.expert.xml`.
+- Block **labels** must match Open Roberta's PT-PT translation (e.g., `conduzir ◇ a velocidade ◇ % distância ◇ cm`). Exception: clearer PT-PT wording (labels, dropdowns, messages) from `src/blockly/ptClarity.js`, display only ([decision 0014](docs/decisions/0014-clearer-pt-wording-display-only.md)).
+- The **toolbox structure** (categories, subcategories, order) must match `program.toolbox.beginner.xml` and `program.toolbox.expert.xml`. Exception: a few blocks are moved from beginner to expert only (`MOVED_TO_EXPERT`, [decision 0015](docs/decisions/0015-trimmed-beginner-toolbox.md)).
 
 ## 2. Source of Truth
 
@@ -88,6 +88,8 @@ Map PNGs use three reserved colours. They are invisible to all sensors and do NO
 | Magenta | `#ff00ff` | Obstacle wall — robot collision halt |
 | Cyan    | `#00ffff` | Spawn zone body — centroid = robot start position |
 | Yellow  | `#ffff00` | Spawn direction marker — vector cyan→yellow = robot heading |
+
+**On screen** magenta walls (and everything outside the map) are drawn as bricks (`src/sim/mapTexture.js`, display only); maps and sensors still use magenta.
 
 **Collision:** only magenta triggers collision. Cyan and yellow are passable.
 **Sensors:** cyan and yellow pixels return `'white'` from `getColorNameAt`. For sensor-detectable cyan lines use `#33ffff`.

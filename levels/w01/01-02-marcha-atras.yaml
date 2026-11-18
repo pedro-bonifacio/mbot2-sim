@@ -1,0 +1,36 @@
+# World 1: driving backwards.
+id: "01-02"
+world: 1
+kind: core
+title: Marcha-atrás
+objective: O quadrado verde está atrás de ti. Anda para trás e pára com o anel amarelo do robô dentro dele.
+concepts: [andar para trás]
+assumes: [andar uma distância]
+toolbox: beginner
+timeLimit: 20
+
+map:
+  items:
+    - patch: { x: 70, y: 51.25, w: 15, h: 20, colour: green }
+
+spawn: { x: 120, y: 61.25, heading: 0 }
+
+zones:
+  - { id: alvo, label: quadrado verde, x: 70, y: 51.25, w: 15, h: 20 }
+
+goals:
+  - robotStoppedIn: { zone: alvo, probe: centre }
+  - noCollision
+
+solution: |
+  robotAPI.drive_for("BACKWARD", 30, 42);
+
+antiSolutions:
+  - name: para a frente
+    why: O quadrado está atrás do robô, não à frente.
+    code: |
+      robotAPI.drive_for("FOREWARD", 30, 42);
+  - name: distância errada
+    why: Pára antes de chegar ao quadrado.
+    code: |
+      robotAPI.drive_for("BACKWARD", 30, 20);

@@ -53,3 +53,4 @@ in `localStorage` is trivially editable. The teacher wants to evaluate on the re
 ## Amendments
 
 - **2026-11-17:** No realism mode and no tolerance-driven level design. The teacher handles the sim-to-real gap in class, and retries on the mat are allowed. See [0012](0012-teacher-owns-guidance-and-sim-to-real.md).
+- **2026-11-18:** The evaluation set is the **random courses** in [`CURRICULUM.md`](../CURRICULUM.md#random-courses-evaluation): 4 standard and 7 advanced, all kept, students choose. The teacher builds each course at random from tape, coloured paper and boxes, so programs must adapt (no marked variant positions).

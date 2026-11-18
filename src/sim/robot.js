@@ -1,3 +1,4 @@
+import { ROBOT_LENGTH_CM } from './constants.js';
 // Hard-coded mBot 2 constants from configuration.default.xml
 export const ROBOT_CONSTANTS = {
   WHEEL_DIAMETER_CM: 6.5,
@@ -38,6 +39,13 @@ export function setSpawn(x, y, theta) {
 
 export function getSpawn() {
   return { spawnX: _spawnX, spawnY: _spawnY, spawnHeading: _spawnTheta };
+}
+
+/** Probe point of the robot in world cm: its centre, or the middle of its front bumper. */
+export function robotProbePoint(probe = 'centre') {
+  if (probe !== 'front') return [robot.x, robot.y];
+  const h = ROBOT_LENGTH_CM / 2;
+  return [robot.x + Math.cos(robot.theta) * h, robot.y + Math.sin(robot.theta) * h];
 }
 
 export function resetRobot() {

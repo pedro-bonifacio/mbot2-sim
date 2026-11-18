@@ -39,6 +39,7 @@
     "title": { "type": "string" },
     "objective": { "type": "string", "description": "PT-PT: what to do, shown to the student" },
     "briefing": { "type": "string" },
+    "starter": { "type": "string", "description": "Program the level opens with (Blockly XML as saved by the sim, or an Open Roberta export), e.g. a broken program to fix. levels:check requires it to fail at least one seed." },
     "concepts": { "type": "array", "items": { "type": "string" } },
     "assumes": { "type": "array", "items": { "type": "string" } },
     "toolbox": { "enum": ["beginner", "expert"] },

@@ -1,4 +1,5 @@
 import * as Blockly from 'blockly';
+import { registerRenderer, RENDERER } from './renderer.js';
 import * as Pt from 'blockly/msg/pt';
 import { ptMessages } from '../i18n/pt.js';
 import { orToolbox } from './toolboxes/index.js';
@@ -41,7 +42,9 @@ export function registerAllBlocks() {
 export function initBlockly() {
   registerAllBlocks();
 
+  registerRenderer();
   workspace = Blockly.inject('blockly-area', {
+    renderer: RENDERER,
     toolbox: orToolbox('beginner'),
     grid: { spacing: 20, length: 3, colour: '#ccc', snap: true },
     zoom: { controls: true, wheel: true, startScale: 1.0 },

@@ -1,0 +1,44 @@
+# World 1 challenge: precision. The garage is 20 cm wide; the robot is 13 cm wide.
+id: "01-09"
+world: 1
+kind: challenge
+title: Garagem
+objective: Entra na garagem sem tocar nas paredes e pára com o anel amarelo do robô lá dentro.
+concepts: [precisão]
+assumes: [andar uma distância, rodar um ângulo]
+toolbox: beginner
+timeLimit: 40
+
+map:
+  items:
+    - wall: { x: 137, y: 75, w: 3, h: 38 }
+    - wall: { x: 160, y: 75, w: 3, h: 38 }
+    - wall: { x: 137, y: 110, w: 26, h: 3 }
+
+spawn: { x: 30, y: 30, heading: 0 }
+
+zones:
+  - { id: garagem, label: garagem, x: 140, y: 85, w: 20, h: 25 }
+
+goals:
+  - robotStoppedIn: { zone: garagem, probe: centre }
+  - noCollision
+
+solution: |
+  robotAPI.drive_for("FOREWARD", 30, 120);
+  robotAPI.turn_for("RIGHT", 30, 90);
+  robotAPI.drive_for("FOREWARD", 30, 65);
+
+antiSolutions:
+  - name: desalinhado
+    why: Vira 8 cm antes do sítio certo e bate na parede da garagem.
+    code: |
+      robotAPI.drive_for("FOREWARD", 30, 112);
+      robotAPI.turn_for("RIGHT", 30, 90);
+      robotAPI.drive_for("FOREWARD", 30, 65);
+  - name: à porta
+    why: Pára à porta, sem entrar.
+    code: |
+      robotAPI.drive_for("FOREWARD", 30, 120);
+      robotAPI.turn_for("RIGHT", 30, 90);
+      robotAPI.drive_for("FOREWARD", 30, 40);

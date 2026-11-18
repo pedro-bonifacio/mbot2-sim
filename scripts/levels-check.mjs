@@ -17,7 +17,7 @@ import pngjs from 'pngjs';
 
 console.log = () => {};   // silence developer logs from the sim
 const print = (s) => process.stdout.write(s + '\n');
-const { ROOT } = await import('./lib/sim.mjs');
+const { ROOT, programFromText } = await import('./lib/sim.mjs');
 const { levelFiles, loadLevelFile, LEVELS_DIR } = await import('./lib/levels.mjs');
 const imp = (p) => import(path.join(ROOT, p));
 const { prepareLevel, testSeeds } = await imp('src/levels/level.js');
@@ -97,6 +97,16 @@ for (const file of levelFiles()) {
         if (verbose) results.forEach((r, i) => notes.push(`"${anti.name}", seed ${seeds[i]}: ${describe(r)}`));
         if (!failing.length) problems.push(`anti-solution "${anti.name}" passes every seed — the variants don't catch it`);
         else notes.push(`anti-solution "${anti.name}" fails ${failing.length}/${seeds.length} seeds`);
+      }
+      if (level.starter) {
+        let code = null;
+        try { code = programFromText(level.starter).code; } catch (e) { problems.push(`starter program does not load: ${e.message}`); }
+        if (code) {
+          const results = seeds.map((seed) => runLevel({ level, code, seed }));
+          if (verbose) results.forEach((r, i) => notes.push(`starter, seed ${seeds[i]}: ${describe(r)}`));
+          if (results.every((r) => r.verdict && r.verdict.passed)) problems.push('starter program passes every seed — there is nothing to fix');
+          else notes.push(`starter fails ${results.filter((r) => !r.verdict || !r.verdict.passed).length}/${seeds.length} seeds`);
+        }
       }
       if (preview) writePreview(level, seeds[0]);
     }

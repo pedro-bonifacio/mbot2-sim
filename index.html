@@ -53,14 +53,15 @@
       <section id="level-panel" hidden></section>
       <div id="canvas-wrapper">
         <canvas id="sim-canvas" width="1600" height="980"></canvas>
+        <button id="btn-ruler" type="button" aria-pressed="false" title="Mede distâncias: arrasta no mapa. Começa em cima do robô para saberes também quanto rodar. (Esc para sair)">📏 Régua</button>
       </div>
       <div class="screen-console-row">
+        <div id="button-row-wrapper">
+          <span class="button-row-label">Controlador</span>
+          <div id="button-row"></div>
+        </div>
         <canvas id="display-canvas" width="256" height="256"></canvas>
         <div id="console-panel"></div>
-      </div>
-      <div id="button-row-wrapper">
-        <span class="button-row-label">Controlador:</span>
-        <div id="button-row"></div>
       </div>
     </div>
   </main>

@@ -1,0 +1,41 @@
+# World 1: drive, turn, drive round a corner.
+id: "01-04"
+world: 1
+kind: core
+title: Em L
+objective: Contorna a caixa e pára com o anel amarelo do robô dentro do quadrado verde.
+concepts: [sequência]
+assumes: [andar uma distância, rodar um ângulo]
+toolbox: beginner
+timeLimit: 30
+
+map:
+  items:
+    - box:   { x: 1, y: 45, w: 114, h: 76.5 }
+    - patch: { x: 122.5, y: 82.5, w: 15, h: 15, colour: green }
+
+spawn: { x: 30, y: 25, heading: 0 }
+
+zones:
+  - { id: alvo, label: quadrado verde, x: 122.5, y: 82.5, w: 15, h: 15 }
+
+goals:
+  - robotStoppedIn: { zone: alvo, probe: centre }
+  - noCollision
+
+solution: |
+  robotAPI.drive_for("FOREWARD", 30, 100);
+  robotAPI.turn_for("RIGHT", 30, 90);
+  robotAPI.drive_for("FOREWARD", 30, 65);
+
+antiSolutions:
+  - name: só a primeira parte
+    why: Chega à esquina mas não vira.
+    code: |
+      robotAPI.drive_for("FOREWARD", 30, 100);
+  - name: vira cedo demais
+    why: Vira antes de passar a caixa e bate nela.
+    code: |
+      robotAPI.drive_for("FOREWARD", 30, 60);
+      robotAPI.turn_for("RIGHT", 30, 90);
+      robotAPI.drive_for("FOREWARD", 30, 65);

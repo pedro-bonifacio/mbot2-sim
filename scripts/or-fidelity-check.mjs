@@ -24,6 +24,7 @@ const dyn = JSON.parse(fs.readFileSync(path.join(LIVE, 'or-mbot2-dynamic.json'),
 
 const { registerAllBlocks } = await import(path.join(ROOT, 'src/blockly/index.js'));
 const { OR } = await import(path.join(ROOT, 'src/blockly/generated/orSpecs.js'));
+const { clarifyLabel } = await import(path.join(ROOT, 'src/blockly/ptClarity.js'));
 registerAllBlocks();
 
 // Intentional differences, each with a reason. Keyed "type: problem-prefix".
@@ -49,10 +50,21 @@ function load(xml) {
 
 function describeSim(block) {
   const inputs = [];
+  // Blockly moves a word shared by every option of a dropdown into a label before or
+  // after it ("para" in "para a frente | para trás"); that is part of the dropdown.
+  // (Blockly inserts it as a new label next to the dropdown, so match by position and text.)
+  const affixes = new Set();
+  for (const inp of block.inputList) inp.fieldRow.forEach((f, i, row) => {
+    if (!(f instanceof Blockly.FieldDropdown)) return;
+    const before = row[i - 1], after = row[i + 1];
+    if (f.prefixField && before && !before.name && before.getText() === f.prefixField) affixes.add(before);
+    if (f.suffixField && after && !after.name && after.getText() === f.suffixField) affixes.add(after);
+  });
   for (const inp of block.inputList) {
     if (inp.name === 'BUTTONS') continue; // +/− buttons (OR uses mutator icons)
     const fields = [];
     for (const f of inp.fieldRow) {
+      if (affixes.has(f)) continue;
       const isDrop = f instanceof Blockly.FieldDropdown;
       fields.push({
         name: f.name || null,
@@ -74,9 +86,11 @@ function describeSim(block) {
 }
 
 const norm = (c) => (c == null ? null : JSON.stringify([].concat(c).slice().sort()));
-const labels = (shape) => shape.flatMap(i => i.fields)
+// Open Roberta's labels pass through the sim's clearer PT-PT wording (decision 0014)
+// before comparing, so the check still catches any other difference.
+const labels = (shape, type) => shape.flatMap(i => i.fields)
   .filter(f => !f.name || (!IGNORE_LABEL_FIELDS.has(f.name) && f.kind === 'label'))
-  .map(f => String(f.text).trim()).filter(Boolean);
+  .map(f => String(clarifyLabel(type, String(f.text))).trim()).filter(Boolean);
 const simLabels = (inputs) => inputs.flatMap(i => i.fields)
   .filter(f => !f.name && f.visible)
   .map(f => String(f.text).trim()).filter(Boolean);
@@ -131,7 +145,7 @@ function compare(type, orEntry, simBlock) {
   }
 
   // Visible labels, in order.
-  const ol = labels(orEntry.shape), sl = simLabels(sim.inputs);
+  const ol = labels(orEntry.shape, type), sl = simLabels(sim.inputs);
   if (JSON.stringify(ol) !== JSON.stringify(sl)) p.push(`labels differ — OR ${JSON.stringify(ol)} vs sim ${JSON.stringify(sl)}`);
 
   // Serialisation: own field values + mutation attributes.
