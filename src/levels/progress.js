@@ -100,37 +100,6 @@ export function forgetAccount(username) {
   if (account === username) data = null;
 }
 
-/** True if the guest entry (progress made without an account) has stars or programs. */
-export function guestHasProgress() {
-  const g = load(null);
-  return Object.keys(g.stars).length > 0 || Object.keys(g.programs).length > 0;
-}
-
-/**
- * Moves the guest progress into the current account: stars are added, guest programs
- * fill only the levels the account has no program for. All of it becomes pending, and
- * the guest entry is emptied so the next student on this computer is not asked again.
- */
-export function mergeGuest() {
-  if (!account) return;
-  const g = load(null);
-  const d = current();
-  for (const [id, s] of Object.entries(g.stars)) {
-    const mine = d.stars[id] || (d.stars[id] = { one: false, two: false });
-    if ((s.one && !mine.one) || (s.two && !mine.two)) {
-      mine.one = mine.one || s.one;
-      mine.two = mine.two || s.two;
-      markStars(id);
-    }
-  }
-  for (const [slot, xml] of Object.entries(g.programs)) {
-    if (!(slot in d.programs)) { d.programs[slot] = xml; markProgram(slot); }
-  }
-  if (!persist()) return;   // keep the guest copy if the account's could not be saved
-  const ls = storage();
-  try { ls.removeItem(PROGRESS_KEY); ls.removeItem(LEGACY_PROGRAM_KEY); } catch (e) {}
-}
-
 /** What the server does not have yet: { stars: {id: {one, two}}, programs: {slot: xml | null} }. */
 export function pendingChanges() {
   const d = current();

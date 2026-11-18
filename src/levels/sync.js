@@ -149,8 +149,10 @@ export function initSync() {
 /**
  * Logs in and gets the account's progress from the server. Resolves { ok: true,
  * username } or { ok: false, error: 'wrong_login' | 'too_many_tries' | 'offline' |
- * 'not_configured' }. The caller saves the editor's program first, may then merge the
- * guest progress, and must call finishLogin() to show the account's program and save.
+ * 'not_configured' }. The caller saves the editor's program first and then calls
+ * finishLogin() to show the account's program and save. Progress made without an
+ * account is never moved into one (it could be someone else's); it stays in this
+ * browser's guest entry.
  */
 export async function login(username, password) {
   let r;
@@ -167,7 +169,7 @@ export async function login(username, password) {
   return { ok: true, username: session.username };
 }
 
-/** After login (and any guest merge): the editor shows the account's program; save. */
+/** After login: the editor shows the account's program; save. */
 export function finishLogin() {
   onAccountChange();
   return push();

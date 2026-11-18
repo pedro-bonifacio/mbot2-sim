@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 ### Added
-- **Class accounts**: students log in ("👤 Entrar") with a username like `7b-12` and the password from their slip; stars and programs then follow them to any computer, saved automatically (⚠ shown when offline, sent when the connection returns). Not logged in, everything works as before. The teacher creates a class from a CSV (`number`, `names`) with `node turmas.mjs create 7B alunos.csv` on the shared drive; names never reach the server (decision 0016).
+- **Class accounts**: students log in ("👤 Entrar") with a username like `7b-12` and the password from their slip; stars and programs then follow them to any computer, saved automatically (⚠ shown when offline, sent when the connection returns). Not logged in, everything works as before. The teacher creates a class from a CSV (`number`, `names`) with `node turmas.mjs create 7B` on the shared drive (one folder per class in `turmas/`); names never reach the server (decision 0016). Progress made without an account, or from a progress file, never enters an account.
 - 04-01 and 05-01 say that the front of the robot (the yellow ring) is what counts.
 ### Changed
 - **Clearer Portuguese on every block**: no more English leftovers ("speed RPM", "turn RGB LED on", "quad rgb sensor"), PT-PT forms ("premido", "devolve", "faz", "Ação"), units in parentheses ("distância (cm)"), sensors read "ler … do ultrassom / do sensor de cor". Display only: programs and the Open Roberta export are unchanged.

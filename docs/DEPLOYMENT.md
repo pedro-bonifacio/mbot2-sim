@@ -142,7 +142,7 @@ other host the sim still works; "Entrar" then says the site has no accounts.
 6. `npm run turmas:install` copies the class tool to the shared drive
    (`/mnt/nas/career/professor-tic/mbot2-turmas`, or pass another folder). There, copy
    `config.example.json` to `config.json` with the site address and the `TEACHER_KEY`.
-   Then `node turmas.mjs create 7B alunos-7B.csv` (see its `README.txt`).
+   Then put a class CSV in `turmas/7B/` and run `node turmas.mjs create 7B` (see its `README.txt`).
 
 **Development:** `npx wrangler d1 migrations apply mbot2-sim --local` once, then
 `npm run build && npm run api:dev` (API with a local D1 on port 8788; secrets from

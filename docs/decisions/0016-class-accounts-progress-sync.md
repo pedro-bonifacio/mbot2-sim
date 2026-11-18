@@ -19,19 +19,22 @@ Each student gets an account made by the teacher; the sim syncs stars and per-le
 programs to a small API on the same Cloudflare Pages project (Pages Functions + D1,
 free tier). **No names are sent to the server.**
 
-- **Accounts.** The teacher runs `turmas create <turma> <csv>` (a Node script on the
-  teacher's shared drive, source in `tools/turmas/`). The CSV has columns `number` and
-  `names`. Usernames are `<turma>-<number>` (e.g. `7b-12`); passwords are
-  `animal-colour-NN` from a curated word list (nothing a student could be teased
-  with). The script writes `<turma>-passwords.csv` (number, names, username, password)
-  next to itself and sends the server only usernames and passwords; the server stores
-  salted PBKDF2 hashes.
+- **Accounts.** The teacher runs `node turmas.mjs create <turma>` (a Node script on the
+  teacher's shared drive, source in `tools/turmas/`), which reads the class CSV in
+  `turmas/<turma>/` (columns `number` and `names`). Usernames are `<turma>-<number>`
+  (e.g. `7b-12`); passwords are `animal-colour-NN` from a curated word list (nothing a
+  student could be teased with). The script writes `<turma>-passwords.csv` (number,
+  names, username, password) in the same folder and sends the server only usernames
+  and salted PBKDF2 hashes.
 - **Storage.** D1 holds, per username: password hash, and per level the stars and the
   last program (Blockly XML). Nothing else: no names, emails or IP logs kept by us.
 - **Sync.** Logged in, the sim saves to the server at most every 15 s and when the page
   is hidden, only what changed. Unsynced local edits win over the server copy; stars
   are only ever added. Not logged in, the sim works exactly as before (browser only).
   The progress file stays as a backup.
+- **Nothing from outside enters an account.** Progress made without an account is never
+  moved into one, and "Abrir progresso" is refused while logged in: on a shared computer
+  it could be someone else's work.
 - **Sessions.** Login returns an HMAC-signed token valid 12 h (one school day), kept in
   the browser. "Sair" removes it and this computer's copy of the account's progress.
 - **Teacher.** Class endpoints need a teacher key (a Pages secret, also in the script's

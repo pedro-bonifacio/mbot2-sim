@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 // The teacher's class tool for the mBot 2 sim (decision 0016). Lives on the teacher's
-// shared drive next to config.json and the class password files; the source is
-// tools/turmas/ in the sim's repo (install with `npm run turmas:install`).
+// shared drive next to config.json; each class has a folder turmas/<class>/ with its
+// students CSV and password file. Source: tools/turmas/ in the sim's repo (install
+// with `npm run turmas:install`).
 //
-//   node turmas.mjs create 7B alunos-7B.csv   accounts for a class (CSV: number, names)
+//   node turmas.mjs create 7B                 accounts from the CSV in turmas/7B/
+//                                             (columns number, names)
 //   node turmas.mjs add 7B 23 "Nome Apelido"  one more student
 //   node turmas.mjs reset 7B 12               new password for a student
 //   node turmas.mjs show 7B                   progress per student
@@ -66,7 +68,31 @@ async function request(cfg, method, route, body) {
   return { status: res.status, data };
 }
 
-const passwordsFile = (turma) => path.join(HERE, `${turma.toUpperCase()}-passwords.csv`);
+const CLASSES = path.join(HERE, 'turmas');
+const isPasswords = (f) => /-passwords\.csv$/i.test(f);
+
+/** turmas/<class>/: an existing folder in any letter case, else turmas/<CLASS>. */
+function classDir(turma) {
+  const want = turma.toLowerCase();
+  if (fs.existsSync(CLASSES)) {
+    const found = fs.readdirSync(CLASSES, { withFileTypes: true }).find((d) => d.isDirectory() && d.name.toLowerCase() === want);
+    if (found) return path.join(CLASSES, found.name);
+  }
+  return path.join(CLASSES, turma.toUpperCase());
+}
+
+const passwordsFile = (turma) => path.join(classDir(turma), `${turma.toUpperCase()}-passwords.csv`);
+
+/** The students CSV in the class folder (the one CSV that is not the password file). */
+function studentsCsv(turma) {
+  const dir = classDir(turma);
+  const rel = path.relative(HERE, dir);
+  if (!fs.existsSync(dir)) die(`no folder ${rel}. Create it and put the class CSV (columns number, names) in it.`);
+  const csvs = fs.readdirSync(dir).filter((f) => f.toLowerCase().endsWith('.csv') && !isPasswords(f));
+  if (!csvs.length) die(`no CSV in ${rel}. Put the class CSV (columns number, names) there.`);
+  if (csvs.length > 1) die(`more than one CSV in ${rel} (${csvs.join(', ')}); leave only the class list.`);
+  return path.join(dir, csvs[0]);
+}
 
 function readPasswords(turma) {
   const file = passwordsFile(turma);
@@ -89,12 +115,12 @@ function printTable(rows) {
 }
 
 // ── commands ───────────────────────────────────────────────────────────────────
-async function create(cfg, turmaArg, csvPath) {
-  if (!turmaArg || !csvPath) die('usage: node turmas.mjs create <class> <students.csv>');
+async function create(cfg, turmaArg) {
+  if (!turmaArg) die('usage: node turmas.mjs create <class>   (the CSV goes in turmas/<class>/)');
   const turma = cleanTurma(turmaArg);
-  if (!fs.existsSync(csvPath)) die(`file not found: ${csvPath}`);
   const out = passwordsFile(turmaArg);
-  if (fs.existsSync(out)) die(`${path.basename(out)} already exists. To add a student use "add"; to start over use "delete" first.`);
+  if (fs.existsSync(out)) die(`${path.relative(HERE, out)} already exists. To add a student use "add"; to start over use "delete" first.`);
+  const csvPath = studentsCsv(turmaArg);
   let students;
   let delimiter;
   try {
@@ -126,6 +152,7 @@ async function add(cfg, turmaArg, numberArg, name) {
   if (status === 409) die(`${student.username} already exists. For a new password use "reset ${turmaArg} ${number}".`);
   if (status !== 200) die(`server error ${status}: ${data.error || ''}`);
   const pw = readPasswords(turmaArg) || { file: passwordsFile(turmaArg), delimiter: ',', rows: [] };
+  fs.mkdirSync(path.dirname(pw.file), { recursive: true });
   pw.rows = pw.rows.filter((r) => Number(r.number) !== number).concat(student);
   savePasswords(pw.file, pw.rows, pw.delimiter);
   console.log('\n✓ Student added.\n');
@@ -153,7 +180,7 @@ async function reset(cfg, turmaArg, numberArg) {
   }
   console.log('\n✓ New password.\n');
   printTable([row]);
-  console.log(pw ? `\nUpdated in ${pw.file}\n` : `\n(no ${path.basename(passwordsFile(turmaArg))} here; write it down)\n`);
+  console.log(pw ? `\nUpdated in ${pw.file}\n` : `\n(no ${path.relative(HERE, passwordsFile(turmaArg))}; write it down)\n`);
 }
 
 const when = (ms) => (ms ? new Date(ms).toLocaleString('pt-PT', { dateStyle: 'short', timeStyle: 'short' }) : '—');
@@ -191,8 +218,8 @@ async function remove(cfg, turmaArg) {
   const { status, data } = await request(cfg, 'DELETE', `/api/teacher/turmas/${turma}`);
   if (status !== 200) die(`server error ${status}: ${data.error || ''}`);
   console.log(`\n✓ Deleted ${data.deleted ?? ''} accounts of class ${turmaArg.toUpperCase()}.`);
-  const file = passwordsFile(turmaArg);
-  if (fs.existsSync(file)) console.log(`  ${path.basename(file)} is still here; delete it too when you no longer need it.`);
+  const dir = classDir(turmaArg);
+  if (fs.existsSync(dir)) console.log(`  The folder ${path.relative(HERE, dir)} (names and passwords) is still there; delete it when you no longer need it.`);
   console.log('');
 }
 
@@ -201,7 +228,7 @@ const { args, opts } = parseArgs(process.argv.slice(2));
 const [cmd, ...rest] = args;
 const commands = { create, add, reset, show, list, delete: remove };
 if (!commands[cmd]) {
-  console.log(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 16).map((l) => l.replace(/^\/\/ ?/, '')).join('\n'));
+  console.log(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split("\n").slice(1, 17).map((l) => l.replace(/^\/\/ ?/, '')).join('\n'));
   process.exit(cmd ? 1 : 0);
 }
 try {

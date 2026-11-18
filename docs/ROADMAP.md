@@ -32,6 +32,7 @@ Done this session (details in `CHANGELOG.md → Unreleased`):
          (no HTTPS login here; SSH works).
    - [ ] Tell the school's data-protection officer (class + number + programs, no names).
    - [ ] Looks: "👤 Entrar" box, "☁ Guardado" / "⚠ Sem ligação" in the top bar.
+   - [x] Test class `TESTE` created from Windows/Linux (`turmas/TESTE/`); delete it when done.
    - [ ] Try `node turmas.mjs create` with a real class CSV exported from the school's system.
    - Later: a class overview page (the API has `GET /api/teacher/turmas/<turma>` already;
      `turmas show` prints it).

@@ -7,6 +7,7 @@ import { ptMessages as MSG } from '../i18n/pt.js';
 import { ensureStartBlock } from '../blockly/startBlock.js';
 import { onLevelChange, getLevelState, refreshLevelState } from '../levels/session.js';
 import { FREE_SLOT, getProgram, setProgram, exportProgress, importProgress } from '../levels/progress.js';
+import { loggedInAs } from '../levels/sync.js';
 import {
   isOpenRobertaXml, openRobertaToBlocklyDom, blocklyDomToOpenRoberta, openRobertaFilename,
 } from '../blockly/orFormat.js';
@@ -296,8 +297,12 @@ export function exportProgressFile() {
   appendConsoleMessage(MSG.PROGRESS_EXPORT_DONE.replace('%1', filename));
 }
 
-/** "Abrir progresso": merges a progress file (stars added, its programs replace the saved ones). */
+/**
+ * "Abrir progresso": merges a progress file (stars added, its programs replace the saved
+ * ones). Not while logged in: the file could be someone else's (decision 0016).
+ */
 export function importProgressFile(file) {
+  if (loggedInAs()) { window.alert(MSG.PROGRESS_IMPORT_ACCOUNT); return; }
   const ws = getWorkspace();
   const state = getRunState();
   if (state === RunState.RUNNING || state === RunState.PAUSED_ASYNC) stopProgram();

@@ -6,7 +6,6 @@ import {
   initSync, login, finishLogin, logout, loggedInAs, syncStatus, onSyncStatus,
   setRemoteChangeHandler, setAccountChangeHandler, setFlushHandler,
 } from '../levels/sync.js';
-import { guestHasProgress, mergeGuest } from '../levels/progress.js';
 import { flushEditor, reloadEditor } from './programIO.js';
 import { appendConsoleMessage } from './console.js';
 
@@ -98,7 +97,6 @@ export function initAccountUI() {
     }
     dialog.close();
     pass.value = '';
-    if (guestHasProgress() && window.confirm(MSG.ACCOUNT_MERGE_GUEST.replace('%1', r.username))) mergeGuest();
     finishLogin();
     appendConsoleMessage(MSG.ACCOUNT_HELLO.replace('%1', r.username));
     render();

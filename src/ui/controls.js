@@ -6,6 +6,7 @@ import { run as runProgram, stop as stopProgram, setSpeed, getSpeed } from '../r
 import { ptMessages as MSG } from '../i18n/pt.js';
 import { RunState, getRunState, onRunStateChange } from '../runtime/runState.js';
 import { saveProgram, loadProgramFromFile, newProgram, exportToOpenRoberta, exportProgressFile, importProgressFile } from './programIO.js';
+import { loggedInAs } from '../levels/sync.js';
 
 export function initControls() {
   const btnRun    = document.getElementById('btn-run');
@@ -60,7 +61,10 @@ export function initControls() {
 
   const progressInput = document.getElementById('file-input-progress');
   document.getElementById('btn-progress-export').addEventListener('click', () => exportProgressFile());
-  document.getElementById('btn-progress-import').addEventListener('click', () => progressInput.click());
+  document.getElementById('btn-progress-import').addEventListener('click', () => {
+    if (loggedInAs()) { window.alert(MSG.PROGRESS_IMPORT_ACCOUNT); return; }   // decision 0016
+    progressInput.click();
+  });
   progressInput.addEventListener('change', () => {
     const file = progressInput.files[0];
     if (file) importProgressFile(file);
