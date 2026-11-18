@@ -3,7 +3,7 @@ id: "05-01"
 world: 5
 kind: core
 title: Parar na linha
-objective: Anda em frente até encontrares a linha preta, pára em cima dela e acende os LEDs a verde.
+objective: Anda em frente até encontrares a linha preta, pára em cima dela e acende os LEDs a verde. Conta a frente do robô (o anel amarelo).
 concepts: [sensor de cor, esperar até]
 assumes: [andar, LEDs]
 toolbox: beginner

@@ -4,7 +4,7 @@ id: "04-01"
 world: 4
 kind: core
 title: Parar antes da parede
-objective: Anda em frente e pára com a frente do robô a menos de 15 cm da parede, sem lhe tocar. A parede não está sempre no mesmo sítio!
+objective: Anda em frente e pára com a frente do robô a menos de 15 cm da parede, sem lhe tocar. A parede não está sempre no mesmo sítio! Desta vez conta a frente do robô (o anel amarelo).
 concepts: [ultrassom, esperar até]
 assumes: [andar, comparação]
 toolbox: beginner
