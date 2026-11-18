@@ -1,5 +1,6 @@
 import { PX_PER_CM } from './world.js';
 import { DISPLAY_SCALE } from './constants.js';
+import { texturedMap, wallPattern } from './mapTexture.js';
 
 // Tolerance (Euclidean RGB distance) for palette matching
 const TOLERANCE = 40;
@@ -141,7 +142,23 @@ export function raycast(originX, originY, headingRad, maxDistanceCm = 300) {
 // Draw map image onto ctx in world-pixel space (camera transform already applied by caller).
 // Map PNG native resolution = world cm × DISPLAY_SCALE, so drawImage at mapWidthCm * PX_PER_CM
 // renders 1 map-px per screen-px (at camera.scale = 1).
+// Walls are shown as bricks (mapTexture.js); the textured copy is built once per map.
+let shown = null, shownFor = null;
 export function drawMap(ctx) {
   if (!offscreenCanvas) return;
-  ctx.drawImage(offscreenCanvas, 0, 0, mapWidthCm * PX_PER_CM, mapHeightCm * PX_PER_CM);
+  if (shownFor !== offscreenCanvas) {
+    shownFor = offscreenCanvas;
+    try { shown = texturedMap(offscreenCanvas, pixels); } catch (e) { shown = offscreenCanvas; }
+  }
+  ctx.drawImage(shown, 0, 0, mapWidthCm * PX_PER_CM, mapHeightCm * PX_PER_CM);
+}
+
+/** Fills the world-px rectangle with the wall bricks (what lies outside the map). */
+let pattern = null, patternCtx = null;
+export function drawOutside(ctx, x, y, w, h) {
+  if (patternCtx !== ctx) { pattern = wallPattern(ctx); patternCtx = ctx; }
+  ctx.save();
+  ctx.fillStyle = pattern;
+  ctx.fillRect(x, y, w, h);
+  ctx.restore();
 }

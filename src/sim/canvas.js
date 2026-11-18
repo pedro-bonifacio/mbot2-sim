@@ -2,7 +2,7 @@ import { robot, resetRobot, robotProbePoint, ROBOT_CONSTANTS } from './robot.js'
 import { isRulerOn, rulerDown, rulerMove, rulerUp, rulerLabel, drawRulerLine, onRulerChange } from './ruler.js';
 import { PX_PER_CM, worldToScreen } from './world.js';
 import { DISPLAY_SCALE, ROBOT_LENGTH_PX, ROBOT_WIDTH_PX } from './constants.js';
-import { drawMap, hasMap, getMapSizeCm } from './map.js';
+import { drawMap, drawOutside, hasMap, getMapSizeCm } from './map.js';
 import { ledState, resetLeds } from './leds.js';
 import { resetDisplay } from '../ui/display.js';
 import { getQuadRGBWorldPositions, getQuadRGBProbeData, getUltrasonicConeRays, resetTickCache, sensorQuadRGB } from './sensors.js';
@@ -213,7 +213,12 @@ function draw() {
 
   ctx.setTransform(camera.scale, 0, 0, camera.scale, camera.offsetX, camera.offsetY);
 
-  if (hasMap()) drawMap(ctx);
+  if (hasMap()) {
+    // Outside the map is wall (collision.js): fill the visible area with bricks first.
+    const x0 = -camera.offsetX / camera.scale, y0 = -camera.offsetY / camera.scale;
+    drawOutside(ctx, x0, y0, canvas.width / camera.scale, canvas.height / camera.scale);
+    drawMap(ctx);
+  }
 
   ctx.globalAlpha = hasMap() ? 0.25 : 1.0;
   drawGrid();

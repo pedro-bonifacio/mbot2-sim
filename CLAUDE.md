@@ -89,6 +89,8 @@ Map PNGs use three reserved colours. They are invisible to all sensors and do NO
 | Cyan    | `#00ffff` | Spawn zone body — centroid = robot start position |
 | Yellow  | `#ffff00` | Spawn direction marker — vector cyan→yellow = robot heading |
 
+**On screen** magenta walls (and everything outside the map) are drawn as bricks (`src/sim/mapTexture.js`, display only); maps and sensors still use magenta.
+
 **Collision:** only magenta triggers collision. Cyan and yellow are passable.
 **Sensors:** cyan and yellow pixels return `'white'` from `getColorNameAt`. For sensor-detectable cyan lines use `#33ffff`.
 **Authoring:** see `docs/MAP_AUTHORING.md` for the full guide.
