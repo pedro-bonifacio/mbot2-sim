@@ -157,6 +157,7 @@ world). For now a Prova is `kind: challenge` with a title starting "Prova:". Tit
 | 05-09 | B | Cruzamento | follow the line straight through a crossing | |
 | 05-10 | B | Linha tracejada | follow a line with gaps | |
 | 05-13 | B | O segundo verde | stop on the 2nd green patch, random spacing, red patches in between (no variables: repeat 2) | |
+| 05-14 | B | O robô não pára! | find the bug: opens with a `repeat forever` whose stop never lasts (a real student program) | **built** |
 | 05-11 | D | Volta rápida | a line lap, ★★★ under N seconds | ★★★ |
 | 05-12 | P | Linha livre | P1: a random track, to the red end | layout choice |
 
@@ -228,6 +229,12 @@ world). For now a Prova is `kind: challenge` with a title starting "Prova:". Tit
 | 10-05 | C | Regresso a casa | after any random route, return to the start (encoders + gyro) | |
 | 10-06 | D | Labirinto às escuras | a box maze with no junction marks, as fast as possible | ★★★ |
 | 10-07 | B | Espetáculo | free: a dance with lights and music (no goal; shown in class) | |
+
+**"Find the bug" levels** (`starter:` program, built 2026-11-18): when a student makes
+an instructive mistake, save the program and turn it into a bonus level. Good candidates
+per world: a turn in the wrong direction (W1), a wait missing between LED changes (W2),
+a repeat count off by one (W3), a threshold that is too small for the speed (W4),
+the never-ending stop (05-14), a counter never reset (W7), a function that never returns (W9).
 
 ## Sim features needed
 

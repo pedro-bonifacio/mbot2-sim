@@ -36,10 +36,16 @@ function _saveNow(ws) {
   _store(ws);
 }
 
-/** Puts the slot's saved program in the editor (an empty program if none). */
+/** The open level's starter program (e.g. a broken program to fix), or null. */
+function _starter() {
+  const st = getLevelState();
+  return (st.level && st.level.id === _slot && st.level.starter) || null;
+}
+
+/** Puts the slot's saved program in the editor (the level's starter, or an empty program, if none). */
 function _showSlot(ws) {
   ws.clear();
-  const saved = getProgram(_slot);
+  const saved = getProgram(_slot) || _starter();
   if (saved) {
     try {
       _deserialize(ws, saved);
@@ -65,6 +71,10 @@ function _serialize(ws) {
 }
 
 function _deserialize(ws, xmlText) {
+  if (isOpenRobertaXml(xmlText)) {
+    Blockly.Xml.domToWorkspace(openRobertaToBlocklyDom(xmlText), ws);
+    return;
+  }
   const parser = new DOMParser();
   const doc = parser.parseFromString(xmlText, 'application/xml');
   if (doc.querySelector('parsererror')) throw new Error('XML parse error');
@@ -237,9 +247,8 @@ export function newProgram() {
   const ws = getWorkspace();
   if (!ws) return;
   if (!window.confirm(MSG.PROGRAM_NEW_CONFIRM)) return;
-  ws.clear();
-  ensureStartBlock(ws);
   setProgram(_slot, null);
+  _showSlot(ws);   // a level with a starter program starts again from it
 }
 
 /**

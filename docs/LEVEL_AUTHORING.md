@@ -65,6 +65,14 @@ finished when `npm run levels:check <id>` says `ok`.
       stops with a goal unmet. A level where the robot must stop and then carry on sets
       `settle: never` (and maybe `stall`), or it passes at the first stop.
 
+## "Find the bug" levels
+
+A level can open with a broken program (`starter:`) for the student to fix: a real
+mistake a student made is the best source. Save the program from the sim
+(**Ficheiro ▾ → Guardar programa**) and paste the file's text under `starter: |`.
+`levels:check` makes sure the starter fails; list the *likely wrong fixes* as
+anti-solutions. Example: [`w05/05-14-o-robo-nao-para.yaml`](../levels/w05/05-14-o-robo-nao-para.yaml).
+
 ## Picking goals
 
 | The student must… | Goals |

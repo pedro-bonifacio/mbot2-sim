@@ -25,7 +25,11 @@ registerAllBlocks();
 
 /** Program file (Open Roberta export or Blockly XML) → { code (as it runs, with block highlighting), plainCode, warnings }. */
 export function loadProgram(file) {
-  const text = fs.readFileSync(path.resolve(ROOT, file), 'utf8');
+  return programFromText(fs.readFileSync(path.resolve(ROOT, file), 'utf8'));
+}
+
+/** Program text (Open Roberta export or Blockly XML) → { code, plainCode, warnings }. */
+export function programFromText(text) {
   const ws = new Blockly.Workspace();
   try {
     const dom = isOpenRobertaXml(text) ? openRobertaToBlocklyDom(text) : Blockly.utils.xml.textToDom(text);
