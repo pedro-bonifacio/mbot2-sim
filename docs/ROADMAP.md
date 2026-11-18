@@ -7,7 +7,7 @@ Last reviewed: 2026-11-17 (end of day)
 
 ---
 
-## ▶ Where we left off (2026-11-17, end of third session)
+## ▶ Where we left off (2026-11-18, end of third session)
 
 **State:** everything is on `main` (local only, not pushed); `npm run check` passes.
 Done this session (details in `CHANGELOG.md → Unreleased`):
@@ -53,13 +53,14 @@ Done this session (details in `CHANGELOG.md → Unreleased`):
    - [ ] **Editor/robot divider, yellow running block, orange trail:** drag the divider (double-click
          resets); run a program and watch the yellow outline move and the trail appear.
    - [ ] **Robot in class:** `VERIFY_ON_ROBOT.md` (10 checks).
-2. **Build, level engine (Phase C), in this order:** ~~save stars and programs per level~~
-   (done: each level keeps its own program and stars; **Guardar progresso** / **Abrir progresso**);
-   ~~level selector~~ (done: **★ Níveis**); ~~`docs/LEVEL_AUTHORING.md`~~ (done; optional
-   `/new-level` skill still open); ~~`levels:mat` printable mats~~ (dropped: maps are built by hand);
-   ~~PNG `background` in levels~~ (dropped 2026-11-17: not needed; the classroom setup is
-   coloured cardboard + boxes, see the kit item below).
-3. Then content: evaluation levels (Phase D), World 1–4 levels.
+2. **Phase C is done** (progress saving, ★ Níveis, LEVEL_AUTHORING.md). Dropped by the teacher:
+   printable mats and PNG backgrounds — evaluation maps are built by hand from coloured
+   cardboard and boxes. Still optional: a `/new-level` skill.
+   Possible small follow-up: with a level open, the robot side is ~70 px taller than an
+   800 px-high screen (the controller buttons need a little scroll).
+3. **Next: content, in a dedicated session** — World 1–4 levels and evaluation levels
+   (Phase D), following `docs/CURRICULUM.md` and `docs/LEVEL_AUTHORING.md`.
+4. `git push` only when the teacher says so (everything is local).
 
 **How we test** (decided 2026-11-17: the assistant tests itself; the teacher only checks looks):
 - `npm run check` — fidelity, codegen, variables/functions, sim tests.
