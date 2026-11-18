@@ -3,63 +3,45 @@
 Living plan. Edit freely; tick items as they ship (and log them in `../CHANGELOG.md`).
 The *why* behind items lives in [`decisions/`](decisions/README.md).
 
-Last reviewed: 2026-11-17 (end of day)
+Last reviewed: 2026-11-18 (end of fourth session)
 
 ---
 
-## ▶ Where we left off (2026-11-18, end of third session)
+## ▶ Where we left off (2026-11-18, end of fourth session)
 
 **State:** everything is on `main` (local only, not pushed); `npm run check` passes.
+Dev server left running for the teacher: http://100.114.196.108:5173/ (stops after 2 h at most).
 Done this session (details in `CHANGELOG.md → Unreleased`):
-- **Level rules** ([0013](decisions/0013-when-a-level-run-is-judged.md)) — wall always fails, early
-  fail 5 s after stopping with a goal unmet, per-level `settle` / `stall`, variant 1 first.
-- **Progress saved** — stars and one program per level in localStorage;
-  **Guardar progresso** / **Abrir progresso** file (`src/levels/progress.js`).
-- **★ Níveis** level selector — worlds, stars, free maps; a level opens with its toolbox.
-- **UI tidy-up** — one-row top bar with **Ficheiro ▾** menu, fast-forward ×1/×2/×4, result
-  line + **Próximo nível** in the level panel, reopen last level, tab title + icon,
-  all student messages in `pt.js`; resizable editor/robot split, running block outlined,
-  robot trail; single-layout levels give ★★ on a pass.
-- `docs/LEVEL_AUTHORING.md`. (`levels:mat` PDF mats were built, then removed: the teacher builds
-  evaluation maps by hand from cardboard and boxes, using `levels/_previews/`.)
-- Earlier sessions: Open Roberta export, real-footprint collision, fixed ticks, seeded
-  random, level engine v1 (see CHANGELOG).
+- **Course plan** in `CURRICULUM.md`: 10 worlds (~90 levels), each world ends with a **Prova**
+  (★★ = may skip the world), and 11 **random courses** P1–P11 for evaluation on the real robot
+  (0008 amended: all kept, students choose).
+- **World 1 built** (01-01 … 01-10) + **05-14**, a find-the-bug level (`starter:` program).
+- Yellow ring + green zones, 📏 Régua, brick walls, program carried into untouched levels.
+- Blocks: clearer PT-PT wording everywhere ([0014](decisions/0014-clearer-pt-wording-display-only.md)),
+  even spacing (custom renderer), trimmed beginner toolbox ([0015](decisions/0015-trimmed-beginner-toolbox.md));
+  calmer running-block outline; compact controller pad.
+- Tried and dropped: showing blocks world by world (it narrowed students' solutions).
 
 **Start the next session with:**
 
 1. **Teacher checks** (dev server, see "How we test"):
-   - [ ] **Exportar para Open Roberta:** load `reference_openroberta/export-samples/openroberta/01-simples.xml`,
-         export it, *Importar programa* in Open Roberta Lab; with a robot, run it (VERIFY_ON_ROBOT #10).
-   - [ ] **Collision looks:** `scripts/fixtures/collision/canto-rodar.xml` on `default` — the robot
-         stops turning at ~12° and its outline turns red until Reiniciar.
-   - [ ] **Level looks:** open `?level=04-01` — level panel above the robot, dashed blue zone
-         "perto da parede". Load `scripts/fixtures/levels/04-01-ultrassom.xml` → Executar →
-         ✓ goals, "★ Objetivo cumprido"; **Testar todas as variantes** → ★★. Then
-         `04-01-distancia-fixa.xml` → ✗ with the reason; **Outra variante** moves the wall.
-   - [x] **Level rules decided** ([decision 0013](decisions/0013-when-a-level-run-is-judged.md)):
-     pass after 2 s still with the goals met; touching a wall always fails; a robot stopped
-     5 s with a goal unmet fails early; levels can set `settle` / `stall`; variant 1 first.
-   - [ ] **Progress looks:** open `?level=04-01`, build anything, switch to a free map and
-         back — each keeps its own program; reload — ★ and the program are still there.
-         **Guardar progresso** downloads `<Nome>_progresso_<data>.json`; in another browser
-         **Abrir progresso** brings stars and programs back.
-   - [ ] **Level selector looks:** **★ Níveis** opens a window with the levels by world
-         (id, title, ☆☆ / ★☆ / ★★, the open one outlined in blue) and the free maps; a click
-         opens it. Is it clear and big enough for the class?
-   - [ ] **Read `docs/LEVEL_AUTHORING.md`** — is the workflow how you'd want to make levels?
-   - [ ] **New top bar looks:** one row (▶ Executar in green, ×1/×2/×4, ★ Níveis + what is open,
-         **Ficheiro ▾** menu, toolbox); on a small school laptop screen too. Level panel: green/red
-         result line and **Próximo nível ›**. Tab icon.
-   - [ ] **Editor/robot divider, yellow running block, orange trail:** drag the divider (double-click
-         resets); run a program and watch the yellow outline move and the trail appear.
-   - [ ] **Robot in class:** `VERIFY_ON_ROBOT.md` (10 checks).
-2. **Phase C is done** (progress saving, ★ Níveis, LEVEL_AUTHORING.md). Dropped by the teacher:
-   printable mats and PNG backgrounds — evaluation maps are built by hand from coloured
-   cardboard and boxes. Still optional: a `/new-level` skill.
-   Possible small follow-up: with a level open, the robot side is ~70 px taller than an
-   800 px-high screen (the controller buttons need a little scroll).
-3. **Next: content, in a dedicated session** — World 1–4 levels and evaluation levels
-   (Phase D), following `docs/CURRICULUM.md` and `docs/LEVEL_AUTHORING.md`.
+   - [ ] **World 1 playthrough** (`?level=01-01` … `01-10`): angles, sizes, wording for 11-year-olds;
+         the Slalom and Z angles; the 5 s limit in 01-05; 01-06 is now "Dar a volta" (two turns).
+   - [ ] **Yellow ring and ✓ zones:** the ring on the robot, the dashed ring in the target, the
+         zone turning green with ✓; ring readable on a yellow floor (01-10).
+   - [ ] **📏 Régua:** looks of the line and label; drag from the robot gives "… cm · …° à direita".
+   - [ ] **Bricks:** walls and outside the map (zoom out); cardboard instead of bricks?
+   - [ ] **Block wording:** read the toolbox (Principiante and Avançado). Veto any of: "premido",
+         "Ação", "faz" in loops, "sen/tg", "R (direito)" — one line each in `src/blockly/ptClarity.js`.
+   - [ ] **Controller pad + layout** on a small laptop screen with a level open.
+   - [ ] **05-14:** opens with the broken program; "Novo programa" brings it back.
+   - [ ] Still open from last session: Open Roberta export on the robot (VERIFY_ON_ROBOT #10),
+         collision looks, `04-01` looks, progress file on another browser, `VERIFY_ON_ROBOT.md`.
+2. **Next build steps** (CURRICULUM.md → "Sim features needed", in order): goal values from
+   variants (text/colour/number ± tolerance) and layout choice → then Worlds 2–5; maze
+   generator + box scatter → World 6 and courses P5/P8/P9; event goals (tone, sequence,
+   survive); ★★★; keys in tests; pushable boxes (P4).
+3. Optional: a `/new-level` skill; one-page teacher sheets for the random courses.
 4. `git push` only when the teacher says so (everything is local).
 
 **How we test** (decided 2026-11-17: the assistant tests itself; the teacher only checks looks):
@@ -82,8 +64,8 @@ background browser tab (mBot 2, PT) to extract block data and to ask the server 
 MicroPython a program compiles to. Keep server requests few; see
 [decision 0011](decisions/0011-live-open-roberta-as-fidelity-oracle.md).
 
-**Waiting on decisions:** narrative framing ([0007](decisions/0007-narrative-framing.md));
-one shared evaluation mat vs. one per level; the three level rules above (1a–c).
+**Waiting on decisions:** narrative framing ([0007](decisions/0007-narrative-framing.md)) —
+level titles are neutral for now.
 
 ---
 
@@ -136,7 +118,7 @@ Format: [`LEVEL_FORMAT.md`](LEVEL_FORMAT.md); how-to: [`LEVEL_AUTHORING.md`](LEV
 
 [0008](decisions/0008-evaluation-on-physical-robot.md).
 
-- [ ] Design 3 standard (max 4/5) + 2–3 advanced (5/5) evaluation levels
+- [x] Evaluation set: 4 standard + 7 advanced random courses (CURRICULUM.md → Random courses, 0008 amended)
 - [ ] Physical mats printed and tested with the real robot (sim-to-real tolerance)
 - [ ] Teacher sheet per level: physical setup, variant positions, explanation questions, rubric
 
@@ -144,12 +126,12 @@ Format: [`LEVEL_FORMAT.md`](LEVEL_FORMAT.md); how-to: [`LEVEL_AUTHORING.md`](LEV
 
 See [`CURRICULUM.md`](CURRICULUM.md).
 
-- [ ] World 1–4 levels (~35), playtested with students
+- [ ] World 1–4 levels (~35), playtested with students — World 1 built 2026-11-18
 
 ## Phase F — Content, second wave + QoL tier 2
 
 - [ ] World 5–10 levels
-- [ ] Resizable split between Blockly and sim; collapsible console
+- [x] Resizable split between Blockly and sim; collapsible console (split done)
 - [ ] Drag robot to set a test start position (sandbox only)
 - [ ] Friendlier PT-PT runtime errors (which block, where)
 - [ ] Ambient light + microphone sliders
