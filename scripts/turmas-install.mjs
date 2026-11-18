@@ -16,7 +16,7 @@ const copies = [
   ['tools/turmas/turmas.mjs', 'turmas.mjs'],
   ['tools/turmas/lib.js', 'lib.js'],
   ['server/password.js', 'password.js'],   // the same hashing the server checks
-  ['tools/turmas/README.txt', 'README.txt'],
+  ['tools/turmas/README.md', 'README.md'],
   ['tools/turmas/config.example.json', 'config.example.json'],
 ];
 for (const [from, to] of copies) fs.copyFileSync(path.join(ROOT, from), path.join(target, to));
