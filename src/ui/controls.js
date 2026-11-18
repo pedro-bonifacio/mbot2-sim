@@ -1,6 +1,6 @@
 import { resetSim, isPaused, pauseSim, resumeSim, resetCamera } from '../sim/canvas.js';
 import { appendConsoleMessage } from './console.js';
-import { getWorkspace } from '../blockly/index.js';
+import { setToolboxMode, getWorkspace } from '../blockly/index.js';
 import { run as runProgram, stop as stopProgram, setSpeed, getSpeed } from '../runtime/runLoop.js';
 import { ptMessages as MSG } from '../i18n/pt.js';
 import { RunState, getRunState, onRunStateChange } from '../runtime/runState.js';
@@ -75,6 +75,10 @@ export function initControls() {
     }
   });
 
+  const toolboxSelect = document.getElementById('toolbox-mode');
+  if (toolboxSelect) {
+    toolboxSelect.addEventListener('change', (e) => setToolboxMode(e.target.value));
+  }
 
   onRunStateChange((state) => {
     const running = state === RunState.RUNNING || state === RunState.PAUSED_ASYNC;

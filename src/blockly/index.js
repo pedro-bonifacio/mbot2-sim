@@ -60,10 +60,9 @@ export function initBlockly() {
   return workspace;
 }
 
-/** Shows the beginner or expert toolbox; with `allowed` (a Set of block types), only those blocks. */
-export function setToolboxMode(mode, allowed = null) {
+export function setToolboxMode(mode) {
   if (!workspace) return;
-  workspace.updateToolbox(orToolbox(mode === 'expert' ? 'expert' : 'beginner', allowed));
+  workspace.updateToolbox(orToolbox(mode === 'expert' ? 'expert' : 'beginner'));
 }
 
 export function getWorkspace() {

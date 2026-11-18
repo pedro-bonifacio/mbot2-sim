@@ -10,7 +10,6 @@ import { initProgramIO }   from './ui/programIO.js';
 import { initLevelPanel }  from './ui/levelPanel.js';
 import { initLevelSelector } from './ui/levelSelector.js';
 import { initSplitter } from './ui/splitter.js';
-import { initToolboxMode } from './ui/toolboxMode.js';
 import { initBlockHighlight } from './ui/blockHighlight.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -27,7 +26,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   initSplitter();
   initBlockHighlight();
   await initMapSelector();
-  initToolboxMode();   // after the map selector has opened ?level= or the last level
   // Dev server only (stripped from builds): window.__dev for automated UI checks.
   if (import.meta.env.DEV) (await import('./dev/devHooks.js')).installDevHooks();
   console.log('[mbot2-sim] Ready.');
