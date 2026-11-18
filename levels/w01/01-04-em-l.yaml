@@ -3,7 +3,7 @@ id: "01-04"
 world: 1
 kind: core
 title: Em L
-objective: Contorna a caixa e pára com o centro do robô dentro do quadrado verde.
+objective: Contorna a caixa e pára com o anel amarelo do robô dentro do quadrado verde.
 concepts: [sequência]
 assumes: [andar uma distância, rodar um ângulo]
 toolbox: beginner

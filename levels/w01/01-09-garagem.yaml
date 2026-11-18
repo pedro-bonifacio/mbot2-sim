@@ -3,7 +3,7 @@ id: "01-09"
 world: 1
 kind: challenge
 title: Garagem
-objective: Entra na garagem sem tocar nas paredes e pára com o centro do robô lá dentro.
+objective: Entra na garagem sem tocar nas paredes e pára com o anel amarelo do robô lá dentro.
 concepts: [precisão]
 assumes: [andar uma distância, rodar um ângulo]
 toolbox: beginner

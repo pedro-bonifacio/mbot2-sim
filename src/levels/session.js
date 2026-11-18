@@ -69,9 +69,24 @@ export function loadLevel(id, seedIndex = 0) {
   respawnRobot(mapInfo);
   resetSim();
   resetCamera();
-  setZoneOverlay(Object.values(p.zones));
+  setZoneOverlay(overlayZones(p));
   setRunObserver(observer);
   emit();
+}
+
+/**
+ * Zones for the canvas overlay, each with the robot probe a goal judges it by (the
+ * yellow ring drawn on the robot) and whether it is a pass-through zone (stays ✓ once
+ * reached).
+ */
+function overlayZones(p) {
+  const marks = {};
+  for (const g of p.goals) {
+    if (g.type === 'reachZone' || g.type === 'robotStoppedIn') {
+      marks[g.zone] = { probe: g.probe || 'centre', latch: g.type === 'reachZone' };
+    }
+  }
+  return Object.values(p.zones).map((z) => ({ ...z, ...(marks[z.id] || {}) }));
 }
 
 /** Next test variant of the current level. */

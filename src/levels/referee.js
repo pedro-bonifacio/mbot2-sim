@@ -1,7 +1,6 @@
-import { robot } from '../sim/robot.js';
+import { robot, robotProbePoint } from '../sim/robot.js';
 import { ledState } from '../sim/leds.js';
 import { getDisplayState } from '../ui/display.js';
-import { ROBOT_LENGTH_CM } from '../sim/constants.js';
 import { FLOOR_COLOURS } from './level.js';
 
 // Judges a run against a prepared level's goals (decision 0006). Called once per
@@ -29,11 +28,7 @@ const COLOUR_PT = { red: 'vermelho', yellow: 'amarelo', green: 'verde', cyan: 'c
 const hex = (rgb) => '#' + rgb.map((c) => c.toString(16).padStart(2, '0')).join('');
 
 /** Probe point of the robot in world cm: its centre, or the middle of its front bumper. */
-export function probePoint(probe = 'centre') {
-  if (probe !== 'front') return [robot.x, robot.y];
-  const h = ROBOT_LENGTH_CM / 2;
-  return [robot.x + Math.cos(robot.theta) * h, robot.y + Math.sin(robot.theta) * h];
-}
+export const probePoint = robotProbePoint;
 
 export function inZone(zone, [x, y]) {
   if (zone.type === 'circle') return (x - zone.cx) ** 2 + (y - zone.cy) ** 2 <= zone.r ** 2;
@@ -45,8 +40,8 @@ export function goalLabel(goal, prepared) {
   if (goal.label) return goal.label;
   const zone = goal.zone && (prepared.zones[goal.zone].label || goal.zone);
   switch (goal.type) {
-    case 'reachZone': return `Chegar à zona «${zone}»`;
-    case 'robotStoppedIn': return `Parar com ${goal.probe === 'front' ? 'a frente' : 'o centro'} do robô na zona «${zone}»`;
+    case 'reachZone': return `Passar o anel amarelo do robô pela zona «${zone}»`;
+    case 'robotStoppedIn': return `Parar com o anel amarelo do robô (${goal.probe === 'front' ? 'a frente' : 'o centro'}) dentro da zona «${zone}»`;
     case 'noCollision': return 'Não tocar nas paredes';
     case 'displayShows': return `Mostrar «${goal.text}» no ecrã`;
     case 'ledColour': return `Acender os LEDs a ${COLOUR_PT[goal.colour] || goal.colour}`;

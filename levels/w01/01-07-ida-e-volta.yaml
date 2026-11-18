@@ -3,7 +3,7 @@ id: "01-07"
 world: 1
 kind: bonus
 title: Ida e volta
-objective: Vai até ao quadrado azul e volta para o quadrado verde de onde partiste. Pára com o centro do robô dentro do verde.
+objective: Vai até ao quadrado azul e volta para o quadrado verde de onde partiste. Pára com o anel amarelo do robô dentro do verde.
 concepts: [sequência]
 assumes: [andar uma distância, rodar um ângulo]
 toolbox: beginner

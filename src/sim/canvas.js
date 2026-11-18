@@ -1,4 +1,4 @@
-import { robot, resetRobot, ROBOT_CONSTANTS } from './robot.js';
+import { robot, resetRobot, robotProbePoint, ROBOT_CONSTANTS } from './robot.js';
 import { PX_PER_CM, worldToScreen } from './world.js';
 import { DISPLAY_SCALE, ROBOT_LENGTH_PX, ROBOT_WIDTH_PX } from './constants.js';
 import { drawMap, hasMap, getMapSizeCm } from './map.js';
@@ -23,8 +23,39 @@ export function setFrameHook(fn) { frameHook = fn; }
 
 // Level zones (decision 0006): referee-only areas drawn as a translucent overlay.
 // Sensors never see them. [{ id, label?, type: 'rect'|'circle', … cm }] or null.
+// A zone with a `probe` ('centre' | 'front') is judged by that point of the robot: the
+// point is drawn on the robot as a yellow ring, an empty ring marks the zone's middle,
+// and the zone turns green while the point is inside (and stays ✓ if `latch`).
 let zoneOverlay = null;
-export function setZoneOverlay(zones) { zoneOverlay = zones; }
+const reachedZones = new Set();
+export function setZoneOverlay(zones) { zoneOverlay = zones; reachedZones.clear(); }
+
+const PROBE_RING_CM = 1.6;
+function probeRing(xPx, yPx, dashed) {
+  const r = PROBE_RING_CM * PX_PER_CM;
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(xPx, yPx, r, 0, Math.PI * 2);
+  if (dashed) {
+    ctx.setLineDash([0.6 * PX_PER_CM, 0.5 * PX_PER_CM]);
+    ctx.strokeStyle = 'rgba(30, 30, 30, 0.7)';
+    ctx.lineWidth = 0.35 * PX_PER_CM;
+    ctx.stroke();
+  } else {
+    ctx.strokeStyle = '#111';
+    ctx.lineWidth = 0.9 * PX_PER_CM;
+    ctx.stroke();
+    ctx.strokeStyle = '#facc15';
+    ctx.lineWidth = 0.55 * PX_PER_CM;
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function inOverlayZone(z, [x, y]) {
+  if (z.type === 'circle') return (x - z.cx) ** 2 + (y - z.cy) ** 2 <= z.r ** 2;
+  return x >= z.x && x <= z.x + z.w && y >= z.y && y <= z.y + z.h;
+}
 
 const MAX_DT = 1 / 30;   // frame time cap: absorbs tab-suspend lag (CLAUDE.md §8)
 
@@ -270,6 +301,15 @@ function draw() {
     ctx.stroke();
   }
 
+  // Level probe points: the part of the robot the goals judge (see zoneOverlay).
+  if (zoneOverlay) {
+    const probes = new Set(zoneOverlay.map((z) => z.probe).filter(Boolean));
+    for (const pr of probes) {
+      const [px, py] = robotProbePoint(pr);
+      probeRing(px * PX_PER_CM, py * PX_PER_CM, false);
+    }
+  }
+
   // HUD — screen space (reset transform so it's always top-left regardless of pan/zoom).
   // Font size is scaled up to compensate for CSS downscaling of the canvas, so the text
   // always appears at ~14 px visual size regardless of the native canvas resolution.
@@ -324,16 +364,23 @@ function drawZones() {
   ctx.font = `${Math.max(12, 2 * s) / camera.scale}px sans-serif`;
   ctx.textBaseline = 'top';
   for (const z of zoneOverlay) {
+    const inside = z.probe ? inOverlayZone(z, robotProbePoint(z.probe)) : false;
+    if (inside && z.latch) reachedZones.add(z.id);
+    const done = inside || reachedZones.has(z.id);
     ctx.beginPath();
     if (z.type === 'circle') ctx.arc(z.cx * s, z.cy * s, z.r * s, 0, Math.PI * 2);
     else ctx.rect(z.x * s, z.y * s, z.w * s, z.h * s);
-    ctx.fillStyle = 'rgba(40, 110, 255, 0.16)';
+    ctx.fillStyle = done ? 'rgba(22, 163, 74, 0.30)' : 'rgba(40, 110, 255, 0.16)';
     ctx.fill();
-    ctx.strokeStyle = 'rgba(40, 110, 255, 0.85)';
+    ctx.strokeStyle = done ? 'rgba(21, 128, 61, 0.95)' : 'rgba(40, 110, 255, 0.85)';
     ctx.stroke();
     const [lx, ly] = z.type === 'circle' ? [(z.cx - z.r) * s, (z.cy - z.r) * s] : [z.x * s, z.y * s];
-    ctx.fillStyle = 'rgba(20, 70, 200, 0.95)';
-    ctx.fillText(z.label || z.id, lx + 4 / camera.scale, ly + 4 / camera.scale);
+    ctx.fillStyle = done ? 'rgba(21, 100, 50, 0.95)' : 'rgba(20, 70, 200, 0.95)';
+    ctx.fillText((done ? '✓ ' : '') + (z.label || z.id), lx + 4 / camera.scale, ly + 4 / camera.scale);
+    if (z.probe && !done) {
+      const [cx, cy] = z.type === 'circle' ? [z.cx, z.cy] : [z.x + z.w / 2, z.y + z.h / 2];
+      probeRing(cx * s, cy * s, true);
+    }
   }
   ctx.restore();
 }
@@ -344,6 +391,7 @@ export function togglePause(){ paused = !paused; }
 export function isPaused()   { return paused; }
 
 export function resetSim() {
+  reachedZones.clear();
   clearTrail();
   resetRobot();
   resetLeds();

@@ -4,7 +4,7 @@ id: "01-06"
 world: 1
 kind: core
 title: Curva
-objective: O quadrado verde está do outro lado da parede. Dá a volta à ponta da parede e pára com o centro do robô dentro dele. Experimenta o bloco da curva!
+objective: O quadrado verde está do outro lado da parede. Dá a volta à ponta da parede e pára com o anel amarelo do robô dentro dele. Experimenta o bloco da curva!
 concepts: [curva]
 assumes: [andar uma distância, rodar um ângulo]
 toolbox: beginner

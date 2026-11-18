@@ -3,7 +3,7 @@ id: "01-03"
 world: 1
 kind: core
 title: Virar
-objective: O quadrado verde está à tua direita. Roda para ficares virado para ele, anda e pára com o centro do robô dentro dele.
+objective: O quadrado verde está à tua direita. Roda para ficares virado para ele, anda e pára com o anel amarelo do robô dentro dele.
 concepts: [rodar um ângulo]
 assumes: [andar uma distância]
 toolbox: beginner
