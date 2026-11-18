@@ -24,6 +24,15 @@ Done this session (details in `CHANGELOG.md → Unreleased`):
 
 **Start the next session with:**
 
+0. **Class accounts (built 2026-11-18, [0016](decisions/0016-class-accounts-progress-sync.md)) —
+   only the teacher can do these:**
+   - [ ] Cloudflare setup, steps 1–6 in `DEPLOYMENT.md → Class accounts` (wrangler login, D1,
+         two secrets, deploy, `config.json` on the shared drive).
+   - [ ] Tell the school's data-protection officer (class + number + programs, no names).
+   - [ ] Looks: "👤 Entrar" box, "☁ Guardado" / "⚠ Sem ligação" in the top bar.
+   - [ ] Try `node turmas.mjs create` with a real class CSV exported from the school's system.
+   - Later: a class overview page (the API has `GET /api/teacher/turmas/<turma>` already;
+     `turmas show` prints it).
 1. **Teacher checks** (dev server, see "How we test"):
    - [ ] **World 1 playthrough** (`?level=01-01` … `01-10`): angles, sizes, wording for 11-year-olds;
          the Slalom and Z angles; the 5 s limit in 01-05; 01-06 is now "Dar a volta" (two turns).

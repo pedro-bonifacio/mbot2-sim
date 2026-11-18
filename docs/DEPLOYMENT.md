@@ -120,13 +120,38 @@ This recreates `public/maps/default.png` and `public/maps/test-track.png`.
 
 ---
 
-## No backend, no environment variables
+## Class accounts (progress sync)
 
-There is nothing to configure beyond the build step. This project has:
+Students can log in so their progress follows them to any computer
+([decision 0016](decisions/0016-class-accounts-progress-sync.md)). This needs Cloudflare
+Pages (the API is a Pages Function in `functions/api/`, the data a D1 database). On any
+other host the sim still works; "Entrar" then says the site has no accounts.
 
-- No `.env` file
-- No API keys
-- No database
-- No authentication
+**One-time setup** (free tier):
 
-All state (the current program) is stored in `localStorage` in the student's browser. Each deployment is independent; students cannot share programs between devices unless they export/import the XML manually.
+1. `npx wrangler login`
+2. `npx wrangler d1 create mbot2-sim --jurisdiction eu` (data stays in the EU) and paste the printed `database_id` into
+   `wrangler.toml` (replacing the zeros).
+3. `npx wrangler d1 migrations apply mbot2-sim --remote` (creates the tables).
+4. Two secrets, each a long random string (`openssl rand -base64 32`):
+   `npx wrangler pages secret put TEACHER_KEY` and `npx wrangler pages secret put SESSION_SECRET`.
+   Changing `SESSION_SECRET` later logs everyone out; changing `TEACHER_KEY` means updating
+   the class tool's `config.json`.
+5. Deploy: `npm run build && npx wrangler pages deploy` (or push, if the project is
+   connected to Git).
+6. `npm run turmas:install` copies the class tool to the shared drive
+   (`/mnt/nas/career/professor-tic/mbot2-turmas`, or pass another folder). There, copy
+   `config.example.json` to `config.json` with the site address and the `TEACHER_KEY`.
+   Then `node turmas.mjs create 7B alunos-7B.csv` (see its `README.txt`).
+
+**Development:** `npx wrangler d1 migrations apply mbot2-sim --local` once, then
+`npm run build && npm run api:dev` (API with a local D1 on port 8788; secrets from
+`.dev.vars`, not committed) next to `npm run dev`, which proxies `/api` to it.
+`npm run accounts:check` tests the API without wrangler.
+
+## Data kept
+
+Not logged in, everything stays in the student's browser (`localStorage`). Logged in,
+the server keeps per username (`7b-12`): a password hash, stars per level and the last
+program per level. Names stay in the teacher's password files on the shared drive.
+Delete a class at the end of the year: `node turmas.mjs delete 7B`.

@@ -11,6 +11,7 @@ import { initLevelPanel }  from './ui/levelPanel.js';
 import { initLevelSelector } from './ui/levelSelector.js';
 import { initSplitter } from './ui/splitter.js';
 import { initBlockHighlight } from './ui/blockHighlight.js';
+import { initAccount, initAccountUI } from './ui/accountUI.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   initConsole();
@@ -19,7 +20,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   initRunLoop();     // the world advances in fixed ticks driven by the canvas frames
   initBlockly();
   initControls();
+  initAccount();     // a saved login picks whose progress the editor restores
   initProgramIO();   // auto-restore + auto-save must come after Blockly is mounted
+  initAccountUI();
   initButtons();
   initLevelPanel();
   initLevelSelector();

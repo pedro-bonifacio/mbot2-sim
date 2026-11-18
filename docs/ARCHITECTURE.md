@@ -375,7 +375,8 @@ Format and rules: [LEVEL_FORMAT.md](LEVEL_FORMAT.md). Code in `src/levels/`, one
 | `raster.js` | prepared map → RGBA pixels at 8 px/cm, the same layout a PNG decodes to, so `map.js`, sensors and collision need nothing new |
 | `referee.js` | goals judged every tick → verdict |
 | `runLevel.js` | headless run of one variant (`runHeadless` with a referee) |
-| `progress.js` | stars and one program per level (slot `livre` for free maps) in one localStorage entry; progress file export/import (no DOM) |
+| `progress.js` | stars and one program per level (slot `livre` for free maps) in one localStorage entry per account (guest or logged in), with the changes not yet on the server; progress file export/import (no DOM) |
+| `sync.js` | login/logout and syncing the account's progress with `/api` (`server/api.js`, Pages Function + D1, decision 0016); no DOM |
 | `catalogue.js`, `session.js` | browser only: levels from the Vite plugin; the level on screen, its referee (via `runLoop.setRunObserver`, called at the same points in a tick as the headless runner calls its referee) and the ★★ check |
 
 The level panel is `src/ui/levelPanel.js`; levels join free maps in `src/ui/mapSelector.js`.

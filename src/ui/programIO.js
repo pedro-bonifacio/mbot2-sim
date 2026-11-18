@@ -132,6 +132,28 @@ export function initProgramIO() {
   console.log('[programIO] initialised');
 }
 
+/** Saves the editor's program now (before a login, logout or the server's copy arrives). */
+export function flushEditor() {
+  const ws = getWorkspace();
+  if (ws) _saveNow(ws);
+}
+
+/**
+ * Shows the saved program again after progress changed underneath the editor: another
+ * account (login/logout), or the server's copy (`slots` = the slots that changed).
+ * Not while a program runs; the editor's version then wins on the next save.
+ */
+export function reloadEditor(slots = null) {
+  const ws = getWorkspace();
+  const state = getRunState();
+  const running = state === RunState.RUNNING || state === RunState.PAUSED_ASYNC;
+  if (ws && !running && (!slots || slots.includes(_slot))) {
+    clearTimeout(_debounceTimer);
+    _showSlot(ws);
+  }
+  refreshLevelState();
+}
+
 export function saveProgram() {
   const ws = getWorkspace();
   if (!ws) return;

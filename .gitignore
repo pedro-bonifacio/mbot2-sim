@@ -17,3 +17,5 @@ dist/
 private/
 .claude/
 levels/_previews/
+.dev.vars
+.wrangler/

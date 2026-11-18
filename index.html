@@ -23,6 +23,15 @@
         <span id="current-map"></span>
       </div>
       <div class="group">
+        <div class="menu" id="account-menu">
+          <button id="btn-account" aria-haspopup="true" aria-expanded="false">👤 Entrar</button>
+          <div class="menu-items" role="menu" hidden>
+            <button id="btn-logout" role="menuitem">Sair</button>
+          </div>
+        </div>
+        <span id="sync-status" hidden></span>
+      </div>
+      <div class="group">
         <div class="menu" id="file-menu">
           <button id="btn-file" aria-haspopup="true" aria-expanded="false">Ficheiro ▾</button>
           <div class="menu-items" role="menu" hidden>
@@ -46,6 +55,19 @@
     </div>
   </header>
   <dialog id="level-selector"></dialog>
+  <dialog id="login-dialog">
+    <form id="login-form">
+      <h2>Entrar</h2>
+      <p class="login-help">Com a tua conta, o teu progresso fica guardado e aparece em qualquer computador.</p>
+      <label>Utilizador <input id="login-user" name="username" autocomplete="username" placeholder="7b-12" required /></label>
+      <label>Palavra-passe <input id="login-pass" name="password" type="password" autocomplete="current-password" placeholder="gato-azul-27" required /></label>
+      <p id="login-error" role="alert" hidden></p>
+      <div class="login-buttons">
+        <button type="button" id="login-cancel">Cancelar</button>
+        <button type="submit" id="login-submit" class="primary">Entrar</button>
+      </div>
+    </form>
+  </dialog>
   <main>
     <div id="blockly-area"></div>
     <div id="splitter" role="separator" aria-orientation="vertical"></div>

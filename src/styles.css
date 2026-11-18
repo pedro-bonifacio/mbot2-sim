@@ -141,3 +141,18 @@ main { display: flex; flex: 1; min-height: 0; overflow: hidden; }
 #level-selector .map-chip { padding: 4px 10px; border: 1px solid #d1d5db; border-radius: 14px; background: #fff; cursor: pointer; font: inherit; font-size: 13px; }
 #level-selector .map-chip:hover { border-color: #2563eb; }
 #level-selector .map-chip.current { border: 2px solid #2563eb; padding: 3px 9px; }
+
+/* Account (decision 0016): login box and sync status in the top bar */
+#sync-status { font-size: 13px; color: #d1d5db; white-space: nowrap; }
+#sync-status.warn { color: #fcd34d; }
+#login-dialog { width: min(380px, calc(100vw - 32px)); border: none; border-radius: 8px; padding: 18px 20px; box-shadow: 0 10px 40px rgba(0,0,0,.3); }
+#login-dialog::backdrop { background: rgba(17, 24, 39, .55); }
+#login-dialog h2 { margin: 0 0 6px; font-size: 1.2rem; }
+#login-dialog .login-help { margin: 0 0 14px; color: #4b5563; font-size: 14px; }
+#login-dialog label { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; font-size: 14px; color: #374151; }
+#login-dialog input { padding: 8px 10px; font: inherit; font-size: 16px; border: 1px solid #d1d5db; border-radius: 4px; }
+#login-error { margin: 0 0 12px; color: #b91c1c; font-size: 14px; }
+#login-dialog .login-buttons { display: flex; justify-content: flex-end; gap: 8px; }
+#login-dialog button { padding: 7px 14px; font: inherit; font-size: 14px; cursor: pointer; }
+#login-dialog button.primary { background: #16a34a; color: white; border: 1px solid #15803d; border-radius: 3px; font-weight: 600; }
+#login-dialog button.primary:disabled { background: #86efac; border-color: #86efac; cursor: default; }

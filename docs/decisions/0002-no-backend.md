@@ -1,6 +1,6 @@
 # 0002 — No backend; progress is client-side only
 
-- **Status:** Accepted
+- **Status:** Superseded by [0016](0016-class-accounts-progress-sync.md)
 - **Date:** 2026-11-17
 - **Area:** infra
 

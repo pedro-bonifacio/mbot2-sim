@@ -26,7 +26,10 @@
     "sim:test": "node scripts/sim-test.mjs",
     "levels:check": "node scripts/levels-check.mjs",
     "progress:check": "node scripts/progress-check.mjs",
-    "check": "node scripts/or-fidelity-check.mjs > /dev/null && node scripts/codegen-check.mjs > /dev/null && node scripts/variables-check.mjs > /dev/null && node scripts/export-check.mjs > /dev/null && node scripts/sim-test.mjs > /dev/null && node scripts/levels-check.mjs --no-preview > /dev/null && node scripts/progress-check.mjs > /dev/null && echo 'all checks passed'"
+    "check": "node scripts/or-fidelity-check.mjs > /dev/null && node scripts/codegen-check.mjs > /dev/null && node scripts/variables-check.mjs > /dev/null && node scripts/export-check.mjs > /dev/null && node scripts/sim-test.mjs > /dev/null && node scripts/levels-check.mjs --no-preview > /dev/null && node scripts/progress-check.mjs > /dev/null && node --no-warnings scripts/accounts-check.mjs > /dev/null && echo 'all checks passed'",
+    "accounts:check": "node --no-warnings scripts/accounts-check.mjs",
+    "api:dev": "wrangler pages dev --port 8788 --live-reload=false",
+    "turmas:install": "node scripts/turmas-install.mjs"
   },
   "dependencies": {
     "@blockly/field-colour": "5.0.19",
@@ -37,6 +40,7 @@
     "ajv": "^8.20.0",
     "pngjs": "^7.0.0",
     "vite": "^5.4.0",
+    "wrangler": "^4.164.0",
     "yaml": "^2.9.1"
   }
 }

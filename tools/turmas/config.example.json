@@ -1,0 +1,4 @@
+{
+  "api": "https://mbot2-sim.pages.dev",
+  "teacherKey": "the TEACHER_KEY secret set in Cloudflare"
+}

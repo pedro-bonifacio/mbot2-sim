@@ -56,7 +56,8 @@ function levelYamlPlugin() {
 export default defineConfig({
   root: '.',
   publicDir: 'public',
-  server: { port: 5173, open: true },
+  // /api (decision 0016) runs in `npm run api:dev` (wrangler, local D1) during development.
+  server: { port: 5173, open: true, proxy: { '/api': 'http://localhost:8788' } },
   build: { outDir: 'dist', sourcemap: true },
   plugins: [mapCataloguePlugin(), levelYamlPlugin()],
 });

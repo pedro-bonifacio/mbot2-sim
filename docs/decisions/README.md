@@ -16,7 +16,7 @@ New record: copy [`0000-template.md`](0000-template.md) to the next free number.
 | # | Title | Status | Area |
 |---|-------|--------|------|
 | [0001](0001-self-directed-progression-no-locks.md) | Self-directed progression: all levels unlocked | Accepted | pedagogy |
-| [0002](0002-no-backend.md) | No backend; progress is client-side only | Accepted | infra |
+| [0002](0002-no-backend.md) | No backend; progress is client-side only | Superseded by 0016 | infra |
 | [0003](0003-core-levels-use-real-robot-capabilities-only.md) | Core (evaluated) levels use only real mBot 2 capabilities | Accepted | levels |
 | [0004](0004-deterministic-simulation.md) | Deterministic simulation: fixed timestep + sim clock | Accepted | sim |
 | [0005](0005-randomised-level-variants.md) | Levels are validated against randomised variants | Accepted | levels |
@@ -30,3 +30,4 @@ New record: copy [`0000-template.md`](0000-template.md) to the next free number.
 | [0013](0013-when-a-level-run-is-judged.md) | When a level run passes or fails | Accepted | levels |
 | [0014](0014-clearer-pt-wording-display-only.md) | Clearer PT-PT wording where Open Roberta's translation confuses students | Accepted | blocks |
 | [0015](0015-trimmed-beginner-toolbox.md) | A trimmed beginner toolbox | Accepted | blocks |
+| [0016](0016-class-accounts-progress-sync.md) | Class accounts sync progress; names never reach the server | Accepted | infra |

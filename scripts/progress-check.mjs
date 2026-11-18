@@ -69,5 +69,52 @@ store.set(P.PROGRESS_KEY, '{not json');
 reload();
 check('corrupt saved progress starts empty', P.getProgram('04-01') === null && !P.getStars('04-01').one);
 
+// 6. accounts (decision 0016): own cache per account, pending changes, server copy
+store.clear();
+P.useAccount(null);
+P.setProgram('01-01', XML('guest'));
+P.addStar('01-01', 'one');
+check('guest progress is never pending', !P.hasPending());
+P.useAccount('7b-1');
+check('an account starts without the guest progress', P.getProgram('01-01') === null && !P.getStars('01-01').one);
+check('…and the guest progress is still there to offer', P.guestHasProgress());
+P.setProgram('01-02', XML('mine'));
+P.addStar('01-02', 'two');
+let pend = P.pendingChanges();
+check('changes in an account are pending', pend.programs['01-02'] === XML('mine') && pend.stars['01-02'].two, pend);
+reload();
+check('pending survives a reload', P.hasPending(), P.pendingChanges());
+P.setProgram('01-02', XML('mine2'));   // edited while the save was on its way
+P.markSynced(pend);
+pend = P.pendingChanges();
+check('synced entries drop out; a program edited meanwhile stays pending',
+  !pend.stars['01-02'] && pend.programs['01-02'] === XML('mine2'), pend);
+let changed = P.applyRemote({
+  programs: { '01-02': XML('server'), '01-03': XML('server3'), livre: null },
+  stars: { '01-03': { two: true }, '01-02': { one: false, two: false } },
+});
+check('server copy fills levels, but not over pending local edits',
+  P.getProgram('01-02') === XML('mine2') && P.getProgram('01-03') === XML('server3'), [P.getProgram('01-02'), P.getProgram('01-03')]);
+check('server stars are added, local ones kept', P.getStars('01-03').two && P.getStars('01-02').two);
+check('applyRemote reports changed slots only', JSON.stringify(changed) === '["01-03"]', changed);
+check('server copy is not pending', !P.pendingChanges().programs['01-03']);
+P.setProgram('01-04', XML('x'));
+P.markSynced(P.pendingChanges());
+changed = P.applyRemote({ programs: { '01-04': null }, stars: {} });
+check('a program deleted on another computer goes here too', P.getProgram('01-04') === null && changed[0] === '01-04', changed);
+P.setProgram('01-02', XML('server'));
+P.markSynced(P.pendingChanges());
+P.mergeGuest();
+check('merging guest: its programs fill empty levels only, stars added',
+  P.getProgram('01-01') === XML('guest') && P.getProgram('01-02') === XML('server') && P.getStars('01-01').one);
+check('merged guest progress is pending', P.pendingChanges().programs['01-01'] === XML('guest'), P.pendingChanges());
+check('…and the guest entry is emptied', !P.guestHasProgress());
+P.useAccount('7b-2');
+check('another account sees none of it', P.getProgram('01-01') === null && !P.getStars('01-03').one);
+P.forgetAccount('7b-1');
+P.useAccount('7b-1');
+check('"Sair" removes the account copy from this computer', P.getProgram('01-01') === null && !P.hasPending());
+P.useAccount(null);
+
 process.stdout.write(`progress check: ${failed ? failed + ' failed' : 'all passed'}\n`);
 process.exit(failed ? 1 : 0);

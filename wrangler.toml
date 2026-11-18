@@ -1,2 +1,11 @@
 name = "mbot2-sim"
 pages_build_output_dir = "dist"
+compatibility_date = "2025-07-01"
+
+# Progress sync (decision 0016). Created with `npx wrangler d1 create mbot2-sim --jurisdiction eu`
+# See docs/DEPLOYMENT.md → Class accounts.
+[[d1_databases]]
+binding = "DB"
+database_name = "mbot2-sim"
+database_id = "74ee1271-831a-4a36-98e0-60352f89ec70"
+migrations_dir = "migrations"
