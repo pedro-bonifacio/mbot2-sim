@@ -74,6 +74,19 @@ The robot has **one forward-facing ultrasonic sensor**: to see sideways it must 
 | P4 | Limpar a mesa | light boxes at random inside a black tape ring, **no walls inside** (so anything the ultrasonic sees within the ring is a box) | find each box (turn and look), push it until the colour sensor sees the line, repeat until a full turn sees nothing; never leave the ring | advanced | 10-02 (needs pushable boxes) |
 | P11 | Missão final | P10 + a box blocking the line | go round the box, find the line again, obey the signs | advanced | 10-01 |
 
+**P4 "Limpar a mesa" — a teacher favourite, planned as a full-grade challenge (2026-11-19).**
+The robot cannot tell a box from a wall (the ultrasonic gives only a distance; the colour
+sensor looks down), so the course has **no walls inside the ring**: anything seen within
+the ring is a box. An adaptive program: turn on the spot until something is closer than
+the ring's size → drive at it and push until the colour sensor sees the black line (the
+box is already past it) → back up, turn round → repeat until a full turn sees nothing.
+Boxes at random positions defeat fixed paths and timed pushes. Setup on the real table:
+ring well inside the table edges (or walls far away); light, wide, low boxes (they slide
+off the robot's nose less); boxes spread apart (two touching boxes = a harder version).
+The sim's boxes will be kinder than real ones (no slipping or spinning): note it on the
+teacher sheet ([0012](decisions/0012-teacher-owns-guidance-and-sim-to-real.md)).
+Sim needs: pushable boxes + a goal "every box outside the ring" (Sim features needed, 7).
+
 **Tiers.** Standard courses need Worlds 1–5 (max grade 4/5); advanced ones need Worlds 6–9
 (the only route to 5/5). All 4 standard + 7 advanced courses are kept;
 students choose which to attempt (0008, amended 2026-11-18). Each course gets a one-page teacher sheet: materials,
