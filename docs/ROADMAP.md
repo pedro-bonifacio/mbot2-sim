@@ -26,7 +26,11 @@ Last reviewed: 2026-11-19 (sixth session)
 - **Course boards** ([0018](decisions/0018-courses-on-fixed-boards.md)): the teacher builds courses on
   K-line sheets (70 × 100 cm, 1–3 per course). Levels: `map: { board: 1 | 2 | 3 }` — no
   wall at the edge, driving off fails. 05-08 (1 sheet) and 05-12 (2 sheets) moved onto boards.
-- Next build steps: generators (maze, box scatter) → ★★★ → keys in tests → pushable boxes.
+- **Generators:** `maze` (tape/walls) and `scatter` → **06-08 Labirinto de caixas** (P9, 2 sheets)
+  and **06-09 Corrida de obstáculos** (P5, 3 sheets; boxes on the robot's lane — boxes
+  anywhere were unfair with one narrow forward sensor). The tape maze 06-06 is a draft in
+  `levels/_drafts/`: it needs the real quad-RGB probe spacing.
+- Next build steps: ★★★ → keys in tests → pushable boxes; 06-10 (maze with loops).
 
 **State before this session:** everything was on `main` **and pushed**; the site is live at https://mbot2.pbonifacio.dev
 (Cloudflare Pages deploys every push to `main`). `npm run check` passes.
@@ -47,6 +51,8 @@ Done this session (details in `CHANGELOG.md → Unreleased`):
 **Start the next session with:**
 
 1. **Teacher** (looks and admin only):
+   - [ ] **Measure the quad RGB sensor** (VERIFY_ON_ROBOT #8): distance between the four
+         probes and from the wheel axle — the tape-maze levels wait for it.
    - [ ] World 1 playthrough from 01-09 (01-01 … 01-08 seen, fine).
    - [ ] Looks: "👤 Entrar" box, "☁ Guardado" / "⚠ Sem ligação" in the top bar.
    - [ ] Tell the school's data-protection officer (class + number + programs, no names).

@@ -108,6 +108,22 @@ points (a track from a few waypoints); without it, straight segments with sharp 
 For "follow the line to the end" give checkpoints in a `sequence` and `settle: 0`: the
 run passes the moment the last step is seen, even though the follower keeps moving.
 
+### Generators: a new maze or box layout for every variant
+
+```yaml
+    - maze: { cols: 4, rows: 3, cell: 30, x: 10, y: 5, style: walls }   # or style: tape
+    #   start: [0, 0] where it is grown from; loops: 2 extra openings (default 0 = one
+    #   path between any two cells); thickness (walls, 2) / width + colour (tape, 2, black)
+    - scatter: { count: 3, w: 12, h: 12, area: { x: 45, y: 42, w: 140, h: 16 }, gap: 45,
+        keepClear: [{ x: 0, y: 35, w: 45, h: 30 }] }   # boxes; with colour: patches
+```
+
+Both draw from the variant seed (and their place in the list), so every seed is a new
+maze or layout and the ★★ check covers several. Mazes have their outer wall; cell `[c, r]`
+has its centre at `x + (c + 0.5) * cell`, `y + (r + 0.5) * cell` (put spawn, exit patch
+and zones there). `scatter` keeps items `gap` cm apart (the area holds them whole) and
+off every `keepClear` rectangle, and fails the level check when they do not fit.
+
 ### Coordinates and units
 
 - Centimetres, origin at the top-left corner, **x → right, y → down** (as on screen).

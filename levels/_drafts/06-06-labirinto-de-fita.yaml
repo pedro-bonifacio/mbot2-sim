@@ -1,0 +1,77 @@
+# DRAFT (not loaded): the line-maze solution fails most mazes with the sim's 1 cm
+# probe spacing (VERIFY_ON_ROBOT #8). Revisit once the real spacing is measured.
+# World 6 (random course P8 "Labirinto de fita"), on two course boards (140 × 100 cm,
+# decision 0018). The tape maze is generated anew for every variant (maze generator,
+# 4 × 3 cells of 30 cm, one path between any two cells): only a junction rule — the
+# left-hand rule — finds the green exit every time.
+id: "06-06"
+world: 6
+kind: core
+title: Labirinto de fita
+objective: Segue as linhas pretas pelo labirinto até ao quadrado verde. Em cada cruzamento, vira à esquerda se puderes; senão segue em frente; senão vira à direita. Num beco sem saída, dá meia volta. O labirinto muda de variante para variante.
+concepts: [regra da mão esquerda, decisões encadeadas, seguir a linha]
+assumes: [seguir a linha, sensores de fora]
+toolbox: beginner
+timeLimit: 180
+
+variants:
+  seeds: [1, 2, 3, 4, 5, 6]
+
+map:
+  board: 2
+  items:
+    - maze: { cols: 4, rows: 3, cell: 30, x: 10, y: 5, style: tape }
+    - line: { points: [[2, 20], [25, 20]] }
+    - patch: { x: 111, y: 76, w: 8, h: 8, colour: green }
+
+spawn: { x: 8, y: 20, heading: 0 }
+
+zones:
+  - { id: saida, label: quadrado verde, x: 109, y: 74, w: 12, h: 12 }
+
+goals:
+  - robotStoppedIn: { zone: saida, probe: front }
+  - noCollision
+
+solution: |
+  while (!(robotAPI.quadrgb("COLOUR", "L1") == "#33cc00" || robotAPI.quadrgb("COLOUR", "R1") == "#33cc00")) {
+    if (robotAPI.quadrgb("COLOUR", "L2") == "#000000" && robotAPI.quadrgb("COLOUR", "L1") == "#000000" && robotAPI.quadrgb("COLOUR", "R1") == "#000000") {
+      robotAPI.drive_for("FOREWARD", 30, 7);
+      robotAPI.turn_for("LEFT", 30, 45);
+      robotAPI.turn("LEFT", 20);
+      while (!(robotAPI.quadrgb("COLOUR", "L1") == "#000000" && robotAPI.quadrgb("COLOUR", "R1") == "#000000")) {}
+    } else if (robotAPI.quadrgb("COLOUR", "L1") == "#000000" && robotAPI.quadrgb("COLOUR", "R1") == "#000000" && robotAPI.quadrgb("COLOUR", "R2") == "#000000") {
+      robotAPI.drive_for("FOREWARD", 30, 7);
+      if (!(robotAPI.quadrgb("COLOUR", "L1") == "#000000" || robotAPI.quadrgb("COLOUR", "R1") == "#000000")) {
+        robotAPI.turn_for("RIGHT", 30, 45);
+        robotAPI.turn("RIGHT", 20);
+        while (!(robotAPI.quadrgb("COLOUR", "L1") == "#000000" && robotAPI.quadrgb("COLOUR", "R1") == "#000000")) {}
+      }
+    } else if (robotAPI.quadrgb("COLOUR", "L1") == "#000000" && robotAPI.quadrgb("COLOUR", "R1") == "#000000") {
+      robotAPI.drive("FOREWARD", 20);
+    } else if (robotAPI.quadrgb("COLOUR", "R1") == "#000000" || robotAPI.quadrgb("COLOUR", "R2") == "#000000") {
+      robotAPI.turn("RIGHT", 20);
+    } else if (robotAPI.quadrgb("COLOUR", "L1") == "#000000" || robotAPI.quadrgb("COLOUR", "L2") == "#000000") {
+      robotAPI.turn("LEFT", 20);
+    } else {
+      robotAPI.turn_for("RIGHT", 30, 120);
+      robotAPI.turn("RIGHT", 20);
+      while (!(robotAPI.quadrgb("COLOUR", "L1") == "#000000" && robotAPI.quadrgb("COLOUR", "R1") == "#000000")) {}
+    }
+  }
+  robotAPI.drive_stop();
+
+antiSolutions:
+  - name: só seguir a linha
+    why: Sem regra para os cruzamentos, perde-se no primeiro.
+    code: |
+      while (!(robotAPI.quadrgb("COLOUR", "L1") == "#33cc00")) {
+        if (robotAPI.quadrgb("COLOUR", "L1") == "#ffffff") {
+          robotAPI.turn("RIGHT", 20);
+        } else if (robotAPI.quadrgb("COLOUR", "R1") == "#ffffff") {
+          robotAPI.turn("LEFT", 20);
+        } else {
+          robotAPI.drive("FOREWARD", 20);
+        }
+      }
+      robotAPI.drive_stop();

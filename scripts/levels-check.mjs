@@ -72,7 +72,8 @@ for (const file of levelFiles()) {
       try {
         const prepared = prepareLevel(level, seed);
         const m = levelMap(prepared);
-        setMapData({ imageData: m.imageData, width: m.width, height: m.height, offscreenCanvas: { width: m.widthPx, height: m.heightPx } });
+        setMapData({ imageData: m.imageData, width: m.width, height: m.height, offscreenCanvas: { width: m.widthPx, height: m.heightPx }, openEdge: m.openEdge });
+        if (prepared.board && (m.spawnX < 0 || m.spawnY < 0 || m.spawnX > m.width || m.spawnY > m.height)) problems.push(`seed ${seed}: the robot starts off the board`);
         if (footprintHitsWall(m.spawnX, m.spawnY, m.spawnHeading)) problems.push(`seed ${seed}: the robot starts touching a wall`);
       } catch (e) {
         problems.push(`seed ${seed}: ${e.message}`);

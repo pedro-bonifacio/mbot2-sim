@@ -15,6 +15,6 @@ Status: ☐ unverified · ✅ confirmed · ❌ differs (fix needed)
 | 5 | Right encoder sign | Driving forward makes encoder **R decrease** (L increases) | Reset both encoders, drive forward 20 cm, show both `grau` values. | ☐ |
 | 6 | Text position | `mostrar texto` at column c, row r draws at `x = 8·c + 5`, `y = 17·r` (sim uses an 8×8 grid of 16 px cells) | Show "X" at column 3, row 2 and photograph the screen. | ☐ |
 | 7 | Ultrasonic out of range | Reads **300** with nothing in front | Point at an open space, show `ler distância`. | ☐ |
-| 8 | Quad RGB geometry | Probes 6 cm ahead of the wheel axle, 1 cm apart | Measure on the robot. | ☐ |
+| 8 | Quad RGB geometry | Probes 6 cm ahead of the wheel axle, 1 cm apart | Measure on the robot (ruler: centre to centre of the four sensors, and from the wheel axle). **Priority:** the tape-maze levels (06-05, 06-06) depend on it. | ☐ |
 | 9 | Colour of an orange floor | Classified as the nearest of the 8 colours (no orange) | Show `ler cor` over an orange sheet. | ☐ |
 | 10 | Exported file on the robot | A file from **Exportar para Open Roberta** imports into Open Roberta Lab and runs as in the sim (checked on OR's server, never on a robot) | In the sim, load `reference_openroberta/export-samples/openroberta/01-simples.xml`, export it, *Importar programa* in Open Roberta Lab, transfer to the robot and run: text, key A, beep, drive, turn, stop at 15 cm, green LEDs, two beeps. | ☐ |

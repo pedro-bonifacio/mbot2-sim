@@ -1,0 +1,72 @@
+# World 6 (random course P9 "Labirinto de caixas"), on two course boards (140 × 100 cm,
+# decision 0018). The walls (boxes, books) form a maze generated anew for every
+# variant: 4 × 3 cells of 30 cm, one path between any two cells. With one forward
+# ultrasonic, the robot turns to look at each side — the left-hand rule, cell by cell.
+id: "06-08"
+world: 6
+kind: core
+title: Labirinto de caixas
+objective: Encontra a saída do labirinto - o quadrado verde. Anda uma casa de cada vez (30 cm). Em cada casa, olha primeiro para a esquerda - se estiver livre, vai por aí; senão em frente; senão à direita; senão volta para trás. O labirinto muda de variante para variante.
+concepts: [regra da mão esquerda, decisões encadeadas, ultrassom]
+assumes: [rodar um ângulo, andar uma distância, sensor de cor]
+toolbox: beginner
+timeLimit: 240
+
+variants:
+  seeds: [1, 2, 3, 4, 5, 6]
+
+map:
+  board: 2
+  items:
+    - patch: { x: 101, y: 66, w: 28, h: 28, colour: green }
+    - maze: { cols: 4, rows: 3, cell: 30, x: 10, y: 5, style: walls, thickness: 2 }
+
+spawn: { x: 25, y: 20, heading: 0 }
+
+zones:
+  - { id: saida, label: quadrado verde, x: 101, y: 66, w: 28, h: 28 }
+
+goals:
+  - reachZone: { zone: saida, probe: centre }
+  - noCollision
+
+solution: |
+  while (!(robotAPI.quadrgb("COLOUR", "L1") == "#33cc00")) {
+    robotAPI.turn_for("LEFT", 30, 90);
+    if (robotAPI.ultrasonic() > 20) {
+      robotAPI.drive_for("FOREWARD", 30, 30);
+    } else {
+      robotAPI.turn_for("RIGHT", 30, 90);
+      if (robotAPI.ultrasonic() > 20) {
+        robotAPI.drive_for("FOREWARD", 30, 30);
+      } else {
+        robotAPI.turn_for("RIGHT", 30, 90);
+        if (robotAPI.ultrasonic() > 20) {
+          robotAPI.drive_for("FOREWARD", 30, 30);
+        } else {
+          robotAPI.turn_for("RIGHT", 30, 90);
+          robotAPI.drive_for("FOREWARD", 30, 30);
+        }
+      }
+    }
+  }
+  robotAPI.drive_stop();
+
+antiSolutions:
+  - name: em frente até à parede, depois à direita
+    why: Sem olhar para a esquerda, anda às voltas e não explora o labirinto todo.
+    code: |
+      while (!(robotAPI.quadrgb("COLOUR", "L1") == "#33cc00")) {
+        if (robotAPI.ultrasonic() > 20) {
+          robotAPI.drive_for("FOREWARD", 30, 30);
+        } else {
+          robotAPI.turn_for("RIGHT", 30, 90);
+        }
+      }
+      robotAPI.drive_stop();
+  - name: caminho decorado
+    why: Serve para um labirinto; os outros são diferentes.
+    code: |
+      robotAPI.drive_for("FOREWARD", 30, 90);
+      robotAPI.turn_for("RIGHT", 30, 90);
+      robotAPI.drive_for("FOREWARD", 30, 60);

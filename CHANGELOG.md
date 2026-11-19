@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### Added
+- **Mazes and obstacle courses that change every variant**: 06-08 Labirinto de caixas (a new box maze each time) and 06-09 Corrida de obstáculos (boxes at new distances on the robot's way).
 - **Course boards**: test levels can be one, two or three 70 × 100 cm boards, like the real courses: no walls at the edge (the ultrasonic sees nothing there), and driving off the board fails. 05-08 and 05-12 now use them.
 - **Line-following levels** 05-04 Curvas suaves, 05-05 Curvas de 90° and the World 5 test 05-12 Linha livre: each variant is a different track (smooth curves, sharp corners), so a memorised route never works on all of them.
 - **World 2 "Luz, Som e Ecrã"** (02-01 … 02-07: LEDs, a beep, your name, a traffic light, a countdown, a delivery, a tune), and **04-05 Perto ou longe**, **05-02 Da mesma cor**, **05-08 Ficar no ringue**, **07-01 Contador**, **07-02 Fita métrica**.

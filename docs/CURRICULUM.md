@@ -68,7 +68,7 @@ The robot has **one forward-facing ultrasonic sensor**: to see sideways it must 
 | P2 | Contar e estacionar | coloured patches/stripes in a row, random spacing | stop on the Nth blue one (N given by the teacher); advanced: also show how many of each colour it crossed | standard | 05-07, 07-01 |
 | P3 | Ficar no ringue | area with a black tape border | roam for 30 s without leaving | standard | 05-08 |
 | P6 | Encontrar o objeto | one box anywhere in an empty area | turn to find it, drive to it, stop ~5 cm away | standard | 04-10, 07-05 |
-| P5 | Corrida de obstáculos | boxes scattered at random, a finish line on the far side | reach the finish line without touching a box | advanced | 06-09 |
+| P5 | Corrida de obstáculos | boxes on the robot's lane at marked, varying distances (3 sheets), a finish line on the far side | see each box, go round it, come back to the lane; reach the finish without touching a box (boxes anywhere are unfair: one narrow forward sensor misses boxes beside the path) | advanced | 06-09 |
 | P8 | Labirinto de fita | grid of black tape with junctions and dead ends | reach the green exit patch | advanced | 06-06 |
 | P9 | Labirinto de caixas | maze of boxes/books | reach the exit (turns to look at each junction) | advanced | 06-08 |
 | P7 | Estacionar no espaço livre | row of boxes with one gap at a random place | find the gap and park in it | advanced | 07-06 |
@@ -184,11 +184,11 @@ world). For now a Prova is `kind: challenge` with a title starting "Prova:". Tit
 | 06-02 | C | Só no verde | stop when on green AND close to the wall | |
 | 06-03 | C | Junção em T | follow the line, turn left at the T | |
 | 06-04 | C | Desviar da caixa | a box on the line: go round, find the line again | |
-| 06-05 | C | Mão esquerda | a small tape maze with the left-hand rule | maze generator |
-| 06-06 | C | Labirinto de fita | P8 full | maze generator |
+| 06-05 | C | Mão esquerda | a small tape maze with the left-hand rule | needs VERIFY #8 |
+| 06-06 | C | Labirinto de fita | P8 full | draft (VERIFY #8) |
 | 06-07 | C | Espreitar | at the wall, look left and right, go to the free side | |
-| 06-08 | C | Labirinto de caixas | P9 | maze generator |
-| 06-09 | P | Corrida de obstáculos | P5: random boxes, reach the finish line | box scatter |
+| 06-08 | C | Labirinto de caixas | P9 | **built** |
+| 06-09 | P | Corrida de obstáculos | P5: random boxes, reach the finish line | **built** |
 | 06-10 | D | Labirinto sem becos | a maze with loops: left-hand rule fails, find another way | maze generator |
 
 ### World 7 — Variáveis (counters, encoders, gyro, timers) · expert toolbox
@@ -259,8 +259,10 @@ In build order (most levels unblocked first):
    `when:`, numbers ± tolerance with `drivenCm` / `movingS`; decision 0017).
 2. ~~**Layout choice**~~ — done 2026-11-19: `layouts:` picked by the `layout` parameter,
    `line: { smooth: true }` (05-04, 05-05, 05-12 built; 08-x, 09-04/08, 10-01 can use it).
-3. **Generators:** a seeded **maze** (tape or walls, grid size, cell cm) and **box scatter**
-   (count, size, minimum gap, keep a path open): 06-05/06/08/09/10, 09-06/07, 10-03.
+3. ~~**Generators**~~ — done 2026-11-19: `maze` (tape or walls, loops) and `scatter` (06-08, 06-09
+   built). Tape mazes (06-05, 06-06 draft, 09-06/07) wait for the real probe spacing
+   (VERIFY_ON_ROBOT #8): with the sim's 1 cm, a robot 0.5 cm off the 2 cm tape covers three
+   probes and looks like a junction. 06-10 (loops), 10-03 still to build.
 4. ~~**Event goals**~~ — done 2026-11-19: `tonePlayed`, `sequence`, `stayIn` (decision 0017).
 5. **★★★ challenges:** block count and time limit (01-10, 03-08, 05-11, 08-05/06).
 6. **Keys in tests:** a level can press A/B at given times in the ★★ run (03-04, 10-04).
