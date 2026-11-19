@@ -1,0 +1,82 @@
+# World 6 Prova (random course P5 "Corrida de obstáculos"), on three course boards
+# (210 × 100 cm, decision 0018). Three boxes stand on the robot's lane at random
+# distances (scatter generator, a narrow band): it must see each one, go round it
+# and come back to its lane. Boxes scattered anywhere proved unfair with one narrow
+# forward sensor (it misses boxes beside its path), in the sim and on the table.
+id: "06-09"
+world: 6
+kind: challenge
+title: "Prova: Corrida de obstáculos"
+objective: Chega à linha verde do outro lado sem tocar em nenhuma caixa. Há caixas no caminho, a distâncias que mudam de variante para variante - quando vires uma, contorna-a e volta ao teu caminho.
+concepts: [se/senão, ultrassom, decisões encadeadas]
+assumes: [esperar até, rodar um ângulo, sensor de cor]
+toolbox: beginner
+timeLimit: 90
+settle: 0
+
+variants:
+  seeds: [1, 2, 3, 4, 5, 6, 7, 8]
+
+map:
+  board: 3
+  items:
+    - scatter: { count: 3, w: 12, h: 12, area: { x: 45, y: 42, w: 140, h: 16 }, gap: 45 }
+    - line: { points: [[198, 2], [198, 98]], width: 2, colour: green }
+
+spawn: { x: 15, y: 50, heading: 0 }
+
+zones:
+  - { id: meta, label: linha verde, x: 196, y: 0, w: 14, h: 100 }
+
+goals:
+  - reachZone: { zone: meta, probe: front }
+  - noCollision
+
+solution: |
+  while (!(robotAPI.quadrgb("COLOUR", "L1") == "#33cc00" || robotAPI.quadrgb("COLOUR", "R1") == "#33cc00")) {
+    if (robotAPI.ultrasonic() < 15) {
+      robotAPI.turn_for("LEFT", 30, 60);
+      robotAPI.drive_for("FOREWARD", 30, 25);
+      robotAPI.turn_for("RIGHT", 30, 60);
+      robotAPI.drive_for("FOREWARD", 30, 25);
+      robotAPI.turn_for("RIGHT", 30, 60);
+      robotAPI.drive_for("FOREWARD", 30, 25);
+      robotAPI.turn_for("LEFT", 30, 60);
+    } else {
+      robotAPI.drive("FOREWARD", 30);
+    }
+  }
+  robotAPI.drive_stop();
+
+antiSolutions:
+  - name: sempre em frente
+    why: Bate na primeira caixa.
+    code: |
+      robotAPI.drive("FOREWARD", 30);
+      while (!(robotAPI.quadrgb("COLOUR", "L1") == "#33cc00")) {}
+      robotAPI.drive_stop();
+  - name: contorna e não volta
+    why: Desvia-se de cada caixa para o mesmo lado e nunca volta ao caminho - acaba por sair do tabuleiro.
+    code: |
+      while (!(robotAPI.quadrgb("COLOUR", "L1") == "#33cc00" || robotAPI.quadrgb("COLOUR", "R1") == "#33cc00")) {
+        if (robotAPI.ultrasonic() < 15) {
+          robotAPI.turn_for("LEFT", 30, 60);
+          robotAPI.drive_for("FOREWARD", 30, 25);
+          robotAPI.turn_for("RIGHT", 30, 30);
+        } else {
+          robotAPI.drive("FOREWARD", 30);
+        }
+      }
+      robotAPI.drive_stop();
+  - name: percurso decorado
+    why: Contorna nos sítios onde as caixas estavam numa variante; noutras bate.
+    code: |
+      robotAPI.drive_for("FOREWARD", 30, 40);
+      robotAPI.turn_for("LEFT", 30, 60);
+      robotAPI.drive_for("FOREWARD", 30, 25);
+      robotAPI.turn_for("RIGHT", 30, 60);
+      robotAPI.drive_for("FOREWARD", 30, 25);
+      robotAPI.turn_for("RIGHT", 30, 60);
+      robotAPI.drive_for("FOREWARD", 30, 25);
+      robotAPI.turn_for("LEFT", 30, 60);
+      robotAPI.drive_for("FOREWARD", 30, 150);

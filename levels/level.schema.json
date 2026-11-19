@@ -83,7 +83,11 @@
                 "minItems": 2,
                 "items": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"$ref": "#/definitions/num"}}
               },
-              "width": {"$ref": "#/definitions/num", "description": "cm (default 2)"}, "smooth": {"type": "boolean", "description": "a smooth curve through the points instead of straight segments"},
+              "width": {"$ref": "#/definitions/num", "description": "cm (default 2)"},
+              "smooth": {
+                "type": "boolean",
+                "description": "a smooth curve through the points instead of straight segments"
+              },
               "colour": {"$ref": "#/definitions/colour"}
             }
           },
@@ -103,6 +107,74 @@
           "when": {
             "$ref": "#/definitions/num",
             "description": "leave this out of the variant when the expression is 0, e.g. \"stripes >= 4\""
+          },
+          "maze": {
+            "type": "object",
+            "required": ["cols", "rows", "cell"],
+            "additionalProperties": false,
+            "description": "a maze generated anew for each variant (decision 0005): tape lines between cell centres, or walls on the closed sides",
+            "properties": {
+              "cols": {"$ref": "#/definitions/num"},
+              "rows": {"$ref": "#/definitions/num"},
+              "cell": {"$ref": "#/definitions/num", "description": "cell size, cm"},
+              "x": {"$ref": "#/definitions/num", "description": "top-left corner, cm"},
+              "y": {"$ref": "#/definitions/num"},
+              "start": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {"$ref": "#/definitions/num"},
+                "description": "[col, row] where the maze is grown from (default [0, 0])"
+              },
+              "loops": {
+                "$ref": "#/definitions/num",
+                "description": "extra openings: 0 = exactly one path between any two cells"
+              },
+              "style": {"enum": ["tape", "walls"]},
+              "width": {"$ref": "#/definitions/num", "description": "tape width (default 2)"},
+              "thickness": {"$ref": "#/definitions/num", "description": "wall thickness (default 2)"},
+              "colour": {"$ref": "#/definitions/colour"}
+            }
+          },
+          "scatter": {
+            "type": "object",
+            "required": ["count", "w", "h", "area"],
+            "additionalProperties": false,
+            "description": "count boxes (or patches, with a colour) placed at random for each variant, gap cm apart",
+            "properties": {
+              "count": {"$ref": "#/definitions/num"},
+              "w": {"$ref": "#/definitions/num"},
+              "h": {"$ref": "#/definitions/num"},
+              "area": {
+                "type": "object",
+                "required": ["x", "y", "w", "h"],
+                "properties": {
+                  "x": {"$ref": "#/definitions/num"},
+                  "y": {"$ref": "#/definitions/num"},
+                  "w": {"$ref": "#/definitions/num"},
+                  "h": {"$ref": "#/definitions/num"}
+                }
+              },
+              "gap": {
+                "$ref": "#/definitions/num",
+                "description": "minimum free space between items, cm (the area holds the items whole)"
+              },
+              "keepClear": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["x", "y", "w", "h"],
+                  "properties": {
+                    "x": {"$ref": "#/definitions/num"},
+                    "y": {"$ref": "#/definitions/num"},
+                    "w": {"$ref": "#/definitions/num"},
+                    "h": {"$ref": "#/definitions/num"}
+                  }
+                },
+                "description": "rectangles nothing may overlap (spawn, finish)"
+              },
+              "colour": {"$ref": "#/definitions/colour"}
+            }
           }
         },
         "additionalProperties": false
@@ -219,7 +291,11 @@
           "type": "object",
           "properties": {"w": {"$ref": "#/definitions/num"}, "h": {"$ref": "#/definitions/num"}}
         },
-        "board": {"enum": [true, 1, 2, 3], "description": "a course board of 1–3 K-line sheets (decision 0018): default size 100 × 70 (true or 1), 140 × 100 (2), 210 × 100 (3); no wall at the edge (the ultrasonic sees nothing beyond it), the robot's centre leaving it fails"}, "border": {"type": "boolean", "description": "1 cm wall around the arena (default true; false on a board)"},
+        "board": {
+          "enum": [true, 1, 2, 3],
+          "description": "a course board of 1–3 K-line sheets (decision 0018): default size 100 × 70 (true or 1), 140 × 100 (2), 210 × 100 (3); no wall at the edge (the ultrasonic sees nothing beyond it), the robot's centre leaving it fails"
+        },
+        "border": {"type": "boolean", "description": "1 cm wall around the arena (default true; false on a board)"},
         "items": {"$ref": "#/definitions/mapItems"}
       }
     },

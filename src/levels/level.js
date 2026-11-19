@@ -1,5 +1,6 @@
 import { evalNumber, exprNames, interpolate } from './expr.js';
 import { createRng } from '../sim/random.js';
+import { generateMaze, scatterRects, itemSeed } from './generators.js';
 
 // A level file (YAML → plain object, docs/LEVEL_FORMAT.md) plus a variant seed →
 // a "prepared" level: every expression evaluated, every position in cm, colours as
@@ -132,7 +133,7 @@ export function prepareLevel(level, seed = testSeeds(level)[0]) {
     ...(map.items || []).map((entry, i) => [entry, `map.items[${i}]`]),
     ...(layout?.items || []).map((entry, i) => [entry, `layouts.${layout.name}.items[${i}]`]),
   ];
-  itemList.forEach(([entry, at]) => {
+  itemList.forEach(([entry, at], index) => {
     const [kind, d] = Object.entries(entry).find(([k]) => k !== 'when') || [];
     const p = `${at}.${kind}`;
     if (!included(entry, at)) return;
@@ -149,7 +150,32 @@ export function prepareLevel(level, seed = testSeeds(level)[0]) {
       items.push({ type: 'arc', cx: num(d.cx, `${p}.cx`), cy: num(d.cy, `${p}.cy`), r: num(d.r, `${p}.r`),
         from: num(d.from ?? 0, `${p}.from`), to: num(d.to ?? 360, `${p}.to`),
         width: num(d.width ?? 2, `${p}.width`), rgb: colour(d.colour ?? 'black', `${p}.colour`) });
-    } else throw new Error(`${level.id}: ${p}: unknown map item "${kind}" (wall, box, patch, line, arc)`);
+    } else if (kind === 'maze') {
+      // Generated per variant: tape lines between connected cell centres, or walls on closed sides.
+      const n = (k, def) => num(d[k] ?? def, `${p}.${k}`);
+      const start = d.start ? [0, 1].map((j) => num(d.start[j], `${p}.start[${j}]`)) : [0, 0];
+      const maze = generateMaze({ cols: n('cols'), rows: n('rows'), cell: n('cell'), x: n('x', 0), y: n('y', 0),
+        start, loops: n('loops', 0) }, createRng(itemSeed(seed, index)));
+      if ((d.style ?? 'tape') === 'tape') {
+        const width = n('width', 2), rgb = colour(d.colour ?? 'black', `${p}.colour`);
+        for (const [a, b] of maze.passages) items.push({ type: 'line', width, rgb, points: [maze.centre(...a), maze.centre(...b)] });
+      } else if (d.style === 'walls') {
+        for (const r of maze.walls(n('thickness', 2))) items.push({ type: 'rect', ...r, angle: 0, rgb: WALL_RGB, wall: true });
+      } else throw new Error(`${level.id}: ${p}.style: tape or walls`);
+    } else if (kind === 'scatter') {
+      // Generated per variant: `count` boxes (or patches, with a colour) apart from each other.
+      const n = (k, def) => num(d[k] ?? def, `${p}.${k}`);
+      const rect = (o, q) => ({ x: num(o.x, `${q}.x`), y: num(o.y, `${q}.y`), w: num(o.w, `${q}.w`), h: num(o.h, `${q}.h`) });
+      let rects;
+      try {
+        rects = scatterRects({ count: n('count'), w: n('w'), h: n('h'), area: rect(d.area || {}, `${p}.area`), gap: n('gap', 0),
+          keepClear: (d.keepClear || []).map((k, j) => rect(k, `${p}.keepClear[${j}]`)) }, createRng(itemSeed(seed, index)));
+      } catch (e) { where(p)(e); }
+      for (const r of rects) {
+        items.push(d.colour ? { type: 'rect', ...r, angle: 0, rgb: colour(d.colour, `${p}.colour`) }
+          : { type: 'rect', ...r, angle: 0, rgb: WALL_RGB, wall: true });
+      }
+    } else throw new Error(`${level.id}: ${p}: unknown map item "${kind}" (wall, box, patch, line, arc, maze, scatter)`);
   });
 
   const [sp, spAt] = layout?.spawn ? [layout.spawn, `layouts.${layout.name}.spawn`] : [level.spawn, 'spawn'];
