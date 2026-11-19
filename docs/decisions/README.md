@@ -33,3 +33,4 @@ New record: copy [`0000-template.md`](0000-template.md) to the next free number.
 | [0016](0016-class-accounts-progress-sync.md) | Class accounts sync progress; names never reach the server | Accepted | infra |
 | [0017](0017-goals-that-follow-the-run.md) | Goals that follow the run: values from variants, events, staying in a zone | Accepted | levels |
 | [0018](0018-courses-on-fixed-boards.md) | Evaluation courses are built on fixed K-line boards | Accepted | pedagogy |
+| [0019](0019-three-star-challenges.md) | ★★★ is a per-level challenge on block count or time | Accepted | levels |

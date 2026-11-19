@@ -19,6 +19,7 @@ const { registerAllBlocks } = await imp('src/blockly/index.js');
 const { generateCode, generateRunCode } = await imp('src/codegen/index.js');
 const { isOpenRobertaXml, openRobertaToBlocklyDom } = await imp('src/blockly/orFormat.js');
 const { syncBlocks } = await imp('src/blockly/blocks/_varScope.js');
+const { countBlocks } = await imp('src/blockly/blockCount.js');
 const { parseMapPixels } = await imp('src/sim/mapLoader.js');
 const { runHeadless } = await imp('src/runtime/headless.js');
 registerAllBlocks();
@@ -28,7 +29,7 @@ export function loadProgram(file) {
   return programFromText(fs.readFileSync(path.resolve(ROOT, file), 'utf8'));
 }
 
-/** Program text (Open Roberta export or Blockly XML) → { code, plainCode, warnings }. */
+/** Program text (Open Roberta export or Blockly XML) → { code, plainCode, warnings, blocks (★★★ count) }. */
 export function programFromText(text) {
   const ws = new Blockly.Workspace();
   try {
@@ -36,7 +37,7 @@ export function programFromText(text) {
     Blockly.Xml.domToWorkspace(dom, ws);
     syncBlocks(ws);
     const warnings = ws.getAllBlocks(false).filter((b) => b.robWarning_).map((b) => `${b.type}: ${b.robWarning_}`);
-    return { code: generateRunCode(ws), plainCode: generateCode(ws), warnings };
+    return { code: generateRunCode(ws), plainCode: generateCode(ws), warnings, blocks: countBlocks(ws) };
   } finally {
     ws.dispose();
   }

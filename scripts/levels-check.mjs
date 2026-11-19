@@ -6,6 +6,8 @@
 //   3. solution and anti-solutions only call robotAPI functions that exist;
 //   4. the solution passes on every seed (★★);
 //   5. every anti-solution fails on at least one seed (the variants enforce the concept);
+//      a starter program fails at least one seed; a ★★★ challenge's solution (Blockly
+//      XML) passes every seed and meets the challenge (decision 0019);
 //   6. writes levels/_previews/<id>.png: the first variant, its zones (blue), the
 //      solution's path (red) and the robot at the start (cyan) and end (red).
 //
@@ -23,6 +25,7 @@ const imp = (p) => import(path.join(ROOT, p));
 const { prepareLevel, testSeeds } = await imp('src/levels/level.js');
 const { rasterise, levelMap } = await imp('src/levels/raster.js');
 const { runLevel } = await imp('src/levels/runLevel.js');
+const { judgeChallenge } = await imp('src/levels/challenge.js');
 const { setMapData } = await imp('src/sim/map.js');
 const { footprintHitsWall, footprintCorners } = await imp('src/sim/collision.js');
 const { robotAPI } = await imp('src/sim/robotAPI.js');
@@ -107,6 +110,21 @@ for (const file of levelFiles()) {
           if (verbose) results.forEach((r, i) => notes.push(`starter, seed ${seeds[i]}: ${describe(r)}`));
           if (results.every((r) => r.verdict && r.verdict.passed)) problems.push('starter program passes every seed — there is nothing to fix');
           else notes.push(`starter fails ${results.filter((r) => !r.verdict || !r.verdict.passed).length}/${seeds.length} seeds`);
+        }
+      }
+      if (level.challenge) {
+        let prog = null;
+        try { prog = programFromText(level.challenge.solution); } catch (e) { problems.push(`challenge solution does not load: ${e.message}`); }
+        if (prog) {
+          const results = seeds.map((seed) => runLevel({ level, code: prog.code, seed }));
+          const bad = results.findIndex((r) => !r.verdict || !r.verdict.passed);
+          if (bad >= 0) problems.push(`challenge solution fails seed ${seeds[bad]}: ${describe(results[bad])}`);
+          else {
+            const c = judgeChallenge(level.challenge, { blocks: prog.blocks, timesS: results.map((r) => r.verdict.timeS) });
+            const what = `${prog.blocks} blocks, slowest ${c.slowestS} s`;
+            if (!c.met) problems.push(`challenge solution does not meet the challenge (${what})`);
+            else notes.push(`challenge solution: ${what}`);
+          }
         }
       }
       if (preview) writePreview(level, seeds[0]);

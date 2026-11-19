@@ -1,0 +1,58 @@
+# World 3: work out the turn of a regular polygon (360 / 6 = 60). The tempting 120°
+# (the inside angle) draws a triangle.
+id: "03-02"
+world: 3
+kind: core
+title: Polígonos
+objective: Agora um hexágono - 6 lados iguais de 40 cm. Passa pelos cantos 1 a 5, por esta ordem, e pára no círculo verde onde começaste. Quantos graus tem de rodar o robô em cada canto?
+concepts: [repetir, ângulos]
+assumes: [repetir]
+toolbox: beginner
+timeLimit: 50
+
+map:
+  items:
+    - line:  { points: [[70, 25], [110, 25], [130, 59.6], [110, 94.3], [70, 94.3], [50, 59.6], [70, 25]], width: 1, colour: black }
+    - patch: { cx: 70, cy: 25, r: 8, colour: green }
+
+spawn: { x: 70, y: 25, heading: 0 }
+
+zones:
+  - { id: c1, label: canto 1, cx: 110, cy: 25, r: 7 }
+  - { id: c2, label: canto 2, cx: 130, cy: 59.6, r: 7 }
+  - { id: c3, label: canto 3, cx: 110, cy: 94.3, r: 7 }
+  - { id: c4, label: canto 4, cx: 70, cy: 94.3, r: 7 }
+  - { id: c5, label: canto 5, cx: 50, cy: 59.6, r: 7 }
+  - { id: partida, label: círculo verde, cx: 70, cy: 25, r: 8 }
+
+goals:
+  - sequence: { steps: [{ zone: c1 }, { zone: c2 }, { zone: c3 }, { zone: c4 }, { zone: c5 }] }
+  - robotStoppedIn: { zone: partida, probe: centre }
+  - noCollision
+
+solution: |
+  for (var count = 0; count < 6; count++) {
+    robotAPI.drive_for("FOREWARD", 30, 40);
+    robotAPI.turn_for("RIGHT", 30, 60);
+  }
+
+antiSolutions:
+  - name: ângulo interno
+    why: 120° é o ângulo dentro do hexágono; o robô roda o ângulo de fora (360 / 6) e desenha um triângulo.
+    code: |
+      for (var count = 0; count < 6; count++) {
+        robotAPI.drive_for("FOREWARD", 30, 40);
+        robotAPI.turn_for("RIGHT", 30, 120);
+      }
+  - name: como o quadrado
+    why: 90° dá um quadrado, não um hexágono.
+    code: |
+      for (var count = 0; count < 6; count++) {
+        robotAPI.drive_for("FOREWARD", 30, 40);
+        robotAPI.turn_for("RIGHT", 30, 90);
+      }
+
+challenge:
+  maxBlocks: 3
+  solution: |
+    <export xmlns="http://de.fhg.iais.roberta.blockly"><program><block_set xmlns="http://de.fhg.iais.roberta.blockly" robottype="mbot2" xmlversion="3.1" description="" tags=""><instance x="40" y="40"><block type="robControls_start" intask="true" deletable="false"><mutation declare="false"></mutation><field name="DEBUG">TRUE</field></block><block type="controls_repeat_ext" intask="true"><value name="TIMES"><block type="math_number" intask="true"><field name="NUM">6</field></block></value><statement name="DO"><block type="robActions_motorDiff_on_for" intask="true"><field name="DIRECTION">FOREWARD</field><field name="ACTORPORT">_D</field><hide name="ACTORPORT" value="_D"></hide><value name="POWER"><block type="math_number" intask="true"><field name="NUM">30</field></block></value><value name="DISTANCE"><block type="math_number" intask="true"><field name="NUM">40</field></block></value></block><block type="robActions_motorDiff_turn_for" intask="true"><field name="DIRECTION">RIGHT</field><field name="ACTORPORT">_D</field><hide name="ACTORPORT" value="_D"></hide><value name="POWER"><block type="math_number" intask="true"><field name="NUM">30</field></block></value><value name="DEGREE"><block type="math_number" intask="true"><field name="NUM">60</field></block></value></block></statement></block></instance></block_set></program></export>

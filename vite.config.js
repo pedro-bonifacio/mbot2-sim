@@ -32,7 +32,7 @@ function mapCataloguePlugin() {
 
 // Level files (levels/**/*.yaml, decision 0009) become JSON modules for the browser:
 // validated against levels/level.schema.json (errors show in Vite's overlay), and
-// without `solution` / `antiSolutions`, so the answers never reach the page.
+// without `solution` / `antiSolutions` / `challenge.solution`, so the answers never reach the page.
 function levelYamlPlugin() {
   let validate = null;
   return {
@@ -48,6 +48,10 @@ function levelYamlPlugin() {
         throw new Error(`${path.basename(id)}: ${validate.errors.map((e) => `${e.instancePath || '/'} ${e.message}`).join('; ')}`);
       }
       const { solution, antiSolutions, ...forBrowser } = level;
+      if (forBrowser.challenge) {
+        const { solution: challengeSolution, ...challenge } = forBrowser.challenge;
+        forBrowser.challenge = challenge;
+      }
       return { code: `export default ${JSON.stringify(forBrowser)};`, map: null };
     },
   };

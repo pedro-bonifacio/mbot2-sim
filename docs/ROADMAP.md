@@ -3,11 +3,27 @@
 Living plan. Edit freely; tick items as they ship (and log them in `../CHANGELOG.md`).
 The *why* behind items lives in [`decisions/`](decisions/README.md).
 
-Last reviewed: 2026-11-19 (sixth session)
+Last reviewed: 2026-11-19 (seventh session)
 
 ---
 
-## ▶ Where we left off (2026-11-19, sixth session)
+## ▶ Where we left off (2026-11-19, seventh session)
+
+**This session** (on `main`, **not pushed yet**, like the sixth session's work):
+- **★★★ challenges** ([0019](decisions/0019-three-star-challenges.md)): `challenge: { maxBlocks, maxSeconds, solution }`
+  per level; the panel shows it with a live block count (numbers, texts, colours not
+  counted). Judged on a ★★ program (★★ check, or the run on a one-layout level). Stars
+  sync with a new server column. **Before the next push:**
+  `npx wrangler d1 migrations apply mbot2-sim --remote` (adds `stars.three`), then push;
+  `npm run turmas:install` to get ★★★ in `turmas show`.
+- **World 3** built (03-01, 02, 03, 05, 06, 07, Prova 03-08), each with a ★★★ block limit;
+  01-10 got ★★★ "≤ 15 s". 03-04 waits for keys in tests.
+- **RPM limit for students:** tooltips on the 8 speed blocks ("de −200 a 200") and a
+  console warning once per run when a program asks for more (VERIFY_ON_ROBOT #11: what
+  the real robot does above 200).
+- Teacher checks, the World 3 ★★ question and the push steps: below, "Start the next session with".
+
+### Sixth session (2026-11-19)
 
 **This session** (on `main`, **not pushed yet** — pushing deploys to students):
 - **Goal values from variants + event goals** ([0017](decisions/0017-goals-that-follow-the-run.md)):
@@ -50,25 +66,39 @@ Done this session (details in `CHANGELOG.md → Unreleased`):
 
 **Start the next session with:**
 
-1. **Teacher** (looks and admin only):
-   - [ ] **Measure the quad RGB sensor** (VERIFY_ON_ROBOT #8): distance between the four
-         probes and from the wheel axle — the tape-maze levels wait for it.
-   - [ ] World 1 playthrough from 01-09 (01-01 … 01-08 seen, fine).
-   - [ ] Looks: "👤 Entrar" box, "☁ Guardado" / "⚠ Sem ligação" in the top bar.
-   - [ ] Tell the school's data-protection officer (class + number + programs, no names).
-   - [ ] Real class: CSV exported from the school's system into `turmas/<turma>/`, then
-         `node turmas.mjs create <turma>`. Delete `TESTE` when done (`node turmas.mjs delete TESTE`).
-   - [ ] Still open from before: ring/✓ zones, 📏 Régua, bricks (or cardboard?), block wording
-         vetoes (`src/blockly/ptClarity.js`), controller pad on a small laptop, 05-14 starter,
-         Open Roberta export on the robot (VERIFY_ON_ROBOT #10), collision and `04-01` looks.
-2. **Next build steps — the course** (CURRICULUM.md → "Sim features needed", in order):
-   goal values from variants (text/colour/number ± tolerance) and layout choice → **Worlds 2–5**;
-   maze generator + box scatter → World 6 and courses P5/P8/P9; event goals (tone, sequence,
-   survive); ★★★; keys in tests; pushable boxes (P4).
+1. **Teacher** (looks, decisions, robot — dev server http://100.114.196.108:5173/ is left
+   running; login `teste-1` / `robo123` there, local test account only):
+   - [ ] **World 3** (★ Níveis → Mundo 3): play 03-01 … 03-08. Are the objectives clear
+         ("Quantos graus tem de rodar…", the zigzag and staircase wording)? Do the drawn
+         shapes, corner circles and the staircase walls look right?
+   - [ ] **★★★ looks:** the "★★★ Desafio: …" line and the live "O teu programa tem N blocos"
+         under the goals; ☆☆☆ on the level cards. Try 03-01 with four copies of
+         drive + turn (★★☆ and the reason), then with `repetir 4` (★★★). 01-10: Z in ≤ 15 s.
+   - [ ] **RPM:** hover a "mover" block (tooltip "de −200 a 200"); run speed 500 and read
+         the console warning.
+   - [ ] **Decide:** in World 3, ★/★★ don't need the loop (only ★★★ does). Is ★★ on the
+         Prova enough to skip World 3, or should it need ★★★? (decision 0019 → Consequences)
+   - [ ] **Robot:** VERIFY_ON_ROBOT #11 (speed 500 RPM: runs at 200, or errors?) and
+         **#8 measure the quad RGB sensor** (probe spacing, distance from the wheel axle) —
+         the tape-maze levels wait for it.
+   - [ ] **Before pushing** (pushing deploys to students; sixth + seventh sessions are
+         unpushed): `npx wrangler d1 migrations apply mbot2-sim --remote`, then
+         `git push git@github.com:pedro-bonifacio/mbot2-sim.git main`, then
+         `npm run turmas:install` (★★★ column in `turmas show`).
+   - [ ] Still open from the sixth session: play World 2 and 04-05, 05-02, 05-08, 07-01,
+         07-02 (goal wordings); blue checkpoint circles on 05-04/05/12.
+   - [ ] Still open from before: World 1 from 01-09; "👤 Entrar" / "☁ Guardado" looks;
+         data-protection officer; real class CSV + delete `TESTE`; ring/✓ zones, 📏 Régua,
+         bricks, block wording vetoes (`src/blockly/ptClarity.js`), controller pad on a small
+         laptop, 05-14 starter, Open Roberta export on the robot (VERIFY_ON_ROBOT #10),
+         collision and `04-01` looks.
+2. **Next build steps** (CURRICULUM.md → "Sim features needed"): **keys in tests** (a level
+   presses A/B at set times in the ★★ run → 03-04, 10-04) → **pushable boxes** (P4, 08-07,
+   10-02); then 06-10 (maze with loops), 05-11 and 08-05/06 (★★★ time races), and ★★★ on
+   the repetitive World 1 distance levels if wanted.
 3. Optional: a `/new-level` skill; one-page teacher sheets for the random courses; a class
    overview page for the teacher (the API has `GET /api/teacher/turmas/<turma>`; `turmas show`
    prints it).
-4. Pushing now deploys to the live site: push when a change is ready for students.
 
 **How we test** (decided 2026-11-17: the assistant tests itself; the teacher only checks looks):
 - `npm run check` — fidelity, codegen, variables/functions, sim tests.
@@ -80,6 +110,8 @@ Done this session (details in `CHANGELOG.md → Unreleased`):
 - Dev server for the teacher (remote via Tailscale): `npx vite --host 100.114.196.108 --open false`
   → http://100.114.196.108:5173/. Start it detached (`nohup setsid … &`) so it outlives the
   2 h limit of background tasks. Login there needs `npm run api:dev` (local API, port 8788).
+  After a new file in `migrations/`: `npx wrangler d1 migrations apply mbot2-sim --local`.
+  Local test login: `teste-1` / `robo123` (local D1 only).
 - Test programs for the teacher: `scripts/fixtures/teste-*.xml` (generated by
   `scripts/fixtures/make-test-programs.py`), on map `default.png`; collision cases in
   `scripts/fixtures/collision/`; level programs in `scripts/fixtures/levels/`.
@@ -131,7 +163,7 @@ Format: [`LEVEL_FORMAT.md`](LEVEL_FORMAT.md); how-to: [`LEVEL_AUTHORING.md`](LEV
 - [x] Referee: goals evaluated each tick (browser and headless at the same ticks); result in the level panel and console, PT-PT
 - [x] Zone overlay rendering
 - [x] Variants: seeded parameters + ★★ robustness run (**Testar todas as variantes**)
-- [ ] Stars — ★/★★ shown, kept in memory only; ★★★ challenges not yet
+- [x] Stars — ★/★★/★★★ (★★★ = per-level block or time challenge, [0019](decisions/0019-three-star-challenges.md)); saved in progress and synced
 - [x] Level selector: worlds, ★ status, kind badge (**no locks**) — `src/ui/levelSelector.js`; concepts per level still to show
 - [x] Per-level program save slots; progress export/import (file) — `src/levels/progress.js`, `npm run progress:check`
 - [x] `npm run levels:check`: schema, solution must pass all seeds, anti-solutions must fail, preview PNG per level

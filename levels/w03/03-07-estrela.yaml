@@ -1,0 +1,56 @@
+# World 3 challenge: a five-pointed star - the 144° puzzle (2 × 360 / 5).
+id: "03-07"
+world: 3
+kind: challenge
+title: Estrela
+objective: Desenha uma estrela de cinco pontas com lados de 60 cm - passa pelas pontas 1 a 4, por esta ordem, e pára no círculo verde onde começaste. O robô dá duas voltas completas para desenhar a estrela...
+concepts: [repetir, ângulos]
+assumes: [repetir]
+toolbox: beginner
+timeLimit: 60
+
+map:
+  items:
+    - line:  { points: [[70, 45], [130, 45], [81.5, 80.3], [100, 23.2], [118.5, 80.3], [70, 45]], width: 1, colour: black }
+    - patch: { cx: 70, cy: 45, r: 8, colour: green }
+
+spawn: { x: 70, y: 45, heading: 0 }
+
+zones:
+  - { id: p1, label: ponta 1, cx: 130, cy: 45, r: 7 }
+  - { id: p2, label: ponta 2, cx: 81.5, cy: 80.3, r: 7 }
+  - { id: p3, label: ponta 3, cx: 100, cy: 23.2, r: 7 }
+  - { id: p4, label: ponta 4, cx: 118.5, cy: 80.3, r: 7 }
+  - { id: partida, label: círculo verde, cx: 70, cy: 45, r: 8 }
+
+goals:
+  - sequence: { steps: [{ zone: p1 }, { zone: p2 }, { zone: p3 }, { zone: p4 }] }
+  - robotStoppedIn: { zone: partida, probe: centre }
+  - noCollision
+
+solution: |
+  for (var count = 0; count < 5; count++) {
+    robotAPI.drive_for("FOREWARD", 30, 60);
+    robotAPI.turn_for("RIGHT", 30, 144);
+  }
+
+antiSolutions:
+  - name: pentágono
+    why: 72° (360 / 5) desenha um pentágono, não uma estrela.
+    code: |
+      for (var count = 0; count < 5; count++) {
+        robotAPI.drive_for("FOREWARD", 30, 60);
+        robotAPI.turn_for("RIGHT", 30, 72);
+      }
+  - name: ângulo da ponta
+    why: 36° é o ângulo da ponta da estrela; o robô roda o que falta para 180°.
+    code: |
+      for (var count = 0; count < 5; count++) {
+        robotAPI.drive_for("FOREWARD", 30, 60);
+        robotAPI.turn_for("RIGHT", 30, 36);
+      }
+
+challenge:
+  maxBlocks: 3
+  solution: |
+    <export xmlns="http://de.fhg.iais.roberta.blockly"><program><block_set xmlns="http://de.fhg.iais.roberta.blockly" robottype="mbot2" xmlversion="3.1" description="" tags=""><instance x="40" y="40"><block type="robControls_start" intask="true" deletable="false"><mutation declare="false"></mutation><field name="DEBUG">TRUE</field></block><block type="controls_repeat_ext" intask="true"><value name="TIMES"><block type="math_number" intask="true"><field name="NUM">5</field></block></value><statement name="DO"><block type="robActions_motorDiff_on_for" intask="true"><field name="DIRECTION">FOREWARD</field><field name="ACTORPORT">_D</field><hide name="ACTORPORT" value="_D"></hide><value name="POWER"><block type="math_number" intask="true"><field name="NUM">30</field></block></value><value name="DISTANCE"><block type="math_number" intask="true"><field name="NUM">60</field></block></value></block><block type="robActions_motorDiff_turn_for" intask="true"><field name="DIRECTION">RIGHT</field><field name="ACTORPORT">_D</field><hide name="ACTORPORT" value="_D"></hide><value name="POWER"><block type="math_number" intask="true"><field name="NUM">30</field></block></value><value name="DEGREE"><block type="math_number" intask="true"><field name="NUM">144</field></block></value></block></statement></block></instance></block_set></program></export>

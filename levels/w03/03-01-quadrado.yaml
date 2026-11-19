@@ -1,0 +1,57 @@
+# World 3: the first repeat. Four equal sides and four equal turns; ★★★ needs the
+# repeat block (3 blocks), without it the program has 8.
+id: "03-01"
+world: 3
+kind: core
+title: Quadrado
+objective: Desenha um quadrado com 50 cm de lado - passa pelos cantos 1, 2 e 3, por esta ordem, e volta a parar no círculo verde onde começaste. Há quatro lados iguais... repete!
+concepts: [repetir]
+assumes: [andar uma distância, rodar um ângulo]
+toolbox: beginner
+timeLimit: 40
+
+map:
+  items:
+    - line:  { points: [[60, 30], [110, 30], [110, 80], [60, 80], [60, 30]], width: 1, colour: black }
+    - patch: { cx: 60, cy: 30, r: 8, colour: green }
+
+spawn: { x: 60, y: 30, heading: 0 }
+
+zones:
+  - { id: c1, label: canto 1, cx: 110, cy: 30, r: 7 }
+  - { id: c2, label: canto 2, cx: 110, cy: 80, r: 7 }
+  - { id: c3, label: canto 3, cx: 60, cy: 80, r: 7 }
+  - { id: partida, label: círculo verde, cx: 60, cy: 30, r: 8 }
+
+goals:
+  - sequence: { steps: [{ zone: c1 }, { zone: c2 }, { zone: c3 }] }
+  - robotStoppedIn: { zone: partida, probe: centre }
+  - noCollision
+
+solution: |
+  for (var count = 0; count < 4; count++) {
+    robotAPI.drive_for("FOREWARD", 30, 50);
+    robotAPI.turn_for("RIGHT", 30, 90);
+  }
+
+antiSolutions:
+  - name: três lados
+    why: Repete 3 vezes em vez de 4 e não volta ao início.
+    code: |
+      for (var count = 0; count < 3; count++) {
+        robotAPI.drive_for("FOREWARD", 30, 50);
+        robotAPI.turn_for("RIGHT", 30, 90);
+      }
+  - name: para a esquerda
+    why: O quadrado para a esquerda sai da mesa (bate na parede de cima).
+    code: |
+      for (var count = 0; count < 4; count++) {
+        robotAPI.drive_for("FOREWARD", 30, 50);
+        robotAPI.turn_for("LEFT", 30, 90);
+      }
+
+# ★★★: repeat 4 { drive, turn } = 3 blocks.
+challenge:
+  maxBlocks: 3
+  solution: |
+    <export xmlns="http://de.fhg.iais.roberta.blockly"><program><block_set xmlns="http://de.fhg.iais.roberta.blockly" robottype="mbot2" xmlversion="3.1" description="" tags=""><instance x="40" y="40"><block type="robControls_start" intask="true" deletable="false"><mutation declare="false"></mutation><field name="DEBUG">TRUE</field></block><block type="controls_repeat_ext" intask="true"><value name="TIMES"><block type="math_number" intask="true"><field name="NUM">4</field></block></value><statement name="DO"><block type="robActions_motorDiff_on_for" intask="true"><field name="DIRECTION">FOREWARD</field><field name="ACTORPORT">_D</field><hide name="ACTORPORT" value="_D"></hide><value name="POWER"><block type="math_number" intask="true"><field name="NUM">30</field></block></value><value name="DISTANCE"><block type="math_number" intask="true"><field name="NUM">50</field></block></value></block><block type="robActions_motorDiff_turn_for" intask="true"><field name="DIRECTION">RIGHT</field><field name="ACTORPORT">_D</field><hide name="ACTORPORT" value="_D"></hide><value name="POWER"><block type="math_number" intask="true"><field name="NUM">30</field></block></value><value name="DEGREE"><block type="math_number" intask="true"><field name="NUM">90</field></block></value></block></statement></block></instance></block_set></program></export>

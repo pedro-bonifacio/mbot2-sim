@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 ### Added
+- **Speed limit explained**: hovering a driving or motor block says the speed is in RPM, from −200 to 200 (200 RPM ≈ 68 cm/s); a program that asks for more gets one console warning per run ("Pediste 500 RPM: o robô anda a 200").
+- **★★★ challenges**: some levels have an extra challenge — at most N blocks, or done within N seconds. The level panel shows it with your program's block count as you build (numbers, texts and colours don't count); ★★★ comes with a program that also earns ★★. 01-10 now has one (finish the Z in 15 s).
+- **World 3 "Repetir"**: 03-01 Quadrado, 03-02 Polígonos, 03-03 Ziguezague, 03-05 Repetições dentro de repetições, 03-06 Pisca-pisca, 03-07 Estrela and the test 03-08 Escadaria. Each one's ★★★ needs the repeat block.
 - **Mazes and obstacle courses that change every variant**: 06-08 Labirinto de caixas (a new box maze each time) and 06-09 Corrida de obstáculos (boxes at new distances on the robot's way).
 - **Course boards**: test levels can be one, two or three 70 × 100 cm boards, like the real courses: no walls at the edge (the ultrasonic sees nothing there), and driving off the board fails. 05-08 and 05-12 now use them.
 - **Line-following levels** 05-04 Curvas suaves, 05-05 Curvas de 90° and the World 5 test 05-12 Linha livre: each variant is a different track (smooth curves, sharp corners), so a memorised route never works on all of them.

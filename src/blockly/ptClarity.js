@@ -157,6 +157,20 @@ export const MSG_TEXT = {
   PROCEDURES_IFRETURN_TOOLTIP: 'Se a condição for verdadeira, devolve o segundo valor.',
 };
 
+// ── Tooltips (Open Roberta's mBot 2 blocks have none) ─────────────────────────
+// The speed limit is said wherever a speed is typed; robotAPI warns at run time too.
+const RPM = 'Velocidade das rodas em RPM (rotações por minuto), de −200 a 200; 200 RPM ≈ 68 cm/s.';
+export const TOOLTIP_BY_TYPE = {
+  robActions_motorDiff_on_for:   `Anda a direito uma distância (cm) e pára. ${RPM}`,
+  robActions_motorDiff_on:       `Põe o robô a andar até outro bloco o parar ou mudar. ${RPM}`,
+  robActions_motorDiff_turn_for: `Roda o robô no lugar um ângulo (°) e pára. ${RPM}`,
+  robActions_motorDiff_turn:     `Põe o robô a rodar no lugar até outro bloco o parar. ${RPM}`,
+  robActions_motorDiff_curve_for: `Anda em curva uma distância (cm), cada roda à sua velocidade, e pára. ${RPM}`,
+  robActions_motorDiff_curve:    `Anda em curva, cada roda à sua velocidade, até outro bloco o parar. ${RPM}`,
+  robActions_motor_on:           `Liga um motor (R = direito, L = esquerdo). ${RPM}`,
+  robActions_motor_on_for:       `Roda um motor (R = direito, L = esquerdo) um número de voltas ou graus e pára. ${RPM}`,
+};
+
 // ── Toolbox category names ───────────────────────────────────────────────────
 export const CATEGORY_TEXT = { TOOLBOX_ACTION: 'Ação' };
 
@@ -174,6 +188,9 @@ export function clarifyLabel(type, text) {
   if (own && own[text] !== undefined) return own[text];
   return LABEL_TEXT[text] ?? text;
 }
+
+/** A block type's PT-PT tooltip, or undefined. */
+export function clarifyTooltip(type) { return TOOLTIP_BY_TYPE[type]; }
 
 export function clarifyMsg(key, text) {
   return MSG_TEXT[key] ?? text;

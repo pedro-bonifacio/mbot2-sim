@@ -80,6 +80,13 @@ antiSolutions:             # tempting but wrong: each must fail at least one see
     why: Só funciona quando a parede calha no sítio certo.
     code: |
       robotAPI.drive_for("FOREWARD", 30, 80);
+
+challenge:                 # optional ★★★ (decision 0019): maxBlocks and/or maxSeconds
+  maxBlocks: 3             #   start block, numbers, texts, colours, true/false, comments not counted
+  maxSeconds: 15           #   every variant passes within this many simulated seconds
+  # label: …               #   PT-PT wording instead of "no máximo 3 blocos, em 15 s ou menos"
+  solution: |              #   Blockly XML or an Open Roberta export (one line is fine); must pass
+    <export …>…</export>   #   every seed and meet the challenge; never sent to the browser
 ```
 
 ### Layouts: one of several hand-drawn maps per variant
@@ -192,7 +199,10 @@ The student sees the first seed first; **Outra variante** cycles through the see
 - ★ — the run passed on the variant on screen.
 - ★★ — **Testar todas as variantes**: the program passes on every seed (run headlessly).
   A level with one layout (no `variants`) gives ★★ with the ★, and hides that button.
-- ★★★ — optional challenge (not implemented yet).
+- ★★★ — the level's `challenge`, met by a program that earns ★★: judged in the ★★ check
+  (every variant within `maxSeconds`), or on the passing run of a level with one layout.
+  The panel shows the challenge and the program's block count as it is edited
+  ([decision 0019](decisions/0019-three-star-challenges.md)).
 
 ## Checking levels
 
@@ -201,7 +211,8 @@ The student sees the first seed first; **Outra variante** cycles through the see
 1. schema, id ↔ file name ↔ world;
 2. every seed prepares and spawns the robot clear of walls;
 3. solution and anti-solutions only call existing `robotAPI` functions;
-4. the solution passes every seed; 5. each anti-solution fails at least one;
+4. the solution passes every seed; 5. each anti-solution fails at least one; a
+   `starter` fails at least one; `challenge.solution` passes every seed and meets the challenge;
 6. the referee's rules on `scripts/fixtures/referee-cases.json` (whole check only);
 7. `levels/_previews/<id>.png`: seed 1, zones (blue), the solution's path (red), the
    robot at start (cyan) and end (red). `--verbose` prints every seed's verdict.
@@ -212,6 +223,6 @@ copy the code (DevTools console prints it on **Executar**) to be sure it is bloc
 ## In the browser
 
 Levels appear in **★ Níveis** (by world, with the student's stars, plus the free maps; `?level=04-01` opens one directly). A level opens with its `toolbox`. The
-Vite plugin (`vite.config.js`) validates each file and strips `solution` and
-`antiSolutions`, so answers never reach the page. Dev hooks: `__dev.level(id)`,
+Vite plugin (`vite.config.js`) validates each file and strips `solution`,
+`antiSolutions` and `challenge.solution`, so answers never reach the page. Dev hooks: `__dev.level(id)`,
 `__dev.variant()`, `__dev.checkAll()`, `__dev.state().level`.

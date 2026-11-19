@@ -107,6 +107,9 @@ main { display: flex; flex: 1; min-height: 0; overflow: hidden; }
 #level-panel .goals li .mark { display: inline-block; width: 1.2em; font-weight: bold; }
 #level-panel .goals li.ok { color: #15803d; }
 #level-panel .goals li.bad { color: #b91c1c; }
+#level-panel .challenge { margin: 0 0 8px; color: #92400e; }
+#level-panel .challenge.ok { color: #15803d; }
+#level-panel .challenge .block-count { color: #4b5563; font-size: 13px; }
 #level-panel .level-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 #level-panel .variant { color: #4b5563; margin-right: 4px; }
 #level-panel button { padding: 4px 10px; cursor: pointer; }

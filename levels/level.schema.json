@@ -403,6 +403,19 @@
       },
       "description": "tempting but wrong programs; each must fail at least one seed"
     },
+    "challenge": {
+      "type": "object",
+      "description": "★★★ (decision 0019), judged on a program that earns ★★. At least one of maxBlocks / maxSeconds.",
+      "required": ["solution"],
+      "anyOf": [{"required": ["maxBlocks"]}, {"required": ["maxSeconds"]}],
+      "additionalProperties": false,
+      "properties": {
+        "maxBlocks": {"type": "integer", "minimum": 1, "description": "at most this many blocks (the start block, numbers, texts, colours, true/false and comments do not count)"},
+        "maxSeconds": {"type": "number", "exclusiveMinimum": 0, "description": "every variant passes within this many simulated seconds"},
+        "label": {"type": "string", "description": "PT-PT wording instead of the generated one"},
+        "solution": {"type": "string", "description": "Blockly XML (as Guardar programa saves it) that meets the challenge on every seed; checked by levels:check, never sent to the browser"}
+      }
+    },
     "layouts": {
       "type": "object",
       "description": "hand-drawn alternatives, one per variant, picked by the text parameter `layout` (e.g. layout: { choices: [oval, gancho] }). Each adds items and zones and may set the spawn.",

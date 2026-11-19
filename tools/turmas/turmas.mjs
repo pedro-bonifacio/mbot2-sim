@@ -194,7 +194,7 @@ async function show(cfg, turmaArg) {
   const names = Object.fromEntries(((readPasswords(turmaArg) || {}).rows || []).map((r) => [r.username, r.names]));
   console.log(`\nClass ${turmaArg.toUpperCase()} — levels with ★ / with ★★ / last seen\n`);
   for (const s of data) {
-    console.log(`  ${String(s.number).padStart(2)}  ${s.username.padEnd(8)}  ★ ${String(s.levels).padStart(2)}  ★★ ${String(s.twoStars).padStart(2)}  ${when(s.lastSeen).padEnd(17)}  ${names[s.username] || ''}`);
+    console.log(`  ${String(s.number).padStart(2)}  ${s.username.padEnd(8)}  ★ ${String(s.levels).padStart(2)}  ★★ ${String(s.twoStars).padStart(2)}  ★★★ ${String(s.threeStars ?? 0).padStart(2)}  ${when(s.lastSeen).padEnd(17)}  ${names[s.username] || ''}`);
   }
   console.log('');
 }

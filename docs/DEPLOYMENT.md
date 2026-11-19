@@ -144,7 +144,11 @@ other host the sim still works; "Entrar" then says the site has no accounts.
    `config.example.json` to `config.json` with the site address and the `TEACHER_KEY`.
    Then put a class CSV in `turmas/7B/` and run `node turmas.mjs create 7B` (see its `README.md`).
 
-**Development:** `npx wrangler d1 migrations apply mbot2-sim --local` once, then
+**New migrations** (a new file in `migrations/`, e.g. `0002_three_stars.sql`): run
+`npx wrangler d1 migrations apply mbot2-sim --remote` **before** pushing the code that
+needs them, or saving progress fails on the live site until it is applied.
+
+**Development:** `npx wrangler d1 migrations apply mbot2-sim --local` once (and after each new migration), then
 `npm run build && npm run api:dev` (API with a local D1 on port 8788; secrets from
 `.dev.vars`, not committed) next to `npm run dev`, which proxies `/api` to it.
 `npm run accounts:check` tests the API without wrangler.

@@ -1,5 +1,5 @@
 {
-  "_doc": "Headless simulator tests (npm run sim:test). pose = relative to the spawn: forward/right cm, turned degrees (+ = right); tolerance 0.5 cm / 1 deg. Only listed fields are checked. seed = the program's random-number seed (default 1).",
+  "_doc": "Headless simulator tests (npm run sim:test). pose = relative to the spawn: forward/right cm, turned degrees (+ = right); tolerance 0.5 cm / 1 deg. Only listed fields are checked. seed = the program's random-number seed (default 1). consoleWarnings = every warning the program prints, in order.",
   "tests": [
     {
       "name": "Open Roberta export 01-simples (waits for key A)",
@@ -177,6 +177,21 @@
         "display": [
           "0 2",
           "1 0.06195825757458806"
+        ]
+      }
+    },
+    {
+      "name": "speeds above 200 RPM run at 200 and warn once per run",
+      "program": "scripts/fixtures/rpm-acima-do-limite.xml",
+      "expect": {
+        "status": "finished",
+        "pose": {
+          "forward": 50,
+          "right": -20,
+          "turned": 90
+        },
+        "consoleWarnings": [
+          "⚠ Os motores do mBot 2 só vão até 200 RPM. Pediste 500 RPM: o robô anda a 200."
         ]
       }
     }

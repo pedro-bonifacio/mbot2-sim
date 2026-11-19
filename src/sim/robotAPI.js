@@ -1,6 +1,6 @@
 import { appendConsoleMessage } from '../ui/console.js';
 import { ptMessages as MSG } from '../i18n/pt.js';
-import { robot, setWheelSpeeds } from './robot.js';
+import { robot, setWheelSpeeds, ROBOT_CONSTANTS } from './robot.js';
 import { asyncTicket } from '../runtime/runState.js';
 import { play_tone as _play_tone, set_volume as _set_volume, get_volume as _get_volume } from './audio.js';
 import {
@@ -34,6 +34,19 @@ import {
 
 // FIFO message bus: channel → string[]. Resets on each program run (CLAUDE.md §6).
 const _messageBus = new Map();
+
+// The motors reach ±200 RPM (CLAUDE.md §3); robot.js clamps any faster request. The
+// student is told once per run, with the number they asked for (PT-PT, console).
+let _rpmWarned = false;
+function checkRpm(...speeds) {
+  if (_rpmWarned) return;
+  const v = speeds.map(num).find((s) => Math.abs(s) > ROBOT_CONSTANTS.MAX_RPM);
+  if (v === undefined) return;
+  _rpmWarned = true;
+  const capped = Math.sign(v) * ROBOT_CONSTANTS.MAX_RPM;
+  appendConsoleMessage(MSG.RPM_LIMIT.replace('%1', formatRpm(v)).replace('%2', formatRpm(capped)), 'warn');
+}
+const formatRpm = (v) => String(Math.round(v * 10) / 10).replace('.', ',').replace('-', '−');
 
 const isBackward = (direction) => String(direction).indexOf('BACKWARD') === 0;
 const num = (x) => Number(x) || 0;
@@ -103,6 +116,7 @@ export const robotAPI = {
   // ── Differential drive (RPM) ──────────────────────────────────────────────
 
   drive(direction, power) {
+    checkRpm(power);
     const p = isBackward(direction) ? -num(power) : num(power);
     setWheelSpeeds(p, p);
   },
@@ -111,28 +125,33 @@ export const robotAPI = {
 
   // RIGHT → drive_speed(p, p): left forward, right backward.
   turn(direction, power) {
+    checkRpm(power);
     const p = num(power);
     if (String(direction) === 'LEFT') setWheelSpeeds(-p, p);
     else setWheelSpeeds(p, -p);
   },
 
   curve(direction, powerL, powerR) {
+    checkRpm(powerL, powerR);
     const s = isBackward(direction) ? -1 : 1;
     setWheelSpeeds(s * num(powerL), s * num(powerR));
   },
 
   drive_for(direction, power, distance, callback) {
+    checkRpm(power);
     const p = isBackward(direction) ? -num(power) : num(power);
     driveDistance(p, p, distance, callback);
   },
 
   curve_for(direction, powerL, powerR, distance, callback) {
+    checkRpm(powerL, powerR);
     const s = isBackward(direction) ? -1 : 1;
     driveDistance(s * num(powerL), s * num(powerR), distance, callback);
   },
 
   // mbot2.turn(angle, speed): RIGHT = positive angle (clockwise).
   turn_for(direction, power, degrees, callback) {
+    checkRpm(power);
     const p = Math.abs(num(power));
     const target = Math.abs(num(degrees)) * Math.PI / 180;
     const s = String(direction) === 'LEFT' ? -1 : 1;
@@ -157,12 +176,13 @@ export const robotAPI = {
 
   // ── Single motors (ports R = EM2, L = EM1) ────────────────────────────────
 
-  motor_on(port, power) { setMotor(port, num(power)); },
+  motor_on(port, power) { checkRpm(power); setMotor(port, num(power)); },
 
   motor_stop(port) { setMotor(port, 0); },
 
   // mbot2.EM_turn(angle, speed, port): turn the motor by an angle, then stop.
   motor_on_for(port, power, value, unit, callback) {
+    checkRpm(power);
     const target = Math.abs(String(unit) === 'DEGREE' ? num(value) : num(value) * 360);
     if (num(power) === 0 || target === 0) { waitUntil(callback, () => true); return; }
     const dir = Math.sign(num(power)) * (num(value) < 0 ? -1 : 1);
@@ -245,7 +265,8 @@ export const robotAPI = {
     return queue && queue.length ? queue.shift() : '';
   },
 
-  _resetMessageBus() { _messageBus.clear(); },
+  /** Per-run state: message bus and the RPM warning. */
+  _resetRun() { _messageBus.clear(); _rpmWarned = false; },
 };
 
 // Async methods: sandbox.js wraps these with createAsyncFunction.

@@ -14,7 +14,9 @@ import { makeUsername, makePassword, parseCsv, buildStudents } from '../tools/tu
 function fakeD1() {
   const db = new DatabaseSync(':memory:');
   db.exec('PRAGMA foreign_keys = ON;');
-  db.exec(fs.readFileSync(new URL('../migrations/0001_accounts.sql', import.meta.url), 'utf8'));
+  for (const f of fs.readdirSync(new URL('../migrations/', import.meta.url)).filter((n) => n.endsWith('.sql')).sort()) {
+    db.exec(fs.readFileSync(new URL(`../migrations/${f}`, import.meta.url), 'utf8'));
+  }
   const stmt = (sql, args = []) => ({
     bind: (...a) => stmt(sql, a),
     async first() { return db.prepare(sql).get(...args) ?? null; },
@@ -97,6 +99,9 @@ r = await call('PUT', '/api/progress', { programs: { '01-01': null }, stars: { '
 r = await call('GET', '/api/progress', null, tok1);
 check('a deleted program comes back as null', r.body.programs['01-01'] === null && r.body.programs.livre === XML('l'), r.body.programs);
 check('stars are never removed; ★★ implies ★', r.body.stars['01-01'].one && r.body.stars['01-02'].one && r.body.stars['01-02'].two, r.body.stars);
+r = await call('PUT', '/api/progress', { programs: {}, stars: { '01-03': { three: true } } }, tok1);
+r = await call('GET', '/api/progress', null, tok1);
+check('★★★ is saved and implies ★★ and ★', r.body.stars['01-03'].three && r.body.stars['01-03'].two && r.body.stars['01-03'].one && !r.body.stars['01-02'].three, r.body.stars);
 r = await call('PUT', '/api/progress', { programs: { '../x': XML('x') } }, tok1);
 check('bad slot refused', r.status === 400, r);
 r = await call('PUT', '/api/progress', { programs: { '01-03': 'rm -rf' } }, tok1);
@@ -133,7 +138,7 @@ check('new password works', r.status === 200, r);
 r = await call('POST', '/api/teacher/students', { reset: true, students: [{ username: '7b-9', ...(await hashPassword('x')) }] }, T);
 check('reset of an unknown student → 404', r.status === 404, r);
 r = await call('GET', '/api/teacher/turmas/7B', null, T);
-check('class overview: levels with ★ per student', r.status === 200 && r.body[0].levels === 2 && r.body[0].twoStars === 1, r.body);
+check('class overview: levels with ★ per student', r.status === 200 && r.body[0].levels === 3 && r.body[0].twoStars === 2 && r.body[0].threeStars === 1, r.body);
 r = await call('GET', '/api/teacher/turmas', null, T);
 check('list of classes', r.body.length === 1 && r.body[0].turma === '7b' && r.body[0].students === 2, r.body);
 r = await call('DELETE', '/api/teacher/turmas/7b', null, T);

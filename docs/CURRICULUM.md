@@ -115,7 +115,7 @@ world). For now a Prova is `kind: challenge` with a title starting "Prova:". Tit
 | 01-07 | B | Ida e volta | drive to a box and come back to the start | |
 | 01-08 | B | Slalom | weave between three boxes | |
 | 01-09 | D | Garagem | turn into a garage 20 cm wide: precision | |
-| 01-10 | P | Percurso em Z | a Z through three corners between two angled boxes (★★★ ≤ 8 blocks later) | ★★★ |
+| 01-10 | P | Percurso em Z | a Z through three corners between two angled boxes; ★★★ in ≤ 15 s (about 100 RPM) | **built** |
 
 ### World 2 — Luz, Som e Ecrã (LEDs, tones, display, wait) · no variants · **built 2026-11-19**
 
@@ -129,18 +129,20 @@ world). For now a Prova is `kind: challenge` with a title starting "Prova:". Tit
 | 02-06 | B | Entrega | drive to the box, beep, LEDs blue, display "Entregue" | **built** |
 | 02-07 | D | Música | play a short tune (notes) while the LEDs change | **built** |
 
-### World 3 — Repetir (repeat, patterns, fewest blocks) · no variants
+### World 3 — Repetir (repeat, patterns, fewest blocks) · no variants · **built 2026-11-19** (except 03-04)
+
+Every level has a ★★★ block limit: the loop is what earns it ([0019](decisions/0019-three-star-challenges.md)).
 
 | id | k | Title | Idea | Needs |
 |----|---|-------|------|-------|
-| 03-01 | C | Quadrado | a square with `repeat 4` (back at the start) | |
-| 03-02 | C | Polígonos | a hexagon: work out the angle (360 / 6) | |
-| 03-03 | C | Ziguezague | a long zigzag corridor: repeat a pair of moves | |
+| 03-01 | C | Quadrado | a square with `repeat 4` (back at the start); ★★★ ≤ 3 blocks | **built** |
+| 03-02 | C | Polígonos | a hexagon: work out the angle (360 / 6); ★★★ ≤ 3 | **built** |
+| 03-03 | C | Ziguezague | zigzag between posts: repeat a pair of moves; ★★★ ≤ 6 | **built** |
 | 03-04 | C | Esperar pelo botão | press A to start each lap of the square | key in tests |
-| 03-05 | C | Repetições dentro de repetições | four squares in a row (nested repeat) | |
-| 03-06 | B | Pisca-pisca | LEDs blink 10 times while driving |  |
-| 03-07 | D | Estrela | a five-pointed star: the 144° puzzle | |
-| 03-08 | P | Escadaria | a staircase corridor, ★★★ with ≤ 5 blocks | ★★★ |
+| 03-05 | C | Repetições dentro de repetições | four squares in a row (nested repeat); ★★★ ≤ 5 | **built** |
+| 03-06 | B | Pisca-pisca | LEDs blink 10 times on the way to a goal 160 cm away; ★★★ ≤ 5 | **built** |
+| 03-07 | D | Estrela | a five-pointed star: the 144° puzzle; ★★★ ≤ 3 | **built** |
+| 03-08 | P | Escadaria | a staircase corridor (3 deep steps: no diagonal shortcut fits), ★★★ ≤ 5 blocks | **built** |
 
 ### World 4 — Ultrassom (wait until, if/else, unknown distances) · variants from here
 
@@ -264,6 +266,7 @@ In build order (most levels unblocked first):
    (VERIFY_ON_ROBOT #8): with the sim's 1 cm, a robot 0.5 cm off the 2 cm tape covers three
    probes and looks like a junction. 06-10 (loops), 10-03 still to build.
 4. ~~**Event goals**~~ — done 2026-11-19: `tonePlayed`, `sequence`, `stayIn` (decision 0017).
-5. **★★★ challenges:** block count and time limit (01-10, 03-08, 05-11, 08-05/06).
+5. ~~**★★★ challenges**~~ — done 2026-11-19: `challenge: { maxBlocks, maxSeconds }` (decision 0019);
+   01-10 and World 3 use it, 05-11 and 08-05/06 still to build.
 6. **Keys in tests:** a level can press A/B at given times in the ★★ run (03-04, 10-04).
 7. **Pushable boxes** (P4, 08-07, 10-02): new sim physics, approved 2026-11-18.

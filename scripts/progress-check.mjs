@@ -24,7 +24,7 @@ const throws = (fn) => { try { fn(); return false; } catch (e) { return true; } 
 store.set(P.LEGACY_PROGRAM_KEY, XML('old'));
 reload();
 check('old saved program is kept as the free-map program', P.getProgram(P.FREE_SLOT) === XML('old'), P.getProgram(P.FREE_SLOT));
-check('no stars yet', JSON.stringify(P.getStars('04-01')) === '{"one":false,"two":false}', P.getStars('04-01'));
+check('no stars yet', JSON.stringify(P.getStars('04-01')) === '{"one":false,"two":false,"three":false}', P.getStars('04-01'));
 
 // 2. stars and programs survive a reload, per level
 P.addStar('04-01', 'one');
@@ -34,6 +34,16 @@ P.setProgram('05-01', XML('b'));
 reload();
 check('★ survives a reload', P.getStars('04-01').one && !P.getStars('04-01').two, P.getStars('04-01'));
 check('★★ implies ★', P.getStars('05-01').one && P.getStars('05-01').two, P.getStars('05-01'));
+P.addStar('05-02', 'three');
+check('★★★ implies ★★ and ★', P.getStars('05-02').one && P.getStars('05-02').two && P.getStars('05-02').three, P.getStars('05-02'));
+store.clear();
+reload();
+P.addStar('04-01', 'one');
+P.addStar('05-01', 'two');
+P.setProgram(P.FREE_SLOT, XML('old'));
+P.setProgram('04-01', XML('a'));
+P.setProgram('05-01', XML('b'));
+check('★★ alone is not ★★★', !P.getStars('05-01').three, P.getStars('05-01'));
 check('each level keeps its own program', P.getProgram('04-01') === XML('a') && P.getProgram('05-01') === XML('b'));
 check('free-map program untouched', P.getProgram(P.FREE_SLOT) === XML('old'));
 P.setProgram('05-01', null);
@@ -95,6 +105,8 @@ let changed = P.applyRemote({
 check('server copy fills levels, but not over pending local edits',
   P.getProgram('01-02') === XML('mine2') && P.getProgram('01-03') === XML('server3'), [P.getProgram('01-02'), P.getProgram('01-03')]);
 check('server stars are added, local ones kept', P.getStars('01-03').two && P.getStars('01-02').two);
+P.applyRemote({ stars: { '01-05': { three: true } }, programs: {} });
+check('a server ★★★ arrives with ★★ and ★', P.getStars('01-05').three && P.getStars('01-05').two && P.getStars('01-05').one, P.getStars('01-05'));
 check('applyRemote reports changed slots only', JSON.stringify(changed) === '["01-03"]', changed);
 check('server copy is not pending', !P.pendingChanges().programs['01-03']);
 P.setProgram('01-04', XML('x'));

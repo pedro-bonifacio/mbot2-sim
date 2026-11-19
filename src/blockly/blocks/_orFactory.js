@@ -1,5 +1,5 @@
 import * as Blockly from 'blockly';
-import { clarifyOptions, clarifyLabel, clarifyMsg } from '../ptClarity.js';
+import { clarifyOptions, clarifyLabel, clarifyMsg, clarifyTooltip } from '../ptClarity.js';
 import * as fieldColourPkg from '@blockly/field-colour';
 import { OR } from '../generated/orSpecs.js';
 
@@ -122,6 +122,8 @@ export function initFromSpec(block, spec, validators = {}) {
   if (spec.next) block.setNextStatement(true);
   if (spec.inline === true || spec.inline === false) block.setInputsInline(spec.inline);
   block.setColour(spec.colour);
+  const tip = clarifyTooltip(block.type);
+  if (tip) block.setTooltip(tip);
 }
 
 // ── Sensor "mode" behaviour ─────────────────────────────────────────────────

@@ -71,7 +71,7 @@ export function runHeadless({ code, map, maxSeconds = 60, keys = [], sampleEvery
     seedProgramRandom(seed);
     createInterpreter(code);
     resetSensors();
-    robotAPI._resetMessageBus();
+    robotAPI._resetRun();
     const maxTicks = Math.ceil(maxSeconds / TICK_S);
     let nextSample = 0;
     for (let i = 0; i < maxTicks; i++) {

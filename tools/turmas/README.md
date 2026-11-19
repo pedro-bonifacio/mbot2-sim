@@ -7,7 +7,7 @@ Run in this folder (needs Node.js 18+). On Windows: right-click the folder → *
 | `node turmas.mjs create 7B` | Creates the accounts from the CSV in `turmas/7B/` and writes `turmas/7B/7B-passwords.csv` |
 | `node turmas.mjs add 7B 23 "Nome Apelido"` | Adds one student |
 | `node turmas.mjs reset 7B 12` | New password for one student |
-| `node turmas.mjs show 7B` | Progress per student (★, ★★, last seen) |
+| `node turmas.mjs show 7B` | Progress per student (★, ★★, ★★★, last seen) |
 | `node turmas.mjs list` | All classes on the server |
 | `node turmas.mjs delete 7B` | Deletes the class and its progress (end of year) |
 

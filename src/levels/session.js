@@ -3,6 +3,7 @@ import { prepareLevel, testSeeds } from './level.js';
 import { rasterise } from './raster.js';
 import { createReferee } from './referee.js';
 import { runLevel } from './runLevel.js';
+import { judgeChallenge } from './challenge.js';
 import { getStars, addStar } from './progress.js';
 import { setMapData } from '../sim/map.js';
 import { respawnRobot } from '../sim/robot.js';
@@ -13,8 +14,9 @@ import { RunState, getRunState } from '../runtime/runState.js';
 // The level being played in the browser (no DOM: src/ui/levelPanel.js shows it).
 // Loads a variant onto the canvas, judges each run with the referee (through the
 // run loop's observer, at the same ticks as the headless runner), and runs the
-// ★★ check: the student's program on every test variant, headlessly.
-// Stars are saved per level in progress.js (this browser only, decision 0002).
+// ★★ check: the student's program on every test variant, headlessly, and the ★★★
+// challenge (decision 0019) on a program that earns ★★. Stars are saved per level in
+// progress.js (decision 0016).
 
 const state = {
   level: null,        // level object (catalogue.js)
@@ -22,8 +24,14 @@ const state = {
   prepared: null,
   referee: null,
   lastVerdict: null,  // verdict of the latest run on this variant
-  allVariants: null,  // { passed, results: [{ seed, verdict }] } of the latest ★★ check
+  allVariants: null,  // { passed, results: [{ seed, verdict }], challenge? } of the latest ★★ check
+  runChallenge: null, // ★★★ result of the latest passing run (levels with one layout)
+  runBlocks: 0,       // block count of the program as the run started
 };
+let countBlocks = () => 0;   // set by the UI (it owns the Blockly workspace)
+
+/** `fn()` → the block count of the student's program (src/blockly/blockCount.js). */
+export function setBlockCounter(fn) { countBlocks = fn; }
 const listeners = new Set();
 const emit = () => listeners.forEach((fn) => fn(getLevelState()));
 
@@ -33,10 +41,10 @@ export function refreshLevelState() { emit(); }
 export function listLevels() { return LEVELS; }
 
 export function getLevelState() {
-  const { level, seedIndex, prepared, lastVerdict, allVariants } = state;
+  const { level, seedIndex, prepared, lastVerdict, allVariants, runChallenge } = state;
   if (!level) return { level: null };
   return {
-    level, prepared, lastVerdict, allVariants,
+    level, prepared, lastVerdict, allVariants, runChallenge,
     variant: seedIndex + 1, variants: testSeeds(level).length,
     stars: getStars(level.id),
   };
@@ -54,6 +62,7 @@ export function loadLevel(id, seedIndex = 0) {
   state.prepared = prepareLevel(level, seeds[state.seedIndex]);
   state.referee = null;
   state.lastVerdict = null;
+  state.runChallenge = null;
   if (state.allVariants && state.allVariants.id !== id) state.allVariants = null;
 
   const { imageData, widthPx, heightPx } = rasterise(state.prepared);
@@ -110,6 +119,8 @@ const observer = {
   onStart() {
     state.referee = createReferee(state.prepared);
     state.lastVerdict = null;
+    state.runChallenge = null;
+    state.runBlocks = countBlocks();
     state.allVariants = null;   // the panel shows this run's result from now on
     emit();
   },
@@ -121,7 +132,13 @@ const observer = {
     if (running()) endRun();
     if (v.passed) markStar('one');
     // One layout only: passing it is already passing "every variant".
-    if (v.passed && testSeeds(state.level).length === 1) markStar('two');
+    if (v.passed && testSeeds(state.level).length === 1) {
+      markStar('two');
+      if (state.level.challenge) {
+        state.runChallenge = judgeChallenge(state.level.challenge, { blocks: state.runBlocks, timesS: [v.timeS] });
+        if (state.runChallenge.met) markStar('three');
+      }
+    }
     emit();
   },
 };
@@ -140,9 +157,13 @@ export function checkAllVariants(code) {
     return { seed, verdict: r.verdict || { passed: false, reason: r.status, goals: [] } };
   });
   const passed = results.every((r) => r.verdict.passed);
+  const challenge = passed && level.challenge
+    ? judgeChallenge(level.challenge, { blocks: countBlocks(), timesS: results.map((r) => r.verdict.timeS) })
+    : null;
   loadLevel(level.id, seedIndex);   // restore map, robot and display
-  state.allVariants = { id: level.id, passed, results };
+  state.allVariants = { id: level.id, passed, results, challenge };
   if (passed) markStar('two');
+  if (challenge && challenge.met) markStar('three');
   emit();
   return state.allVariants;
 }

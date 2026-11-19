@@ -37,6 +37,10 @@ for (const t of tests.filter((x) => !filter || x.name.includes(filter))) {
     }
   }
   if (e.distance !== undefined && Math.abs(r.distance - e.distance) > 0.5) problems.push(`distance ${r.distance}, expected ${e.distance}`);
+  if (e.consoleWarnings) {
+    const got = r.messages.filter((m) => m.level === 'warn').map((m) => m.text);
+    if (JSON.stringify(got) !== JSON.stringify(e.consoleWarnings)) problems.push(`console warnings ${JSON.stringify(got)}, expected ${JSON.stringify(e.consoleWarnings)}`);
+  }
   for (const k of ['display', 'leds']) {
     if (e[k] && JSON.stringify(r[k]) !== JSON.stringify(e[k])) problems.push(`${k} ${JSON.stringify(r[k])}, expected ${JSON.stringify(e[k])}`);
   }

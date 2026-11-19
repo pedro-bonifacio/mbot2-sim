@@ -105,7 +105,7 @@ export function runCode(jsCode, { seed = freshSeed() } = {}) {
   }
 
   resetSensors();
-  robotAPI._resetMessageBus();
+  robotAPI._resetRun();
   _runStartMs = simNow();
   setRunState(RunState.RUNNING);   // the next tick starts it
   if (_observer && _observer.onStart) _observer.onStart();

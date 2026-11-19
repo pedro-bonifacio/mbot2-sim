@@ -73,6 +73,17 @@ mistake a student made is the best source. Save the program from the sim
 `levels:check` makes sure the starter fails; list the *likely wrong fixes* as
 anti-solutions. Example: [`w05/05-14-o-robo-nao-para.yaml`](../levels/w05/05-14-o-robo-nao-para.yaml).
 
+## ★★★ challenges
+
+An optional `challenge:` gives ★★★ for a program that earns ★★ **and** uses at most
+`maxBlocks` blocks and/or finishes every variant within `maxSeconds`
+([decision 0019](decisions/0019-three-star-challenges.md)). Use a block limit where the
+level's idea is a shorter program (World 3: the loop), a time limit for races. Build the
+best program in the sim; the level panel shows its block count (numbers, texts, colours
+and the start block don't count). Save it (**Guardar programa**) and paste the file's text
+under `challenge.solution: |`; `levels:check` runs it on every seed and checks the limit.
+Example: [`w03/03-01-quadrado.yaml`](../levels/w03/03-01-quadrado.yaml).
+
 ## Picking goals
 
 | The student must… | Goals |
@@ -95,6 +106,7 @@ A level passes only when **all** goals hold at once, so "reach A, then stop in B
 | `solution fails seed N … (timeLimit)` | `timeLimit` too short, or a `repeat forever` that keeps the robot moving |
 | `anti-solution … passes every seed` | the variants don't move far enough, or the zone is so wide a fixed distance lands in it |
 | `calls unknown robotAPI.x` | hand-written code; build it in the editor and copy the generated code |
+| `challenge solution does not meet the challenge (N blocks, slowest S s)` | the limit is tighter than the best program; raise it or shorten the program |
 | `colour "orange" is not one of …` | use one of the 8 sensor colours |
 | zone in the wrong place in the preview | zones use the same cm and the same variant parameters as the map; `x` is the left edge, not the centre |
 

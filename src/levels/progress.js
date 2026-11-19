@@ -66,7 +66,7 @@ function clean(obj, withPending = false) {
   const out = empty();
   for (const [id, s] of Object.entries(obj.stars || {})) {
     if (!SLOT_RE.test(id) || id === FREE_SLOT || !s || typeof s !== 'object') throw new Error(`bad stars entry "${id}"`);
-    out.stars[id] = { one: !!(s.one || s.two), two: !!s.two };
+    out.stars[id] = normStars(s);
   }
   for (const [slot, xml] of Object.entries(obj.programs || {})) {
     if (!SLOT_RE.test(slot) || typeof xml !== 'string' || !xml.trim().startsWith('<xml')) throw new Error(`bad program "${slot}"`);
@@ -77,6 +77,21 @@ function clean(obj, withPending = false) {
     for (const slot of Object.keys(obj.pending.programs || {})) if (SLOT_RE.test(slot)) out.pending.programs[slot] = true;
   }
   return out;
+}
+
+/** { one, two, three } from untrusted input; a higher star implies the lower ones. */
+function normStars(s) {
+  const three = !!(s && s.three);
+  const two = three || !!(s && s.two);
+  return { one: two || !!(s && s.one), two, three };
+}
+
+/** Adds stars `s` to `mine` (stars are never lost). */
+function mergeStars(mine, s) {
+  const n = normStars(s);
+  mine.one = mine.one || n.one;
+  mine.two = mine.two || n.two;
+  mine.three = !!mine.three || n.three;
 }
 
 function markStars(id) { if (account) current().pending.stars[id] = true; }
@@ -100,7 +115,7 @@ export function forgetAccount(username) {
   if (account === username) data = null;
 }
 
-/** What the server does not have yet: { stars: {id: {one, two}}, programs: {slot: xml | null} }. */
+/** What the server does not have yet: { stars: {id: {one, two, three}}, programs: {slot: xml | null} }. */
 export function pendingChanges() {
   const d = current();
   const out = { stars: {}, programs: {} };
@@ -137,9 +152,7 @@ export function applyRemote(remote) {
   const changed = [];
   for (const [id, s] of Object.entries((remote && remote.stars) || {})) {
     if (!SLOT_RE.test(id) || id === FREE_SLOT || !s) continue;
-    const mine = d.stars[id] || (d.stars[id] = { one: false, two: false });
-    mine.one = mine.one || !!s.one || !!s.two;
-    mine.two = mine.two || !!s.two;
+    mergeStars(d.stars[id] || (d.stars[id] = { one: false, two: false, three: false }), s);
   }
   for (const [slot, xml] of Object.entries((remote && remote.programs) || {})) {
     if (!SLOT_RE.test(slot) || d.pending.programs[slot]) continue;
@@ -154,19 +167,17 @@ export function applyRemote(remote) {
 
 // ── stars and programs ───────────────────────────────────────────────────────
 
-/** { one, two } for a level id. */
+/** { one, two, three } for a level id. */
 export function getStars(id) {
-  const s = current().stars[id];
-  return { one: !!(s && s.one), two: !!(s && s.two) };
+  return normStars(current().stars[id]);
 }
 
-/** Adds stars (never removes them). `which` = 'one' | 'two'. */
+/** Adds a star (never removes one). `which` = 'one' | 'two' | 'three'; each implies the lower ones. */
 export function addStar(id, which) {
   const d = current();
-  const s = d.stars[id] || (d.stars[id] = { one: false, two: false });
+  const s = d.stars[id] || (d.stars[id] = { one: false, two: false, three: false });
   if (s[which]) return;
-  s[which] = true;
-  if (which === 'two') s.one = true;
+  mergeStars(s, { [which]: true });
   markStars(id);
   persist();
 }
@@ -203,9 +214,7 @@ export function importProgress(obj) {
   const incoming = clean(obj);
   const d = current();
   for (const [id, s] of Object.entries(incoming.stars)) {
-    const mine = d.stars[id] || (d.stars[id] = { one: false, two: false });
-    mine.one = mine.one || s.one;
-    mine.two = mine.two || s.two;
+    mergeStars(d.stars[id] || (d.stars[id] = { one: false, two: false, three: false }), s);
     markStars(id);
   }
   for (const [slot, xml] of Object.entries(incoming.programs)) {

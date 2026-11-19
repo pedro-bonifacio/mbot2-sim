@@ -105,12 +105,12 @@ async function login(request, env, now) {
 async function getProgress(env, username) {
   const [p, s] = await env.DB.batch([
     env.DB.prepare('SELECT slot, xml FROM programs WHERE username = ?').bind(username),
-    env.DB.prepare('SELECT level, one, two FROM stars WHERE username = ?').bind(username),
+    env.DB.prepare('SELECT level, one, two, three FROM stars WHERE username = ?').bind(username),
   ]);
   const programs = {};
   for (const r of p.results) programs[r.slot] = r.xml;   // null = deleted
   const stars = {};
-  for (const r of s.results) stars[r.level] = { one: !!r.one, two: !!r.two };
+  for (const r of s.results) stars[r.level] = { one: !!r.one, two: !!r.two, three: !!r.three };
   return json({ programs, stars });
 }
 
@@ -131,12 +131,14 @@ async function putProgress(request, env, username, now) {
   }
   for (const [level, s] of stars) {
     if (!LEVEL_RE.test(level) || !s || typeof s !== 'object') return fail(400, 'bad_stars');
-    const two = s.two ? 1 : 0;
-    const one = s.one || s.two ? 1 : 0;
+    const three = s.three ? 1 : 0;
+    const two = s.two || three ? 1 : 0;
+    const one = s.one || two ? 1 : 0;
     stmts.push(env.DB.prepare(   // stars are only ever added
-      'INSERT INTO stars (username, level, one, two) VALUES (?, ?, ?, ?) ' +
-      'ON CONFLICT (username, level) DO UPDATE SET one = max(one, excluded.one), two = max(two, excluded.two)',
-    ).bind(username, level, one, two));
+      'INSERT INTO stars (username, level, one, two, three) VALUES (?, ?, ?, ?, ?) ' +
+      'ON CONFLICT (username, level) DO UPDATE SET one = max(one, excluded.one), two = max(two, excluded.two), ' +
+      'three = max(three, excluded.three)',
+    ).bind(username, level, one, two, three));
   }
   stmts.push(env.DB.prepare('UPDATE students SET last_seen = ? WHERE username = ?').bind(now, username));
   await env.DB.batch(stmts);
@@ -185,7 +187,8 @@ async function showTurma(env, turma) {
   const r = await env.DB.prepare(
     'SELECT s.username, s.number, s.last_seen AS lastSeen, ' +
     '(SELECT count(*) FROM stars t WHERE t.username = s.username AND t.one = 1) AS levels, ' +
-    '(SELECT count(*) FROM stars t WHERE t.username = s.username AND t.two = 1) AS twoStars ' +
+    '(SELECT count(*) FROM stars t WHERE t.username = s.username AND t.two = 1) AS twoStars, ' +
+    '(SELECT count(*) FROM stars t WHERE t.username = s.username AND t.three = 1) AS threeStars ' +
     'FROM students s WHERE s.turma = ? ORDER BY s.number',
   ).bind(turma).all();
   return json(r.results);

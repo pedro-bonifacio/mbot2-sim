@@ -3,7 +3,7 @@ import { getStars } from '../levels/progress.js';
 import { listFreeMaps, openFromSelector, getActiveMapName } from './mapSelector.js';
 import { ptMessages as MSG } from '../i18n/pt.js';
 
-// "★ Níveis": a dialog listing every level by world with its ★ / ★★, and the free
+// "★ Níveis": a dialog listing every level by world with its ★ / ★★ (/ ★★★), and the free
 // maps. Every level can be opened, in any order (decision 0001: no locks).
 
 const fmt = (s, ...a) => a.reduce((t, v, i) => t.replace(`%${i + 1}`, v), s);
@@ -56,7 +56,7 @@ function render() {
       const cls = ['level-card', l.id === currentId ? 'current' : '', st.one ? 'has-star' : '', l.kind ? `kind-${l.kind}` : ''].join(' ');
       return `<button class="${cls}" data-open="level:${esc(l.id)}" title="${esc(l.objective || '')}">
         <span class="card-id">${esc(l.id)}</span>
-        <span class="card-stars" aria-label="${st.two ? '2' : st.one ? '1' : '0'} estrelas">${st.one ? '★' : '☆'}${st.two ? '★' : '☆'}</span>
+        <span class="card-stars" aria-label="${st.three ? '3' : st.two ? '2' : st.one ? '1' : '0'} estrelas">${st.one ? '★' : '☆'}${st.two ? '★' : '☆'}${l.challenge ? (st.three ? '★' : '☆') : ''}</span>
         <span class="card-title">${esc(l.title)}</span>
         ${kind ? `<span class="card-kind">${esc(kind)}</span>` : ''}
       </button>`;
