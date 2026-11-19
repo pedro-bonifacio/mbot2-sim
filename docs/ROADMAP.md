@@ -9,7 +9,8 @@ Last reviewed: 2026-11-19 (seventh session)
 
 ## ▶ Where we left off (2026-11-19, seventh session)
 
-**This session** (on `main`, **not pushed yet**, like the sixth session's work):
+**This session** (on `main`, **pushed and live** with the sixth session's work, 2026-11-19;
+live D1 migrated to `0002_three_stars`, class tool reinstalled):
 - **★★★ challenges** ([0019](decisions/0019-three-star-challenges.md)): `challenge: { maxBlocks, maxSeconds, solution }`
   per level; the panel shows it with a live block count (numbers, texts, colours not
   counted). Judged on a ★★ program (★★ check, or the run on a one-layout level). Stars
@@ -21,11 +22,11 @@ Last reviewed: 2026-11-19 (seventh session)
 - **RPM limit for students:** tooltips on the 8 speed blocks ("de −200 a 200") and a
   console warning once per run when a program asks for more (VERIFY_ON_ROBOT #11: what
   the real robot does above 200).
-- Teacher checks, the World 3 ★★ question and the push steps: below, "Start the next session with".
+- Teacher checks and the World 3 ★★ question: below, "Start the next session with".
 
 ### Sixth session (2026-11-19)
 
-**This session** (on `main`, **not pushed yet** — pushing deploys to students):
+**That session** (pushed with the seventh session's work):
 - **Goal values from variants + event goals** ([0017](decisions/0017-goals-that-follow-the-run.md)):
   text/colour parameters and cases, `when:` on map items/zones, `displayShows` with
   `number ± tolerance` (may use the run's `drivenCm`, `movingS`) or `any`, `tonePlayed`,
@@ -81,10 +82,8 @@ Done this session (details in `CHANGELOG.md → Unreleased`):
    - [ ] **Robot:** VERIFY_ON_ROBOT #11 (speed 500 RPM: runs at 200, or errors?) and
          **#8 measure the quad RGB sensor** (probe spacing, distance from the wheel axle) —
          the tape-maze levels wait for it.
-   - [ ] **Before pushing** (pushing deploys to students; sixth + seventh sessions are
-         unpushed): `npx wrangler d1 migrations apply mbot2-sim --remote`, then
-         `git push git@github.com:pedro-bonifacio/mbot2-sim.git main`, then
-         `npm run turmas:install` (★★★ column in `turmas show`).
+   - [ ] On the live site (https://mbot2.pbonifacio.dev): log in with a `TESTE` account,
+         earn a ★★★ (03-01 with `repetir 4`) and check `node turmas.mjs show TESTE` lists it.
    - [ ] Still open from the sixth session: play World 2 and 04-05, 05-02, 05-08, 07-01,
          07-02 (goal wordings); blue checkpoint circles on 05-04/05/12.
    - [ ] Still open from before: World 1 from 01-09; "👤 Entrar" / "☁ Guardado" looks;
