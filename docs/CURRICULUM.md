@@ -71,7 +71,7 @@ The robot has **one forward-facing ultrasonic sensor**: to see sideways it must 
 | P9 | Labirinto de caixas | maze of boxes/books | reach the exit (turns to look at each junction) | advanced | 06-08 |
 | P7 | Estacionar no espaço livre | row of boxes with one gap at a random place | find the gap and park in it | advanced | 07-06 |
 | P10 | Sinais de trânsito | tape line with colour patches beside it | obey them: green = left at next junction, blue = right, red = stop | advanced | 09-04 |
-| P4 | Limpar a mesa | light boxes inside a black ring | push every box out without leaving the ring | advanced | 10-02 (needs pushable boxes) |
+| P4 | Limpar a mesa | light boxes at random inside a black tape ring, **no walls inside** (so anything the ultrasonic sees within the ring is a box) | find each box (turn and look), push it until the colour sensor sees the line, repeat until a full turn sees nothing; never leave the ring | advanced | 10-02 (needs pushable boxes) |
 | P11 | Missão final | P10 + a box blocking the line | go round the box, find the line again, obey the signs | advanced | 10-01 |
 
 **Tiers.** Standard courses need Worlds 1–5 (max grade 4/5); advanced ones need Worlds 6–9
