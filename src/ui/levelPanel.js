@@ -90,6 +90,7 @@ function verdictText(v, st) {
   return v.reason === 'collision' ? MSG.LEVEL_FAILED_COLLISION
     : v.reason === 'timeLimit' ? fmt(MSG.LEVEL_FAILED_TIME, st.prepared.timeLimitS)
     : v.reason === 'stalled' ? MSG.LEVEL_FAILED_STALLED
+    : v.reason === 'leftZone' ? MSG.LEVEL_FAILED_LEFT_ZONE
     : v.reason === 'error' ? MSG.LEVEL_FAILED_ERROR : MSG.LEVEL_FAILED;
 }
 

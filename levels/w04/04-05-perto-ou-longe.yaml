@@ -1,0 +1,48 @@
+# World 4: if/else on the ultrasonic. A case parameter ties the word to the wall:
+# near cases put the wall 16–36 cm from the sensor, far ones 86–126 cm.
+id: "04-05"
+world: 4
+kind: core
+title: Perto ou longe
+objective: Sem sair do sítio, mede a distância à parede. Se estiver a menos de 60 cm, escreve PERTO no ecrã; senão, escreve LONGE.
+concepts: [se/senão, ultrassom]
+assumes: [ecrã, comparação]
+toolbox: beginner
+timeLimit: 10
+
+variants:
+  params:
+    side: { choices: [{ base: 55, spread: 1, word: PERTO }, { base: 125, spread: 2, word: LONGE }] }
+    offset: { min: 0, max: 20, step: 5 }
+  seeds: [7, 1, 9, 10, 14, 11, 8, 26]   # PERTO and LONGE alternate, near and far ends of each
+
+map:
+  items:
+    - wall: { x: base + offset * spread, y: 1, w: 4, h: 120.5 }
+
+spawn: { x: 30, y: 61.25, heading: 0 }
+
+goals:
+  - displayShows: { text: "{word}" }
+  - noCollision
+
+solution: |
+  if (robotAPI.ultrasonic() < 60) {
+    robotAPI.println("PERTO");
+  } else {
+    robotAPI.println("LONGE");
+  }
+
+antiSolutions:
+  - name: sempre PERTO
+    why: Não usa o sensor.
+    code: |
+      robotAPI.println("PERTO");
+  - name: ao contrário
+    why: Troca as duas palavras.
+    code: |
+      if (robotAPI.ultrasonic() < 60) {
+        robotAPI.println("LONGE");
+      } else {
+        robotAPI.println("PERTO");
+      }

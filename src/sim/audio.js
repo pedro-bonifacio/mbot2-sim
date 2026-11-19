@@ -1,3 +1,5 @@
+import { simNow } from './clock.js';
+
 let audioCtx = null;
 let currentOscillator = null;
 let volumePercent = 50;
@@ -31,7 +33,18 @@ function stopCurrent() {
   currentOscillator = null;
 }
 
+// Every tone the program starts, in simulated time: { n, t (ms), freq (Hz), ms }, n
+// counting up for the whole page (never reset), so a reader keeps its place with
+// `tonesSince(n)` across resets. The level referee reads it (tonePlayed / sequence
+// goals), headless runs too, where there is no sound. Cleared with the sim state.
+const toneLog = [];
+let toneCount = 0;
+export function resetToneLog() { toneLog.length = 0; }
+export function lastToneNumber() { return toneCount; }
+export function tonesSince(n) { return toneLog.filter((t) => t.n > n); }
+
 export function play_tone(freq, ms) {
+  if (Number(freq) > 0 && Number(ms) > 0) toneLog.push({ n: ++toneCount, t: simNow(), freq: Number(freq), ms: Number(ms) });
   const ctx = getCtx();
   if (!ctx) return;
   stopCurrent();

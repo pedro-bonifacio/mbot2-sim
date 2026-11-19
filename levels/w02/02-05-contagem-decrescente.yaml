@@ -1,0 +1,55 @@
+# World 2: a countdown on the display, then the start (sequence with a zone step).
+id: "02-05"
+world: 2
+kind: core
+title: Contagem decrescente
+objective: Mostra 3, 2, 1 e «Partida!» no ecrã, um de cada vez, com 1 segundo entre cada um. Depois anda até à linha de chegada verde.
+concepts: [esperar, ecrã]
+assumes: [andar uma distância]
+toolbox: beginner
+timeLimit: 25
+
+map:
+  items:
+    - patch: { x: 120, y: 41.25, w: 10, h: 40, colour: green }
+
+spawn: { x: 30, y: 61.25, heading: 0 }
+
+zones:
+  - { id: chegada, label: linha de chegada, x: 120, y: 41.25, w: 10, h: 40 }
+
+goals:
+  - sequence:
+      steps: [{ display: "3" }, { display: "2" }, { display: "1" }, { display: "Partida!" }, { zone: chegada, probe: front }]
+  - noCollision
+
+solution: |
+  robotAPI.println(3);
+  robotAPI.wait_ms(1000);
+  robotAPI.println(2);
+  robotAPI.wait_ms(1000);
+  robotAPI.println(1);
+  robotAPI.wait_ms(1000);
+  robotAPI.println("Partida!");
+  robotAPI.drive_for("FOREWARD", 30, 90);
+
+antiSolutions:
+  - name: sem esperar
+    why: Os números aparecem todos ao mesmo tempo; não é uma contagem.
+    code: |
+      robotAPI.println(3);
+      robotAPI.println(2);
+      robotAPI.println(1);
+      robotAPI.println("Partida!");
+      robotAPI.drive_for("FOREWARD", 30, 90);
+  - name: parte antes do tempo
+    why: Anda antes de acabar a contagem.
+    code: |
+      robotAPI.drive_for("FOREWARD", 30, 90);
+      robotAPI.println(3);
+      robotAPI.wait_ms(1000);
+      robotAPI.println(2);
+      robotAPI.wait_ms(1000);
+      robotAPI.println(1);
+      robotAPI.wait_ms(1000);
+      robotAPI.println("Partida!");

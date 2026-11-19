@@ -7,90 +7,187 @@
   "required": ["id", "world", "title", "objective", "spawn", "goals", "solution"],
   "additionalProperties": false,
   "definitions": {
-    "num": { "description": "cm, degrees or seconds: a number, or an expression of variant parameters (+ - * / and parentheses)", "type": ["number", "string"] },
-    "colour": { "description": "One of the quad RGB sensor's 8 colours (no orange; magenta/cyan #00ffff are reserved)", "enum": ["red", "yellow", "green", "cyan", "blue", "purple", "white", "black"] },
+    "num": {
+      "description": "cm, degrees or seconds: a number, or an expression of variant parameters (+ - * / and parentheses)",
+      "type": ["number", "string"]
+    },
+    "colour": {
+      "description": "One of the quad RGB sensor's 8 colours (no orange; magenta/cyan #00ffff are reserved), or the name of a variant parameter holding one",
+      "type": "string"
+    },
     "rect": {
-      "type": "object", "required": ["x", "y", "w", "h"],
+      "type": "object",
+      "required": ["x", "y", "w", "h"],
       "properties": {
-        "x": { "$ref": "#/definitions/num", "description": "left edge, cm" }, "y": { "$ref": "#/definitions/num", "description": "top edge, cm" },
-        "w": { "$ref": "#/definitions/num" }, "h": { "$ref": "#/definitions/num" },
-        "angle": { "$ref": "#/definitions/num", "description": "rotation about the centre, degrees clockwise" }
+        "x": {"$ref": "#/definitions/num", "description": "left edge, cm"},
+        "y": {"$ref": "#/definitions/num", "description": "top edge, cm"},
+        "w": {"$ref": "#/definitions/num"},
+        "h": {"$ref": "#/definitions/num"},
+        "angle": {"$ref": "#/definitions/num", "description": "rotation about the centre, degrees clockwise"}
       }
     },
     "circle": {
-      "type": "object", "required": ["cx", "cy", "r"],
-      "properties": { "cx": { "$ref": "#/definitions/num" }, "cy": { "$ref": "#/definitions/num" }, "r": { "$ref": "#/definitions/num" } }
-    },
-    "shape": { "oneOf": [ { "$ref": "#/definitions/rect" }, { "$ref": "#/definitions/circle" } ] },
-    "zoneRef": {
-      "type": "object", "required": ["zone"], "additionalProperties": false,
+      "type": "object",
+      "required": ["cx", "cy", "r"],
       "properties": {
-        "zone": { "type": "string" },
-        "probe": { "enum": ["centre", "front"], "description": "robot centre (default) or middle of the front bumper" },
-        "label": { "type": "string", "description": "PT-PT text shown instead of the default" }
+        "cx": {"$ref": "#/definitions/num"},
+        "cy": {"$ref": "#/definitions/num"},
+        "r": {"$ref": "#/definitions/num"}
       }
     },
-    "program": { "type": "string", "description": "ES5 code calling robotAPI, as the code generator writes it" }
+    "shape": {"oneOf": [{"$ref": "#/definitions/rect"}, {"$ref": "#/definitions/circle"}]},
+    "zoneRef": {
+      "type": "object",
+      "required": ["zone"],
+      "additionalProperties": false,
+      "properties": {
+        "zone": {"type": "string"},
+        "probe": {"enum": ["centre", "front"], "description": "robot centre (default) or middle of the front bumper"},
+        "label": {"type": "string", "description": "PT-PT text shown instead of the default"}
+      }
+    },
+    "program": {"type": "string", "description": "ES5 code calling robotAPI, as the code generator writes it"},
+    "when": {
+      "$ref": "#/definitions/num",
+      "description": "leave this out of the variant when the expression is 0, e.g. \"stripes >= 4\""
+    },
+    "text": {
+      "type": "string",
+      "description": "text; {name} puts in a text parameter, {expression} a number, e.g. \"{word}\""
+    }
   },
   "properties": {
-    "id": { "type": "string", "pattern": "^\\d{2}-\\d{2}$", "description": "WW-NN, e.g. \"04-01\"" },
-    "world": { "type": "integer", "minimum": 1 },
-    "kind": { "enum": ["core", "bonus", "challenge", "evaluation"] },
-    "title": { "type": "string" },
-    "objective": { "type": "string", "description": "PT-PT: what to do, shown to the student" },
-    "briefing": { "type": "string" },
-    "starter": { "type": "string", "description": "Program the level opens with (Blockly XML as saved by the sim, or an Open Roberta export), e.g. a broken program to fix. levels:check requires it to fail at least one seed." },
-    "concepts": { "type": "array", "items": { "type": "string" } },
-    "assumes": { "type": "array", "items": { "type": "string" } },
-    "toolbox": { "enum": ["beginner", "expert"] },
-    "timeLimit": { "$ref": "#/definitions/num", "description": "simulated seconds (default 60)" },
-    "settle": { "anyOf": [{ "$ref": "#/definitions/num" }, { "const": "never" }], "description": "pass once every goal holds and the robot has stood still this long (default 2 s); never = only when the program ends or at the time limit" },
-    "stall": { "anyOf": [{ "$ref": "#/definitions/num" }, { "const": "never" }], "description": "fail once the robot, having moved, stands still this long with a goal unmet (default 5 s); never = wait for the time limit" },
+    "id": {"type": "string", "pattern": "^\\d{2}-\\d{2}$", "description": "WW-NN, e.g. \"04-01\""},
+    "world": {"type": "integer", "minimum": 1},
+    "kind": {"enum": ["core", "bonus", "challenge", "evaluation"]},
+    "title": {"type": "string"},
+    "objective": {"type": "string", "description": "PT-PT: what to do, shown to the student"},
+    "briefing": {"type": "string"},
+    "starter": {
+      "type": "string",
+      "description": "Program the level opens with (Blockly XML as saved by the sim, or an Open Roberta export), e.g. a broken program to fix. levels:check requires it to fail at least one seed."
+    },
+    "concepts": {"type": "array", "items": {"type": "string"}},
+    "assumes": {"type": "array", "items": {"type": "string"}},
+    "toolbox": {"enum": ["beginner", "expert"]},
+    "timeLimit": {"$ref": "#/definitions/num", "description": "simulated seconds (default 60)"},
+    "settle": {
+      "anyOf": [{"$ref": "#/definitions/num"}, {"const": "never"}],
+      "description": "pass once every goal holds and the robot has stood still this long (default 2 s); never = only when the program ends or at the time limit"
+    },
+    "stall": {
+      "anyOf": [{"$ref": "#/definitions/num"}, {"const": "never"}],
+      "description": "fail once the robot, having moved, stands still this long with a goal unmet (default 5 s); never = wait for the time limit"
+    },
     "variants": {
-      "type": "object", "additionalProperties": false,
+      "type": "object",
+      "additionalProperties": false,
       "properties": {
         "params": {
           "type": "object",
           "additionalProperties": {
             "oneOf": [
-              { "type": "object", "required": ["min", "max"], "additionalProperties": false,
-                "properties": { "min": { "type": "number" }, "max": { "type": "number" }, "step": { "type": "number", "exclusiveMinimum": 0 } } },
-              { "type": "object", "required": ["choices"], "additionalProperties": false,
-                "properties": { "choices": { "type": "array", "items": { "type": "number" }, "minItems": 1 } } }
+              {
+                "type": "object",
+                "required": ["min", "max"],
+                "additionalProperties": false,
+                "properties": {
+                  "min": {"type": "number"},
+                  "max": {"type": "number"},
+                  "step": {"type": "number", "exclusiveMinimum": 0}
+                }
+              },
+              {
+                "type": "object",
+                "required": ["choices"],
+                "additionalProperties": false,
+                "properties": {
+                  "choices": {
+                    "type": "array",
+                    "minItems": 1,
+                    "description": "pick one: a number, a text (colour name, word) or a case {name: value, …} whose keys all become parameters",
+                    "items": {
+                      "anyOf": [
+                        {"type": "number"},
+                        {"type": "string"},
+                        {
+                          "type": "object",
+                          "minProperties": 1,
+                          "additionalProperties": {"type": ["number", "string"]}
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
             ]
           }
         },
-        "seeds": { "type": "array", "items": { "type": "integer" }, "minItems": 1, "description": "the ★★ test set; the first is the one the student sees first" }
+        "seeds": {
+          "type": "array",
+          "items": {"type": "integer"},
+          "minItems": 1,
+          "description": "the ★★ test set; the first is the one the student sees first"
+        }
       }
     },
     "map": {
-      "type": "object", "additionalProperties": false,
+      "type": "object",
+      "additionalProperties": false,
       "properties": {
-        "size": { "type": "object", "properties": { "w": { "$ref": "#/definitions/num" }, "h": { "$ref": "#/definitions/num" } } },
-        "border": { "type": "boolean", "description": "1 cm wall around the arena (default true)" },
+        "size": {
+          "type": "object",
+          "properties": {"w": {"$ref": "#/definitions/num"}, "h": {"$ref": "#/definitions/num"}}
+        },
+        "border": {"type": "boolean", "description": "1 cm wall around the arena (default true)"},
         "items": {
           "type": "array",
           "items": {
-            "type": "object", "minProperties": 1, "maxProperties": 1,
+            "type": "object",
+            "minProperties": 1,
+            "maxProperties": 2,
             "properties": {
-              "wall": { "$ref": "#/definitions/shape" },
-              "box": { "$ref": "#/definitions/shape" },
-              "patch": { "allOf": [ { "$ref": "#/definitions/shape" }, { "type": "object", "required": ["colour"], "properties": { "colour": { "$ref": "#/definitions/colour" } } } ] },
+              "wall": {"$ref": "#/definitions/shape"},
+              "box": {"$ref": "#/definitions/shape"},
+              "patch": {
+                "allOf": [
+                  {"$ref": "#/definitions/shape"},
+                  {
+                    "type": "object",
+                    "required": ["colour"],
+                    "properties": {"colour": {"$ref": "#/definitions/colour"}}
+                  }
+                ]
+              },
               "line": {
-                "type": "object", "required": ["points"],
+                "type": "object",
+                "required": ["points"],
                 "properties": {
-                  "points": { "type": "array", "minItems": 2, "items": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "$ref": "#/definitions/num" } } },
-                  "width": { "$ref": "#/definitions/num", "description": "cm (default 2)" },
-                  "colour": { "$ref": "#/definitions/colour" }
+                  "points": {
+                    "type": "array",
+                    "minItems": 2,
+                    "items": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"$ref": "#/definitions/num"}}
+                  },
+                  "width": {"$ref": "#/definitions/num", "description": "cm (default 2)"},
+                  "colour": {"$ref": "#/definitions/colour"}
                 }
               },
               "arc": {
-                "type": "object", "required": ["cx", "cy", "r"],
+                "type": "object",
+                "required": ["cx", "cy", "r"],
                 "properties": {
-                  "cx": { "$ref": "#/definitions/num" }, "cy": { "$ref": "#/definitions/num" }, "r": { "$ref": "#/definitions/num" },
-                  "from": { "$ref": "#/definitions/num", "description": "degrees clockwise from east" }, "to": { "$ref": "#/definitions/num" },
-                  "width": { "$ref": "#/definitions/num" }, "colour": { "$ref": "#/definitions/colour" }
+                  "cx": {"$ref": "#/definitions/num"},
+                  "cy": {"$ref": "#/definitions/num"},
+                  "r": {"$ref": "#/definitions/num"},
+                  "from": {"$ref": "#/definitions/num", "description": "degrees clockwise from east"},
+                  "to": {"$ref": "#/definitions/num"},
+                  "width": {"$ref": "#/definitions/num"},
+                  "colour": {"$ref": "#/definitions/colour"}
                 }
+              },
+              "when": {
+                "$ref": "#/definitions/num",
+                "description": "leave this out of the variant when the expression is 0, e.g. \"stripes >= 4\""
               }
             },
             "additionalProperties": false
@@ -99,38 +196,131 @@
       }
     },
     "spawn": {
-      "type": "object", "required": ["x", "y"], "additionalProperties": false,
-      "properties": { "x": { "$ref": "#/definitions/num" }, "y": { "$ref": "#/definitions/num" },
-        "heading": { "$ref": "#/definitions/num", "description": "degrees clockwise from east: 0 →, 90 ↓, 180 ←, -90 ↑" } }
+      "type": "object",
+      "required": ["x", "y"],
+      "additionalProperties": false,
+      "properties": {
+        "x": {"$ref": "#/definitions/num"},
+        "y": {"$ref": "#/definitions/num"},
+        "heading": {"$ref": "#/definitions/num", "description": "degrees clockwise from east: 0 →, 90 ↓, 180 ←, -90 ↑"}
+      }
     },
     "zones": {
       "type": "array",
-      "items": { "allOf": [ { "$ref": "#/definitions/shape" },
-        { "type": "object", "required": ["id"], "properties": { "id": { "type": "string" }, "label": { "type": "string", "description": "PT-PT name used in messages" } } } ] }
-    },
-    "goals": {
-      "type": "array", "minItems": 1,
       "items": {
-        "oneOf": [
-          { "enum": ["noCollision"] },
-          { "type": "object", "additionalProperties": false, "minProperties": 1, "maxProperties": 1,
+        "allOf": [
+          {"$ref": "#/definitions/shape"},
+          {
+            "type": "object",
+            "required": ["id"],
             "properties": {
-              "reachZone": { "$ref": "#/definitions/zoneRef" },
-              "robotStoppedIn": { "$ref": "#/definitions/zoneRef" },
-              "noCollision": { "type": ["object", "null"], "properties": { "label": { "type": "string" } } },
-              "displayShows": { "type": "object", "required": ["text"], "additionalProperties": false,
-                "properties": { "text": { "type": "string" }, "row": { "type": "integer" }, "label": { "type": "string" } } },
-              "ledColour": { "type": "object", "required": ["colour"], "additionalProperties": false,
-                "properties": { "colour": { "$ref": "#/definitions/colour" }, "label": { "type": "string" } } }
-            } }
+              "id": {"type": "string"},
+              "label": {"type": "string", "description": "PT-PT name used in messages"},
+              "when": {"$ref": "#/definitions/when"}
+            }
+          }
         ]
       }
     },
-    "solution": { "$ref": "#/definitions/program", "description": "must pass every seed (★★)" },
+    "goals": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {"enum": ["noCollision"]},
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "minProperties": 1,
+            "maxProperties": 1,
+            "properties": {
+              "reachZone": {"$ref": "#/definitions/zoneRef"},
+              "robotStoppedIn": {"$ref": "#/definitions/zoneRef"},
+              "noCollision": {"type": ["object", "null"], "properties": {"label": {"type": "string"}}},
+              "displayShows": {
+                "type": "object",
+                "additionalProperties": false,
+                "description": "at the end: a display line equals text, or holds a number within tolerance",
+                "properties": {
+                  "text": {"$ref": "#/definitions/text"},
+                  "any": {"const": true, "description": "any text but the toolbox default \"Hallo\""},
+                  "number": {
+                    "$ref": "#/definitions/num",
+                    "description": "expected number: variant parameters and the run's drivenCm (cm the robot travelled) and movingS (s it was moving)"
+                  },
+                  "tolerance": {"$ref": "#/definitions/num", "description": "± allowed (default 0)"},
+                  "row": {"type": "integer"},
+                  "label": {"type": "string"}
+                },
+                "oneOf": [{"required": ["text"]}, {"required": ["number"]}, {"required": ["any"]}]
+              },
+              "ledColour": {
+                "type": "object",
+                "required": ["colour"],
+                "additionalProperties": false,
+                "properties": {"colour": {"$ref": "#/definitions/colour"}, "label": {"type": "string"}}
+              },
+              "tonePlayed": {
+                "type": ["object", "null"],
+                "additionalProperties": false,
+                "description": "any time: a tone was played",
+                "properties": {
+                  "frequency": {"$ref": "#/definitions/num", "description": "Hz; omit for any tone"}, "duration": {"$ref": "#/definitions/num", "description": "ms (± 1); omit for any length"},
+                  "tolerance": {"$ref": "#/definitions/num", "description": "± Hz (default 1)"},
+                  "label": {"type": "string"}
+                }
+              },
+              "sequence": {
+                "type": "object",
+                "required": ["steps"],
+                "additionalProperties": false,
+                "description": "any time: these states/events happened in this order",
+                "properties": {
+                  "steps": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "minProperties": 1,
+                      "properties": {
+                        "display": {"$ref": "#/definitions/text"},
+                        "leds": {
+                          "description": "all five LEDs in this colour, or off",
+                          "anyOf": [{"$ref": "#/definitions/colour"}, {"const": "off"}]
+                        },
+                        "tone": {"$ref": "#/definitions/num", "description": "Hz"},
+                        "tolerance": {"$ref": "#/definitions/num"},
+                        "zone": {"type": "string"},
+                        "probe": {"enum": ["centre", "front"]}
+                      }
+                    }
+                  },
+                  "times": {
+                    "$ref": "#/definitions/num",
+                    "description": "the steps repeated this many times (default 1)"
+                  },
+                  "label": {"type": "string"}
+                }
+              },
+              "stayIn": {
+                "$ref": "#/definitions/zoneRef",
+                "description": "throughout: never leave the zone; holds at the time limit (the robot must have moved)"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "solution": {"$ref": "#/definitions/program", "description": "must pass every seed (★★)"},
     "antiSolutions": {
       "type": "array",
-      "items": { "type": "object", "required": ["name", "code"], "additionalProperties": false,
-        "properties": { "name": { "type": "string" }, "why": { "type": "string" }, "code": { "$ref": "#/definitions/program" } } },
+      "items": {
+        "type": "object",
+        "required": ["name", "code"],
+        "additionalProperties": false,
+        "properties": {"name": {"type": "string"}, "why": {"type": "string"}, "code": {"$ref": "#/definitions/program"}}
+      },
       "description": "tempting but wrong programs; each must fail at least one seed"
     }
   }

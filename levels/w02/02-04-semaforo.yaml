@@ -1,0 +1,39 @@
+# World 2: states in order (sequence). Without waits only the last colour is ever
+# on for a tick, so the sequence is not seen.
+id: "02-04"
+world: 2
+kind: core
+title: Semáforo
+objective: Faz um semáforo com os LEDs, por esta ordem - verde, amarelo, vermelho. Cada cor tem de ficar acesa algum tempo (1 segundo, por exemplo).
+concepts: [esperar, sequência]
+assumes: [LEDs]
+toolbox: beginner
+timeLimit: 15
+
+spawn: { x: 100, y: 61.25, heading: 0 }
+
+goals:
+  - sequence: { steps: [{ leds: green }, { leds: yellow }, { leds: red }] }
+
+solution: |
+  robotAPI.led_on("ALL", "#33cc00");
+  robotAPI.wait_ms(1000);
+  robotAPI.led_on("ALL", "#ffff00");
+  robotAPI.wait_ms(1000);
+  robotAPI.led_on("ALL", "#cc0000");
+
+antiSolutions:
+  - name: sem esperar
+    why: As cores mudam tão depressa que só se vê o vermelho.
+    code: |
+      robotAPI.led_on("ALL", "#33cc00");
+      robotAPI.led_on("ALL", "#ffff00");
+      robotAPI.led_on("ALL", "#cc0000");
+  - name: ordem trocada
+    why: Vermelho, amarelo, verde é ao contrário.
+    code: |
+      robotAPI.led_on("ALL", "#cc0000");
+      robotAPI.wait_ms(1000);
+      robotAPI.led_on("ALL", "#ffff00");
+      robotAPI.wait_ms(1000);
+      robotAPI.led_on("ALL", "#33cc00");

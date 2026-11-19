@@ -1,0 +1,45 @@
+# World 2 challenge: notes and LED colours interleaved (a sequence of tones and states).
+id: "02-07"
+world: 2
+kind: challenge
+title: Música
+objective: Toca dó, ré, mi (as notas c’, d’ e e’ do bloco «tocar nota») e muda a cor dos LEDs antes de cada nota - vermelho antes do dó, verde antes do ré, azul antes do mi.
+concepts: [notas, sequência]
+assumes: [som, LEDs]
+toolbox: beginner
+timeLimit: 20
+
+spawn: { x: 100, y: 61.25, heading: 0 }
+
+goals:
+  - sequence:
+      label: Vermelho e dó → verde e ré → azul e mi
+      steps: [{ leds: red }, { tone: 261.626 }, { leds: green }, { tone: 293.665 }, { leds: blue }, { tone: 329.628 }]
+
+solution: |
+  robotAPI.led_on("ALL", "#cc0000");
+  robotAPI.play_tone(261.626, 500);
+  robotAPI.led_on("ALL", "#33cc00");
+  robotAPI.play_tone(293.665, 500);
+  robotAPI.led_on("ALL", "#3366ff");
+  robotAPI.play_tone(329.628, 500);
+
+antiSolutions:
+  - name: luzes no fim
+    why: As notas tocam todas antes de as cores mudarem.
+    code: |
+      robotAPI.play_tone(261.626, 500);
+      robotAPI.play_tone(293.665, 500);
+      robotAPI.play_tone(329.628, 500);
+      robotAPI.led_on("ALL", "#cc0000");
+      robotAPI.led_on("ALL", "#33cc00");
+      robotAPI.led_on("ALL", "#3366ff");
+  - name: notas trocadas
+    why: Mi, ré, dó é ao contrário.
+    code: |
+      robotAPI.led_on("ALL", "#cc0000");
+      robotAPI.play_tone(329.628, 500);
+      robotAPI.led_on("ALL", "#33cc00");
+      robotAPI.play_tone(293.665, 500);
+      robotAPI.led_on("ALL", "#3366ff");
+      robotAPI.play_tone(261.626, 500);

@@ -1,0 +1,23 @@
+# World 2: lights, sound, display. The robot mostly stays put; the goals read its outputs.
+id: "02-01"
+world: 2
+kind: core
+title: Acender os LEDs
+objective: Acende os cinco LEDs do robô a verde.
+concepts: [LEDs, cor]
+toolbox: beginner
+timeLimit: 10
+
+spawn: { x: 100, y: 61.25, heading: 0 }
+
+goals:
+  - ledColour: { colour: green }
+
+solution: |
+  robotAPI.led_on("ALL", "#33cc00");
+
+antiSolutions:
+  - name: a cor do bloco
+    why: O bloco dos LEDs vem com vermelho; é preciso escolher o verde.
+    code: |
+      robotAPI.led_on("ALL", "#cc0000");

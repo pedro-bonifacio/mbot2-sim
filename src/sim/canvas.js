@@ -1,3 +1,4 @@
+import { resetToneLog } from './audio.js';
 import { robot, resetRobot, robotProbePoint, ROBOT_CONSTANTS } from './robot.js';
 import { isRulerOn, rulerDown, rulerMove, rulerUp, rulerLabel, drawRulerLine, onRulerChange } from './ruler.js';
 import { PX_PER_CM, worldToScreen } from './world.js';
@@ -436,4 +437,5 @@ export function resetSim() {
   resetRobot();
   resetLeds();
   resetDisplay();
+  resetToneLog();
 }

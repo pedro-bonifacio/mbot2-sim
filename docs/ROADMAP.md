@@ -3,13 +3,24 @@
 Living plan. Edit freely; tick items as they ship (and log them in `../CHANGELOG.md`).
 The *why* behind items lives in [`decisions/`](decisions/README.md).
 
-Last reviewed: 2026-11-18 (end of fifth session)
+Last reviewed: 2026-11-19 (sixth session)
 
 ---
 
-## ▶ Where we left off (2026-11-18, end of fifth session)
+## ▶ Where we left off (2026-11-19, sixth session)
 
-**State:** everything is on `main` **and pushed**; the site is live at https://mbot2.pbonifacio.dev
+**This session** (on `main`, **not pushed yet** — pushing deploys to students):
+- **Goal values from variants + event goals** ([0017](decisions/0017-goals-that-follow-the-run.md)):
+  text/colour parameters and cases, `when:` on map items/zones, `displayShows` with
+  `number ± tolerance` (may use the run's `drivenCm`, `movingS`) or `any`, `tonePlayed`,
+  `sequence`, `stayIn`. Value goals don't give the answer away; a failed run says what
+  was expected. Format: LEVEL_FORMAT.md.
+- **New levels:** all of **World 2** (02-01 … 02-07), 04-05, 05-02, 05-08, 07-01, 07-02.
+- **Teacher, looks only:** play World 2 and the five others; are the goal wordings clear
+  ("Mostrar a palavra certa no ecrã", "Por esta ordem: LEDs a verde → …")?
+- Next build steps: layout choice → generators (maze, box scatter) → ★★★ → keys in tests.
+
+**State before this session:** everything was on `main` **and pushed**; the site is live at https://mbot2.pbonifacio.dev
 (Cloudflare Pages deploys every push to `main`). `npm run check` passes.
 Push from this machine over SSH: `git push git@github.com:pedro-bonifacio/mbot2-sim.git main`
 (`origin` is HTTPS, which has no login here).
@@ -88,14 +99,14 @@ Prerequisite for any evaluated level ([0003](decisions/0003-core-levels-use-real
 - [x] Fixed-timestep physics + single simulated clock (`wait_ms`, timer sensor, tones, time limits): browser and headless run the same 1/60 s ticks (`src/runtime/simTick.js`); sim tests check 30 fps and uneven frames
 - [x] Seeded PRNG utility for all randomness (`src/sim/random.js`): random blocks draw from a per-run seed; Executar picks a fresh one (recorded, `__dev.state().seed`), headless defaults to 1 (`--seed`)
 - [x] Collision uses the oriented 17.5 × 13 cm footprint (`src/sim/collision.js`): stops at the point of contact, corners count while turning, map edge counts
-- [ ] Headless runner: program + level + seed → result, no rendering — program + map + key presses done (`npm run sim`, `npm run sim:test`); levels and seeds still to come
+- [x] Headless runner: program + level + seed → result, no rendering (`runLevel`, used by `levels:check` and ★★; `npm run sim` for program + map + keys — it has no `--level` option yet)
 
 ## Phase B — QoL tier 1 (debugging & learning)
 
-- [ ] Highlight the currently executing block
-- [ ] Speed control ½× / 1× / 2× / 4× and single-step mode
-- [ ] Live sensor panel: ultrasonic, 4 × quad-RGB (colour + light %), gyro, encoders, timer
-- [ ] Path trail + ghost of the previous run
+- [x] Highlight the currently executing block (outline)
+- [x] Speed control ×1 / ×2 / ×4 — ½× and single-step mode not built
+- [ ] Live sensor panel: the HUD shows pose, RPM, distance and the 4 quad-RGB colours; ultrasonic, light %, gyro, encoders, timer not yet
+- [x] Path trail — ghost of the previous run not built
 
 ## Phase C — Level engine & authoring toolchain
 
@@ -128,7 +139,8 @@ Format: [`LEVEL_FORMAT.md`](LEVEL_FORMAT.md); how-to: [`LEVEL_AUTHORING.md`](LEV
 
 See [`CURRICULUM.md`](CURRICULUM.md).
 
-- [ ] World 1–4 levels (~35), playtested with students — World 1 built 2026-11-18
+- [ ] World 1–4 levels (~35), playtested with students — World 1 built 2026-11-18, World 2 and 04-05 on 2026-11-19
+- [x] Goal values from variants, event goals (`tonePlayed`, `sequence`, `stayIn`) — [0017](decisions/0017-goals-that-follow-the-run.md)
 
 ## Phase F — Content, second wave + QoL tier 2
 

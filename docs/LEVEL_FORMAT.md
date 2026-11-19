@@ -37,6 +37,9 @@ stall: 5                   # optional: fail after standing still this long, havi
 variants:                  # optional: omit for levels with one fixed layout
   params:
     wallX: { min: 90, max: 170, step: 5 }    # or { choices: [100, 130, 160] }
+    # c:    { choices: [red, green, blue] }  # texts: colour names, words
+    # side: { choices: [{ base: 55, word: PERTO }, { base: 125, word: LONGE }] }
+    #        a case: every key becomes a parameter (and `side` its index, 0, 1, …)
   seeds: [1, 2, 3, 4, 5, 6, 7, 8]           # the ★★ test set; the student sees seed 1 first
 
 map:
@@ -48,6 +51,7 @@ map:
     - patch: { x: 75, y: 51, w: 10, h: 20, colour: green }   # or { cx, cy, r, colour }
     - line:  { points: [[20, 61], [180, 61]], width: 2, colour: black }
     - arc:   { cx: 100, cy: 61, r: 40, from: 0, to: 180, width: 2, colour: black }
+    - { when: n >= 3, patch: { x: 80, y: 30, w: 3, h: 60, colour: c } }   # only when n ≥ 3; colour from a parameter
 
 spawn: { x: 30, y: 61.25, heading: 0 }
 
@@ -80,7 +84,12 @@ antiSolutions:             # tempting but wrong: each must fail at least one see
 - Rectangles are `x, y` (top-left), `w, h`, and an optional `angle` (degrees clockwise, about the centre).
 - Headings and arc angles are **degrees clockwise from east**: `0` →, `90` ↓, `180` ←, `-90` ↑.
 - Any number may be an **expression** of variant parameters: `+ - * /`, parentheses,
-  parameter names (`wallX - 15`, `(top + bottom) / 2`). Nothing else.
+  parameter names (`wallX - 15`, `(top + bottom) / 2`), and one comparison
+  `< <= > >= == !=` giving 1 or 0 (for `when:`). Nothing else.
+- `when: <expression>` on a map item or a zone leaves it out of variants where it is 0.
+- Text fields (`displayShows.text`, sequence `display`) take slots: `{word}` puts in a
+  text parameter, `{n - 1}` a number. Colour fields take a colour name or a parameter
+  holding one (`colour: c`).
 
 ### Colours
 
@@ -95,8 +104,27 @@ Zones are not painted.
 | `reachZone: { zone, probe }` | any time | the probe is in the zone at some tick |
 | `robotStoppedIn: { zone, probe }` | at the end | motors stopped and the probe in the zone |
 | `noCollision` | throughout | the robot never touches a wall (fails the run at once) |
-| `displayShows: { text, row? }` | at the end | a display line equals `text` |
+| `displayShows: { text, row? }` | at the end | a display line (`display_text` cell, or a printed line when no `row`) equals `text` |
+| `displayShows: { number, tolerance?, row? }` | at the end | a display line holds a number within ± `tolerance` (default 0): "3", "Riscas: 3", "96,7 cm" |
+| `displayShows: { any: true }` | at the end | some text other than the block's default «Hallo» |
 | `ledColour: { colour }` | at the end | all five LEDs on, in that colour |
+| `tonePlayed: { frequency?, tolerance?, duration? }` | any time | a tone was started (± `tolerance` Hz, default 1; `duration` ms ± 1). `{}` = any tone |
+| `sequence: { steps, times? }` | any time | the steps happened in this order (`times`: repeated) |
+| `stayIn: { zone, probe }` | throughout | the probe never leaves the zone; holds at `timeLimit` if the robot has moved |
+
+`number` may use the variant's parameters and two values of the run: `drivenCm` (cm
+the robot's centre travelled) and `movingS` (seconds it was moving). Goals whose value
+comes from the variant (a `{slot}` text, a parameter colour, any number) are labelled
+"a palavra / cor / o número certo", so the answer is not given away; after a failed
+run the label adds "(esperado: …)".
+
+**Sequence steps:** `{ display: text }`, `{ leds: colour | off }` (all five),
+`{ tone: Hz, tolerance? }`, `{ zone: id, probe? }`. A tone step takes the next matching
+tone. A state step counts when its state **appears** (it was not there the tick
+before), and each kind advances at most one step per tick: LEDs switched, or "3, 2, 1"
+printed, with no wait in between are not a sequence. Different kinds may change
+together (LEDs and display in the same instant).
+[Decision 0017](decisions/0017-goals-that-follow-the-run.md).
 
 `probe` is `centre` (default) or `front` (middle of the front bumper). Every goal takes
 an optional `label` (PT-PT) to replace the default wording.
@@ -107,7 +135,7 @@ it **passes** as soon as every goal holds and either the program has ended or th
 has stood still for `settle` s (default 2 — so "repeat forever: if near, stop" programs
 pass without waiting for the limit), or at `timeLimit` with every goal holding. It
 **fails** at once when the robot touches a wall (on every level; `noCollision` just shows
-it as a goal), when the program ends or errors without passing, when the robot — after
+it as a goal), when the probe leaves a `stayIn` zone, when the program ends or errors without passing, when the robot — after
 it has moved — stands still for `stall` s (default 5) with a goal unmet, or at `timeLimit`.
 Set `settle: never` for levels where the robot must stop and then carry on.
 

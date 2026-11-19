@@ -31,3 +31,4 @@ New record: copy [`0000-template.md`](0000-template.md) to the next free number.
 | [0014](0014-clearer-pt-wording-display-only.md) | Clearer PT-PT wording where Open Roberta's translation confuses students | Accepted | blocks |
 | [0015](0015-trimmed-beginner-toolbox.md) | A trimmed beginner toolbox | Accepted | blocks |
 | [0016](0016-class-accounts-progress-sync.md) | Class accounts sync progress; names never reach the server | Accepted | infra |
+| [0017](0017-goals-that-follow-the-run.md) | Goals that follow the run: values from variants, events, staying in a zone | Accepted | levels |

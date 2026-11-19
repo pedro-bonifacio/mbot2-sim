@@ -102,17 +102,17 @@ world). For now a Prova is `kind: challenge` with a title starting "Prova:". Tit
 | 01-09 | D | Garagem | turn into a garage 20 cm wide: precision | |
 | 01-10 | P | Percurso em Z | a Z through three corners between two angled boxes (★★★ ≤ 8 blocks later) | ★★★ |
 
-### World 2 — Luz, Som e Ecrã (LEDs, tones, display, wait) · no variants
+### World 2 — Luz, Som e Ecrã (LEDs, tones, display, wait) · no variants · **built 2026-11-19**
 
 | id | k | Title | Idea | Needs |
 |----|---|-------|------|-------|
-| 02-01 | C | Acender os LEDs | all LEDs green | |
-| 02-02 | C | Bip | play 440 Hz for 200 ms | goal: tone played |
-| 02-03 | C | O meu nome | write your name on the display | |
-| 02-04 | C | Semáforo | green → yellow → red with waits | goal: sequence |
-| 02-05 | C | Contagem decrescente | 3, 2, 1, "Partida!" on the display, then drive | goal: sequence |
-| 02-06 | B | Entrega | drive to the box, beep, LEDs blue, display "Entregue" | goal: tone played |
-| 02-07 | D | Música | play a short tune (notes) while the LEDs change | goal: sequence |
+| 02-01 | C | Acender os LEDs | all LEDs green | **built** |
+| 02-02 | C | Bip | play 440 Hz for 200 ms | **built** |
+| 02-03 | C | O meu nome | write your name on the display | **built** |
+| 02-04 | C | Semáforo | green → yellow → red with waits | **built** |
+| 02-05 | C | Contagem decrescente | 3, 2, 1, "Partida!" on the display, then drive | **built** |
+| 02-06 | B | Entrega | drive to the box, beep, LEDs blue, display "Entregue" | **built** |
+| 02-07 | D | Música | play a short tune (notes) while the LEDs change | **built** |
 
 ### World 3 — Repetir (repeat, patterns, fewest blocks) · no variants
 
@@ -123,7 +123,7 @@ world). For now a Prova is `kind: challenge` with a title starting "Prova:". Tit
 | 03-03 | C | Ziguezague | a long zigzag corridor: repeat a pair of moves | |
 | 03-04 | C | Esperar pelo botão | press A to start each lap of the square | key in tests |
 | 03-05 | C | Repetições dentro de repetições | four squares in a row (nested repeat) | |
-| 03-06 | B | Pisca-pisca | LEDs blink 10 times while driving | goal: sequence |
+| 03-06 | B | Pisca-pisca | LEDs blink 10 times while driving |  |
 | 03-07 | D | Estrela | a five-pointed star: the 144° puzzle | |
 | 03-08 | P | Escadaria | a staircase corridor, ★★★ with ≤ 5 blocks | ★★★ |
 
@@ -135,7 +135,7 @@ world). For now a Prova is `kind: challenge` with a title starting "Prova:". Tit
 | 04-02 | C | Afastar da parede | start close, reverse until > 30 cm | |
 | 04-03 | C | Corredor com curva | until wall, turn, until wall (both lengths random) | |
 | 04-04 | C | Porta aberta ou fechada | a box blocks the door or not: if blocked go round, else straight through | |
-| 04-05 | C | Perto ou longe | wall near or far: display "PERTO" or "LONGE" | goal text from variant |
+| 04-05 | C | Perto ou longe | wall near or far: display "PERTO" or "LONGE" | **built** |
 | 04-06 | C | Espiral | repeat 4: until wall, turn left (corridor lengths random) | |
 | 04-07 | B | Vai e volta | to the wall, turn 180°, to the other wall | |
 | 04-08 | B | Travagem a tempo | same as 04-01 at 150 RPM: brake earlier | |
@@ -147,13 +147,13 @@ world). For now a Prova is `kind: challenge` with a title starting "Prova:". Tit
 | id | k | Title | Idea | Needs |
 |----|---|-------|------|-------|
 | 05-01 | C | Parar na linha | stop on the black line, LEDs green (exists) | |
-| 05-02 | C | Da mesma cor | drive onto a patch (red/green/blue): LEDs the same colour | goal colour from variant |
+| 05-02 | C | Da mesma cor | drive onto a patch (red/green/blue): LEDs the same colour | **built** |
 | 05-03 | C | Seguir a borda | follow a straight line's edge with one probe | |
 | 05-04 | C | Curvas suaves | follow a curvy line with two probes | layout choice |
 | 05-05 | C | Curvas de 90° | sharp corners need the outer probes | layout choice |
 | 05-06 | C | Fim da linha | follow until the red patch, stop | |
 | 05-07 | C | Contar riscas | stop on the 3rd black stripe, random spacing (repeat 3: until black, until white) | |
-| 05-08 | C | Ficar no ringue | P3: bounce inside a black border for 30 s | goal: survive |
+| 05-08 | C | Ficar no ringue | P3: bounce inside a black border for 30 s | **built** |
 | 05-09 | B | Cruzamento | follow the line straight through a crossing | |
 | 05-10 | B | Linha tracejada | follow a line with gaps | |
 | 05-13 | B | O segundo verde | stop on the 2nd green patch, random spacing, red patches in between (no variables: repeat 2) | |
@@ -180,17 +180,17 @@ world). For now a Prova is `kind: challenge` with a title starting "Prova:". Tit
 
 | id | k | Title | Idea | Needs |
 |----|---|-------|------|-------|
-| 07-01 | C | Contador | count the stripes until the wall, show the number | goal text from variant |
-| 07-02 | C | Fita métrica | drive to the wall, show the distance covered (encoder) | goal: number ± tolerance |
+| 07-01 | C | Contador | count the stripes until the wall, show the number | **built** |
+| 07-02 | C | Fita métrica | drive to the wall, show the distance covered (encoder) | **built** |
 | 07-03 | C | Giroscópio | exact 90° turns with the gyro on a slippery route | |
-| 07-04 | C | Cronómetro | show how long the trip to the wall took | goal: number ± tolerance |
+| 07-04 | C | Cronómetro | show how long the trip to the wall took |  |
 | 07-05 | C | O mais perto | scan 360°, remember the closest angle, go there (P6 full) | |
 | 07-06 | C | Estacionar no espaço livre | P7: drive along the boxes, look every 10 cm, park in the gap | |
 | 07-07 | B | Espiral crescente | each side 5 cm longer than the last | |
-| 07-08 | B | Contar cores | count red and blue patches, show both | goal text from variant |
+| 07-08 | B | Contar cores | count red and blue patches, show both |  |
 | 07-11 | D | Código de barras | 1–4 red stripes at the start say which green patch to stop on: count them, then count greens | |
 | 07-09 | D | Abrandar ao chegar | speed = distance: smooth stop at 10 cm | |
-| 07-10 | P | Contar e estacionar | P2 advanced | goal text from variant |
+| 07-10 | P | Contar e estacionar | P2 advanced |  |
 
 ### World 8 — Controlo (proportional, PID, races)
 
@@ -240,15 +240,14 @@ the never-ending stop (05-14), a counter never reset (W7), a function that never
 
 In build order (most levels unblocked first):
 
-1. **Goal values from variants:** `displayShows` text and `ledColour` colour as expressions of
-   variant params (04-05, 05-02, 07-01, 07-08, 07-10), and **numbers with tolerance**
-   (07-02, 07-04).
+1. ~~**Goal values from variants**~~ — done 2026-11-19 (text/colour parameters, cases,
+   `when:`, numbers ± tolerance with `drivenCm` / `movingS`; decision 0017).
 2. **Layout choice:** a `choices` param that picks one of several hand-drawn item lists
-   (random line tracks: 05-04/05/12, 08-x, 09-04/08, 10-01).
+   (random line tracks: 05-04/05/12, 08-x, 09-04/08, 10-01). Cases + `when:` already
+   cover small layouts; whole tracks still need this.
 3. **Generators:** a seeded **maze** (tape or walls, grid size, cell cm) and **box scatter**
    (count, size, minimum gap, keep a path open): 06-05/06/08/09/10, 09-06/07, 10-03.
-4. **Event goals:** `tonePlayed`, `sequence` (display/LED states in order), `survive`
-   (pass at the time limit if still inside a zone): Worlds 2, 3 and 05-08.
+4. ~~**Event goals**~~ — done 2026-11-19: `tonePlayed`, `sequence`, `stayIn` (decision 0017).
 5. **★★★ challenges:** block count and time limit (01-10, 03-08, 05-11, 08-05/06).
 6. **Keys in tests:** a level can press A/B at given times in the ★★ run (03-04, 10-04).
 7. **Pushable boxes** (P4, 08-07, 10-02): new sim physics, approved 2026-11-18.

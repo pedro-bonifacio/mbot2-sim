@@ -1,0 +1,27 @@
+# World 2: one tone with the right frequency and length (tonePlayed).
+id: "02-02"
+world: 2
+kind: core
+title: Bip
+objective: Toca um som de 440 Hz durante 200 ms (a nota lá).
+concepts: [som, frequência (Hz), duração (ms)]
+toolbox: beginner
+timeLimit: 10
+
+spawn: { x: 100, y: 61.25, heading: 0 }
+
+goals:
+  - tonePlayed: { frequency: 440, duration: 200 }
+
+solution: |
+  robotAPI.play_tone(440, 200);
+
+antiSolutions:
+  - name: os números do bloco
+    why: O bloco vem com 300 Hz e 100 ms.
+    code: |
+      robotAPI.play_tone(300, 100);
+  - name: duração errada
+    why: 440 Hz, mas durante 2 segundos.
+    code: |
+      robotAPI.play_tone(440, 2000);

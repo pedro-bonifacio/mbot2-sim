@@ -1,0 +1,47 @@
+# World 2: drive, then use every output (separate goals: the order is free).
+id: "02-06"
+world: 2
+kind: bonus
+title: Entrega
+objective: Leva a encomenda até à caixa e pára sem lhe tocar, com a frente do robô (o anel amarelo) na zona marcada. Depois dá um bip, acende os LEDs a azul e escreve «Entregue» no ecrã.
+concepts: [sequência]
+assumes: [andar uma distância, som, LEDs, ecrã]
+toolbox: beginner
+timeLimit: 25
+
+map:
+  items:
+    - box: { x: 110, y: 51.25, w: 15, h: 20 }
+
+spawn: { x: 30, y: 61.25, heading: 0 }
+
+zones:
+  - { id: porta, label: em frente da caixa, x: 95, y: 46.25, w: 14, h: 30 }
+
+goals:
+  - robotStoppedIn: { zone: porta, probe: front }
+  - tonePlayed: {}
+  - ledColour: { colour: blue }
+  - displayShows: { text: Entregue }
+  - noCollision
+
+solution: |
+  robotAPI.drive_for("FOREWARD", 30, 60);
+  robotAPI.play_tone(440, 200);
+  robotAPI.led_on("ALL", "#3366ff");
+  robotAPI.println("Entregue");
+
+antiSolutions:
+  - name: esquece o bip
+    why: Faz tudo menos o som.
+    code: |
+      robotAPI.drive_for("FOREWARD", 30, 60);
+      robotAPI.led_on("ALL", "#3366ff");
+      robotAPI.println("Entregue");
+  - name: bate na caixa
+    why: Anda de mais e toca na caixa.
+    code: |
+      robotAPI.drive_for("FOREWARD", 30, 80);
+      robotAPI.play_tone(440, 200);
+      robotAPI.led_on("ALL", "#3366ff");
+      robotAPI.println("Entregue");

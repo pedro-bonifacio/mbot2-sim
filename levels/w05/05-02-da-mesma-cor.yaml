@@ -1,0 +1,53 @@
+# World 5: read a colour and use it. The patch's colour (and place) come from the
+# variant, so the LEDs must copy what the sensor sees.
+id: "05-02"
+world: 5
+kind: core
+title: Da mesma cor
+objective: Anda até ao quadrado colorido, pára com a frente do robô (o anel amarelo) em cima dele e acende os LEDs da mesma cor do quadrado. A cor muda de variante para variante!
+concepts: [sensor de cor, cor]
+assumes: [esperar até, LEDs]
+toolbox: beginner
+timeLimit: 30
+
+variants:
+  params:
+    c: { choices: [red, green, blue] }
+    patchX: { min: 70, max: 150, step: 10 }
+  seeds: [7, 2, 10, 9, 20, 13]   # each colour twice, near and far
+
+map:
+  items:
+    - patch: { x: patchX, y: 46.25, w: 20, h: 30, colour: c }
+
+spawn: { x: 30, y: 61.25, heading: 0 }
+
+zones:
+  - { id: quadrado, label: quadrado colorido, x: patchX, y: 46.25, w: 20, h: 30 }
+
+goals:
+  - robotStoppedIn: { zone: quadrado, probe: front }
+  - ledColour: { colour: c }
+  - noCollision
+
+solution: |
+  robotAPI.drive("FOREWARD", 30);
+  while (!(robotAPI.quadrgb("COLOUR", "L1") != "#ffffff")) {}
+  robotAPI.drive_stop();
+  robotAPI.led_on("ALL", robotAPI.quadrgb("COLOUR", "L1"));
+
+antiSolutions:
+  - name: sempre vermelho
+    why: Acerta só quando o quadrado é vermelho.
+    code: |
+      robotAPI.drive("FOREWARD", 30);
+      while (!(robotAPI.quadrgb("COLOUR", "L1") != "#ffffff")) {}
+      robotAPI.drive_stop();
+      robotAPI.led_on("ALL", "#cc0000");
+  - name: só vermelho
+    why: Espera pelo vermelho e passa por cima dos outros quadrados.
+    code: |
+      robotAPI.drive("FOREWARD", 30);
+      while (!(robotAPI.quadrgb("COLOUR", "L1") == "#cc0000")) {}
+      robotAPI.drive_stop();
+      robotAPI.led_on("ALL", "#cc0000");

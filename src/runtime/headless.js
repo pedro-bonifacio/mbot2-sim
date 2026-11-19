@@ -1,3 +1,4 @@
+import { resetToneLog } from '../sim/audio.js';
 import { createInterpreter, destroyInterpreter } from './interpreter.js';
 import { tickProgram } from './programTick.js';
 import { asyncTicket } from './runState.js';
@@ -53,6 +54,7 @@ export function runHeadless({ code, map, maxSeconds = 60, keys = [], sampleEvery
   resetClock();
   resetDisplay();
   resetLeds();
+  resetToneLog();
   asyncTicket.pending = false;
   asyncTicket.resolveCondition = null;
   asyncTicket.callback = null;

@@ -1,4 +1,4 @@
-import { evalNumber } from './expr.js';
+import { evalNumber, exprNames, interpolate } from './expr.js';
 import { createRng } from '../sim/random.js';
 
 // A level file (YAML → plain object, docs/LEVEL_FORMAT.md) plus a variant seed →
@@ -17,17 +17,29 @@ export const FLOOR_COLOURS = {
 };
 export const WALL_RGB = [255, 0, 255];
 
-export const GOAL_TYPES = ['reachZone', 'robotStoppedIn', 'noCollision', 'displayShows', 'ledColour'];
+export const GOAL_TYPES = ['reachZone', 'robotStoppedIn', 'noCollision', 'displayShows', 'ledColour',
+  'tonePlayed', 'sequence', 'stayIn'];
 const PROBES = ['centre', 'front'];
+const STEP_KINDS = ['display', 'leds', 'tone', 'zone'];
+// Values of the run itself that `displayShows: { number }` may use, besides the
+// variant parameters (the referee supplies them when it judges).
+export const RUN_VALUES = ['drivenCm', 'movingS'];
 
-/** Variant parameter values for `seed`: { name: number }, drawn in declaration order. */
+/**
+ * Variant parameter values for `seed`, drawn in declaration order: { name: value }.
+ * A `choices` entry may be a number, a text (e.g. a colour name or a word) or a
+ * case — an object whose keys all become parameters (and the name the case's index).
+ */
 export function variantParams(level, seed) {
   const defs = (level.variants && level.variants.params) || {};
   const rng = createRng(seed);
   const params = {};
   for (const [name, def] of Object.entries(defs)) {
     if (Array.isArray(def.choices)) {
-      params[name] = def.choices[Math.floor(rng() * def.choices.length)];
+      const k = Math.floor(rng() * def.choices.length);
+      const pick = def.choices[k];
+      if (pick && typeof pick === 'object') { params[name] = k; Object.assign(params, pick); }
+      else params[name] = pick;
     } else {
       const step = def.step ?? 1;
       const n = Math.floor((def.max - def.min) / step + 1e-9) + 1;
@@ -51,10 +63,17 @@ export function prepareLevel(level, seed = testSeeds(level)[0]) {
   const num = (v, path) => { try { return evalNumber(v, params); } catch (e) { return where(path)(e); } };
   // settle / stall: seconds, "never" (→ Infinity) or absent (→ the referee's default)
   const seconds = (v, path) => (v === undefined ? undefined : v === 'never' ? Infinity : num(v, path));
-  const colour = (name, path) => {
-    if (!FLOOR_COLOURS[name]) throw new Error(`${level.id}: ${path}: colour "${name}" is not one of ${Object.keys(FLOOR_COLOURS).join(', ')}`);
-    return FLOOR_COLOURS[name];
+  // A colour: one of the 8 names, or a parameter holding one (e.g. `colour: c`).
+  const colourName = (name, path) => {
+    const n = typeof params[name] === 'string' ? params[name] : name;
+    if (!FLOOR_COLOURS[n]) throw new Error(`${level.id}: ${path}: colour "${n}" is not one of ${Object.keys(FLOOR_COLOURS).join(', ')}`);
+    return n;
   };
+  const colour = (name, path) => FLOOR_COLOURS[colourName(name, path)];
+  const text = (t, path) => { try { return interpolate(t, params); } catch (e) { return where(path)(e); } };
+  const fromVariant = (v) => typeof v === 'string' && (/\{/.test(v) || Object.prototype.hasOwnProperty.call(params, v));
+  // `when: <expression>` on a map item or zone: left out of this variant when it is 0.
+  const included = (entry, path) => entry.when === undefined || num(entry.when, `${path}.when`) !== 0;
 
   const map = level.map || {};
   const size = { w: num(map.size?.w ?? DEFAULT_SIZE.w, 'map.size.w'), h: num(map.size?.h ?? DEFAULT_SIZE.h, 'map.size.h') };
@@ -66,8 +85,9 @@ export function prepareLevel(level, seed = testSeeds(level)[0]) {
     }
   }
   (map.items || []).forEach((entry, i) => {
-    const [kind, d] = Object.entries(entry)[0];
+    const [kind, d] = Object.entries(entry).find(([k]) => k !== 'when') || [];
     const p = `map.items[${i}].${kind}`;
+    if (!included(entry, `map.items[${i}]`)) return;
     const shape = (o) => (o.r !== undefined
       ? { type: 'circle', cx: num(o.cx, `${p}.cx`), cy: num(o.cy, `${p}.cy`), r: num(o.r, `${p}.r`) }
       : { type: 'rect', x: num(o.x, `${p}.x`), y: num(o.y, `${p}.y`), w: num(o.w, `${p}.w`), h: num(o.h, `${p}.h`), angle: num(o.angle ?? 0, `${p}.angle`) });
@@ -93,6 +113,7 @@ export function prepareLevel(level, seed = testSeeds(level)[0]) {
   (level.zones || []).forEach((z, i) => {
     const p = `zones[${i}]`;
     if (!z.id) throw new Error(`${level.id}: ${p}: a zone needs an id`);
+    if (!included(z, p)) return;
     zones[z.id] = z.r !== undefined
       ? { id: z.id, label: z.label, type: 'circle', cx: num(z.cx, `${p}.cx`), cy: num(z.cy, `${p}.cy`), r: num(z.r, `${p}.r`) }
       : { id: z.id, label: z.label, type: 'rect', x: num(z.x, `${p}.x`), y: num(z.y, `${p}.y`), w: num(z.w, `${p}.w`), h: num(z.h, `${p}.h`) };
@@ -103,11 +124,43 @@ export function prepareLevel(level, seed = testSeeds(level)[0]) {
     const d = raw || {};
     const p = `goals[${i}].${type}`;
     if (!GOAL_TYPES.includes(type)) throw new Error(`${level.id}: ${p}: unknown goal (${GOAL_TYPES.join(', ')})`);
-    if ((type === 'reachZone' || type === 'robotStoppedIn')) {
-      if (!zones[d.zone]) throw new Error(`${level.id}: ${p}: no zone "${d.zone}"`);
-      if (d.probe && !PROBES.includes(d.probe)) throw new Error(`${level.id}: ${p}: probe must be ${PROBES.join(' or ')}`);
+    const zoneRef = (z, probe, path) => {
+      if (!zones[z]) throw new Error(`${level.id}: ${path}: no zone "${z}"`);
+      if (probe && !PROBES.includes(probe)) throw new Error(`${level.id}: ${path}: probe must be ${PROBES.join(' or ')}`);
+    };
+    if (type === 'reachZone' || type === 'robotStoppedIn' || type === 'stayIn') zoneRef(d.zone, d.probe, p);
+    if (type === 'ledColour') return { type, ...d, colour: colourName(d.colour, `${p}.colour`), secret: fromVariant(d.colour) };
+    if (type === 'displayShows') {
+      if ([d.text, d.number, d.any].filter((x) => x !== undefined).length !== 1) throw new Error(`${level.id}: ${p}: give one of text, number, any`);
+      if (d.any) return { type, ...d };
+      if (d.text !== undefined) return { type, ...d, text: text(d.text, `${p}.text`), secret: fromVariant(d.text) };
+      // number ± tolerance; may use the run's values, so it is worked out when judged
+      const run = Object.fromEntries(RUN_VALUES.map((n) => [n, 0]));
+      try { evalNumber(d.number, { ...params, ...run }); } catch (e) { where(`${p}.number`)(e); }
+      const usesRun = exprNames(d.number).some((n) => RUN_VALUES.includes(n));
+      return { type, ...d, tolerance: num(d.tolerance ?? 0, `${p}.tolerance`), params,
+        expected: usesRun ? undefined : num(d.number, `${p}.number`), secret: true };
     }
-    if (type === 'ledColour') colour(d.colour, `${p}.colour`);
+    if (type === 'tonePlayed') {
+      return { type, ...d, frequency: d.frequency === undefined ? undefined : num(d.frequency, `${p}.frequency`),
+        duration: d.duration === undefined ? undefined : num(d.duration, `${p}.duration`),
+        tolerance: num(d.tolerance ?? 1, `${p}.tolerance`) };
+    }
+    if (type === 'sequence') {
+      const once = (d.steps || []).map((st, j) => {
+        const sp = `${p}.steps[${j}]`;
+        const kind = STEP_KINDS.find((k) => st && st[k] !== undefined);
+        if (!kind) throw new Error(`${level.id}: ${sp}: a step is one of ${STEP_KINDS.join(', ')}`);
+        if (kind === 'display') return { kind, text: text(st.display, `${sp}.display`) };
+        if (kind === 'leds') return { kind, colour: st.leds === 'off' ? 'off' : colourName(st.leds, `${sp}.leds`) };
+        if (kind === 'tone') return { kind, frequency: num(st.tone, `${sp}.tone`), tolerance: num(st.tolerance ?? 1, `${sp}.tolerance`) };
+        zoneRef(st.zone, st.probe, sp);
+        return { kind, zone: st.zone, probe: st.probe };
+      });
+      if (!once.length) throw new Error(`${level.id}: ${p}: steps must not be empty`);
+      const times = num(d.times ?? 1, `${p}.times`);
+      return { type, label: d.label, times, pattern: once, steps: Array.from({ length: times }, () => once).flat() };
+    }
     return { type, ...d };
   });
   if (!goals.length) throw new Error(`${level.id}: at least one goal is required`);

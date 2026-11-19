@@ -1,0 +1,23 @@
+# World 2: text on the display. Any text but the block's default "Hallo" counts.
+id: "02-03"
+world: 2
+kind: core
+title: O meu nome
+objective: Escreve o teu nome no ecrã do robô.
+concepts: [ecrã, texto]
+toolbox: beginner
+timeLimit: 10
+
+spawn: { x: 100, y: 61.25, heading: 0 }
+
+goals:
+  - displayShows: { any: true, label: Escrever o teu nome no ecrã }
+
+solution: |
+  robotAPI.println("Ana");
+
+antiSolutions:
+  - name: o texto do bloco
+    why: O bloco vem com «Hallo»; é preciso escrever o nome.
+    code: |
+      robotAPI.println("Hallo");
