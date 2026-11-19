@@ -63,7 +63,7 @@ export function loadLevel(id, seedIndex = 0) {
   oc.getContext('2d').putImageData(new ImageData(imageData, widthPx, heightPx), 0, 0);
   const p = state.prepared;
   const mapInfo = { width: p.size.w, height: p.size.h, spawnX: p.spawn.x, spawnY: p.spawn.y,
-    spawnHeading: p.spawn.theta, imageData, offscreenCanvas: oc };
+    spawnHeading: p.spawn.theta, imageData, offscreenCanvas: oc, openEdge: p.board };
   setMapData(mapInfo);
   resizeCanvas(mapInfo);
   respawnRobot(mapInfo);

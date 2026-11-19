@@ -1,6 +1,7 @@
 # World 5 Prova (random course P1 "Linha livre"): a track with smooth curves AND sharp
 # corners, to the red end patch. Four hand-drawn tracks (layouts); checkpoints in
 # order prove the robot followed the line; it must stop with its front on the red.
+# On two course boards (140 × 100 cm, decision 0018).
 id: "05-12"
 world: 5
 kind: challenge
@@ -16,46 +17,49 @@ variants:
     layout: { choices: [volta, zigue, cotovelo, laco] }
   seeds: [7, 12, 1, 4]   # one per track: volta, zigue, cotovelo, laco
 
+map:
+  board: 2   # two course sheets, 140 × 100 cm (decision 0018)
+
 layouts:
   volta:
-    spawn: { x: 22, y: 100, heading: 0 }
+    spawn: { x: 16, y: 80, heading: 0 }
     items:
-      - line: { smooth: true, points: [[20, 100], [60, 100], [95, 82], [110, 50]] }
-      - line: { points: [[110, 50], [110, 25], [160, 25], [160, 88]] }
-      - patch: { x: 155, y: 85, w: 10, h: 10, colour: red }
+      - line: { smooth: true, points: [[14, 80], [42, 80], [66, 66], [77, 40]] }
+      - line: { points: [[77, 40], [77, 20], [112, 20], [112, 70]] }
+      - patch: { x: 107, y: 67, w: 10, h: 10, colour: red }
     zones:
-      - { id: c1, cx: 95, cy: 82, r: 10 }
-      - { id: c2, cx: 160, cy: 25, r: 10 }
-      - { id: fim, label: quadrado vermelho, x: 155, y: 85, w: 10, h: 10 }
+      - { id: c1, cx: 66, cy: 66, r: 10 }
+      - { id: c2, cx: 112, cy: 20, r: 10 }
+      - { id: fim, label: quadrado vermelho, x: 107, y: 67, w: 10, h: 10 }
   zigue:
-    spawn: { x: 22, y: 25, heading: 0 }
+    spawn: { x: 16, y: 20, heading: 0 }
     items:
-      - line: { points: [[20, 25], [70, 25], [70, 70]] }
-      - line: { smooth: true, points: [[70, 70], [72, 88], [100, 100], [140, 92], [168, 62]] }
-      - patch: { x: 163, y: 52, w: 10, h: 10, colour: red }
+      - line: { points: [[14, 20], [49, 20], [49, 56]] }
+      - line: { smooth: true, points: [[49, 56], [50, 70], [70, 80], [98, 74], [118, 50]] }
+      - patch: { x: 113, y: 42, w: 10, h: 10, colour: red }
     zones:
-      - { id: c1, cx: 70, cy: 25, r: 10 }
-      - { id: c2, cx: 100, cy: 100, r: 10 }
-      - { id: fim, label: quadrado vermelho, x: 163, y: 52, w: 10, h: 10 }
+      - { id: c1, cx: 49, cy: 20, r: 10 }
+      - { id: c2, cx: 70, cy: 80, r: 10 }
+      - { id: fim, label: quadrado vermelho, x: 113, y: 42, w: 10, h: 10 }
   cotovelo:
-    spawn: { x: 22, y: 61, heading: 0 }
+    spawn: { x: 16, y: 49, heading: 0 }
     items:
-      - line: { smooth: true, points: [[20, 61], [60, 61], [88, 58], [115, 38], [140, 35]] }
-      - line: { points: [[140, 35], [172, 35], [172, 92]] }
-      - patch: { x: 167, y: 90, w: 10, h: 10, colour: red }
+      - line: { smooth: true, points: [[14, 49], [42, 49], [62, 46], [80, 30], [98, 28]] }
+      - line: { points: [[98, 28], [120, 28], [120, 74]] }
+      - patch: { x: 115, y: 72, w: 10, h: 10, colour: red }
     zones:
-      - { id: c1, cx: 115, cy: 38, r: 10 }
-      - { id: c2, cx: 172, cy: 35, r: 10 }
-      - { id: fim, label: quadrado vermelho, x: 167, y: 90, w: 10, h: 10 }
+      - { id: c1, cx: 80, cy: 30, r: 10 }
+      - { id: c2, cx: 120, cy: 28, r: 10 }
+      - { id: fim, label: quadrado vermelho, x: 115, y: 72, w: 10, h: 10 }
   laco:
-    spawn: { x: 22, y: 100, heading: 0 }
+    spawn: { x: 16, y: 80, heading: 0 }
     items:
-      - line: { points: [[20, 100], [150, 100], [150, 30], [60, 30], [60, 62]] }
-      - patch: { x: 55, y: 60, w: 10, h: 10, colour: red }
+      - line: { points: [[14, 80], [105, 80], [105, 24], [42, 24], [42, 50]] }
+      - patch: { x: 37, y: 48, w: 10, h: 10, colour: red }
     zones:
-      - { id: c1, cx: 150, cy: 100, r: 10 }
-      - { id: c2, cx: 60, cy: 30, r: 10 }
-      - { id: fim, label: quadrado vermelho, x: 55, y: 60, w: 10, h: 10 }
+      - { id: c1, cx: 105, cy: 80, r: 10 }
+      - { id: c2, cx: 42, cy: 24, r: 10 }
+      - { id: fim, label: quadrado vermelho, x: 37, y: 48, w: 10, h: 10 }
 
 goals:
   - sequence: { label: Seguir a linha, steps: [{ zone: c1 }, { zone: c2 }] }

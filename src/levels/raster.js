@@ -77,6 +77,6 @@ export function levelMap(prepared) {
   return {
     width: prepared.size.w, height: prepared.size.h,
     spawnX: prepared.spawn.x, spawnY: prepared.spawn.y, spawnHeading: prepared.spawn.theta,
-    imageData, widthPx, heightPx,
+    imageData, widthPx, heightPx, openEdge: !!prepared.board,
   };
 }

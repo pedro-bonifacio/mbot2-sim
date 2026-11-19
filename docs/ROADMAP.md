@@ -23,6 +23,9 @@ Last reviewed: 2026-11-19 (sixth session)
 - **Teacher, looks only:** play World 2 and the five others; are the goal wordings clear
   ("Mostrar a palavra certa no ecrã", "Por esta ordem: LEDs a verde → …")? Also the line
   tracks of 05-04/05/12: do the blue checkpoint circles help or distract?
+- **Course boards** ([0018](decisions/0018-courses-on-fixed-boards.md)): the teacher builds courses on
+  K-line sheets (70 × 100 cm, 1–3 per course). Levels: `map: { board: 1 | 2 | 3 }` — no
+  wall at the edge, driving off fails. 05-08 (1 sheet) and 05-12 (2 sheets) moved onto boards.
 - Next build steps: generators (maze, box scatter) → ★★★ → keys in tests → pushable boxes.
 
 **State before this session:** everything was on `main` **and pushed**; the site is live at https://mbot2.pbonifacio.dev

@@ -1,6 +1,7 @@
 # World 5: P3 "Ficar no ringue". stayIn: the robot's centre must never leave the ring
 # (its outer edge) and the run only passes at the time limit; a robot that stops
-# stalls after 5 s, one that never moves fails at the limit.
+# stalls after 5 s, one that never moves fails at the limit. On one course board
+# (decision 0018): no walls, as on the table.
 id: "05-08"
 world: 5
 kind: core
@@ -13,18 +14,19 @@ timeLimit: 30
 
 variants:
   params:
-    w: { min: 100, max: 160, step: 10 }
-    h: { min: 70, max: 100, step: 10 }
-  seeds: [1, 2, 3, 4]
+    w: { min: 70, max: 90, step: 5 }
+    h: { min: 50, max: 60, step: 5 }
+  seeds: [5, 7, 9, 4, 18, 30]   # small and large rings, wide and tall
 
 map:
+  board: 1
   items:
-    - line: { points: [[100 - w / 2, 61.25 - h / 2], [100 + w / 2, 61.25 - h / 2], [100 + w / 2, 61.25 + h / 2], [100 - w / 2, 61.25 + h / 2], [100 - w / 2, 61.25 - h / 2]], width: 2, colour: black }
+    - line: { points: [[50 - w / 2, 35 - h / 2], [50 + w / 2, 35 - h / 2], [50 + w / 2, 35 + h / 2], [50 - w / 2, 35 + h / 2], [50 - w / 2, 35 - h / 2]], width: 2, colour: black }
 
-spawn: { x: 100, y: 61.25, heading: 20 }
+spawn: { x: 50, y: 35, heading: 20 }
 
 zones:
-  - { id: ringue, x: 100 - w / 2 - 1, y: 61.25 - h / 2 - 1, w: w + 2, h: h + 2 }
+  - { id: ringue, x: 50 - w / 2 - 1, y: 35 - h / 2 - 1, w: w + 2, h: h + 2 }
 
 goals:
   - stayIn: { zone: ringue }

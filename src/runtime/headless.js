@@ -48,7 +48,7 @@ export function relativePose(map, x = robot.x, y = robot.y, theta = robot.theta)
  *   referee: a level referee (src/levels/referee.js); its verdict ends the run
  */
 export function runHeadless({ code, map, maxSeconds = 60, keys = [], sampleEvery = 0, seed = 1, referee = null }) {
-  setMapData({ imageData: map.imageData, width: map.width, height: map.height,
+  setMapData({ imageData: map.imageData, width: map.width, height: map.height, openEdge: map.openEdge,
     offscreenCanvas: { width: map.widthPx, height: map.heightPx } });
   respawnRobot(map);
   resetClock();

@@ -216,6 +216,10 @@ export function createReferee(prepared) {
 
       if (robot.collided || ended === 'collision') return decide(false, timeS, 'collision', results);
       if (broken.size) return decide(false, timeS, 'leftZone', results);
+      // A board (decision 0018): driving off it — the robot's centre past the edge — fails.
+      if (prepared.board && (robot.x < 0 || robot.y < 0 || robot.x > prepared.size.w || robot.y > prepared.size.h)) {
+        return decide(false, timeS, 'offBoard', results);
+      }
       if (all && (ended || restedS >= settleS)) return decide(true, timeS, ended ? 'ended' : 'settled', results);
       if (ended) return decide(false, timeS, ended, results);
       if (!all && moved && restedS >= stallS) return decide(false, timeS, 'stalled', results);

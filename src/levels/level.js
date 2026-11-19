@@ -6,6 +6,9 @@ import { createRng } from '../sim/random.js';
 // RGB. The rasteriser, the referee and the browser only ever see prepared levels.
 
 export const DEFAULT_SIZE = { w: 200, h: 122.5 };   // cm: the standard 1600 × 980 px arena
+// Course boards (decision 0018): K-line sheets of 100 × 70 cm, 1 to 3 per course,
+// joined along their long sides. `board: true` = 1 sheet. Other arrangements: `size`.
+export const BOARD_SIZES = { 1: { w: 100, h: 70 }, 2: { w: 140, h: 100 }, 3: { w: 210, h: 100 } };
 export const DEFAULT_TIME_LIMIT_S = 60;
 const BORDER_CM = 1;                                // ≥ 0.625 cm, the minimum wall
 
@@ -113,9 +116,13 @@ export function prepareLevel(level, seed = testSeeds(level)[0]) {
   }
 
   const map = level.map || {};
-  const size = { w: num(map.size?.w ?? DEFAULT_SIZE.w, 'map.size.w'), h: num(map.size?.h ?? DEFAULT_SIZE.h, 'map.size.h') };
+  const sheets = map.board === true ? 1 : (map.board || 0);
+  if (sheets && !BOARD_SIZES[sheets]) throw new Error(`${level.id}: map.board: true, 1, 2 or 3 (sheets)`);
+  const board = sheets > 0;
+  const defSize = board ? BOARD_SIZES[sheets] : DEFAULT_SIZE;
+  const size = { w: num(map.size?.w ?? defSize.w, 'map.size.w'), h: num(map.size?.h ?? defSize.h, 'map.size.h') };
   const items = [];
-  if (map.border !== false) {
+  if (map.border ?? !board) {
     const b = BORDER_CM;
     for (const [x, y, w, h] of [[0, 0, size.w, b], [0, size.h - b, size.w, b], [0, 0, b, size.h], [size.w - b, 0, b, size.h]]) {
       items.push({ type: 'rect', x, y, w, h, angle: 0, rgb: WALL_RGB, wall: true, border: true });
@@ -212,7 +219,7 @@ export function prepareLevel(level, seed = testSeeds(level)[0]) {
 
   return {
     id: level.id, title: level.title, objective: level.objective, seed, params, layout: layout?.name,
-    timeLimitS: num(level.timeLimit ?? DEFAULT_TIME_LIMIT_S, 'timeLimit'),
+    board, timeLimitS: num(level.timeLimit ?? DEFAULT_TIME_LIMIT_S, 'timeLimit'),
     settleS: seconds(level.settle, 'settle'), stallS: seconds(level.stall, 'stall'),
     size, items, spawn, zones, goals,
   };

@@ -44,6 +44,14 @@
     { "name": "stayIn: leaving the zone fails at once, before the time limit",
       "level": "05-08",
       "code": "robotAPI.drive(\"FOREWARD\", 40);\nwhile (true) {}",
-      "expect": { "passed": false, "reason": "leftZone", "beforeS": 10 } }
+      "expect": { "passed": false, "reason": "leftZone", "beforeS": 10 } },
+    { "name": "on a board, driving off the edge fails (no wall there: no collision)",
+      "level": "05-08", "patch": { "goals": ["noCollision"] },
+      "code": "robotAPI.drive(\"FOREWARD\", 40);\nwhile (true) {}",
+      "expect": { "passed": false, "reason": "offBoard" } },
+    { "name": "on a board, the ultrasonic sees nothing beyond the edge",
+      "level": "05-08", "patch": { "goals": [{ "displayShows": { "text": "300" } }] },
+      "code": "robotAPI.println(robotAPI.ultrasonic());",
+      "expect": { "passed": true, "reason": "ended" } }
   ]
 }

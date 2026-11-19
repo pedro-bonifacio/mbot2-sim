@@ -219,7 +219,7 @@
           "type": "object",
           "properties": {"w": {"$ref": "#/definitions/num"}, "h": {"$ref": "#/definitions/num"}}
         },
-        "border": {"type": "boolean", "description": "1 cm wall around the arena (default true)"},
+        "board": {"enum": [true, 1, 2, 3], "description": "a course board of 1–3 K-line sheets (decision 0018): default size 100 × 70 (true or 1), 140 × 100 (2), 210 × 100 (3); no wall at the edge (the ultrasonic sees nothing beyond it), the robot's centre leaving it fails"}, "border": {"type": "boolean", "description": "1 cm wall around the arena (default true; false on a board)"},
         "items": {"$ref": "#/definitions/mapItems"}
       }
     },

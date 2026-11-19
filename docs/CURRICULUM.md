@@ -56,8 +56,10 @@ which toolbox it opens with; the student can still switch.
 ## Random courses (evaluation)
 
 Evaluation is on the real robot ([0008](decisions/0008-evaluation-on-physical-robot.md)).
-The teacher builds the course **at random** each time, from black tape, coloured paper and
-boxes. A program only passes if it adapts: no hard-coded distances, turns or counts.
+Each course is built on **K-line boards** of 70 × 100 cm (1–3 sheets, one course per side,
+tape stuck on, marked obstacle positions; [0018](decisions/0018-courses-on-fixed-boards.md));
+the teacher varies boxes, start and direction on the day. A program only passes if it
+adapts: no hard-coded distances, turns or counts. Provas use `map: { board: N }`.
 The robot has **one forward-facing ultrasonic sensor**: to see sideways it must turn and look.
 
 | # | Course | The teacher builds | The robot must | Tier | Sim Prova |

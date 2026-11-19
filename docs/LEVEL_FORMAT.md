@@ -45,6 +45,10 @@ variants:                  # optional: omit for levels with one fixed layout
 map:
   size: { w: 200, h: 122.5 }   # cm, the default
   border: true                 # 1 cm wall round the arena, the default
+  # board: 1                   # instead: a course board (decision 0018), 1–3 sheets:
+                               #   100 × 70, 140 × 100, 210 × 100 cm; no wall at the edge,
+                               #   the ultrasonic sees nothing beyond it, the robot's centre
+                               #   leaving it fails the run (reason offBoard)
   items:                       # painted in order, later on top
     - wall:  { x: wallX, y: 1, w: 4, h: 120.5 }          # magenta: robot collides
     - box:   { x: 50, y: 20, w: 15, h: 15, angle: 30 }   # same as wall (a physical object)

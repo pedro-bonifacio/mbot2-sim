@@ -27,6 +27,9 @@ let mapHeightPx = 0;     // native pixel height
 let mapWidthCm  = 0;     // world width in cm (= mapWidthPx / DISPLAY_SCALE)
 let mapHeightCm = 0;     // world height in cm
 let offscreenCanvas = null;
+// A board map (a level with `map: { board: true }`, decision 0018): nothing beyond the
+// edge — not a wall for collision or the ultrasonic; the table is drawn around it.
+let openEdge = false;
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
@@ -35,7 +38,8 @@ let offscreenCanvas = null;
  * as the active map. Replaces any previously loaded map.
  * width and height are in cm; pixel dimensions are read from the offscreen canvas.
  */
-export function setMapData({ imageData, width, height, offscreenCanvas: oc }) {
+export function setMapData({ imageData, width, height, offscreenCanvas: oc, openEdge: open = false }) {
+  openEdge        = !!open;
   pixels          = imageData;
   mapWidthPx      = oc.width;   // native pixel dims for pixel-index bounds checking
   mapHeightPx     = oc.height;
@@ -123,7 +127,7 @@ export function isObstacle(xCm, yCm) {
   if (!pixels) return false;
   const xPx = Math.floor(xCm * DISPLAY_SCALE); // cm → px for pixel sampling
   const yPx = Math.floor(yCm * DISPLAY_SCALE);
-  if (xPx < 0 || yPx < 0 || xPx >= mapWidthPx || yPx >= mapHeightPx) return true;
+  if (xPx < 0 || yPx < 0 || xPx >= mapWidthPx || yPx >= mapHeightPx) return !openEdge;
   return getColorNameAt(xCm, yCm) === 'magenta';
 }
 
@@ -153,12 +157,13 @@ export function drawMap(ctx) {
   ctx.drawImage(shown, 0, 0, mapWidthCm * PX_PER_CM, mapHeightCm * PX_PER_CM);
 }
 
-/** Fills the world-px rectangle with the wall bricks (what lies outside the map). */
+/** Fills the world-px rectangle with what lies outside the map: wall bricks, or the table round a board. */
 let pattern = null, patternCtx = null;
+const TABLE_COLOUR = '#c9b79c';
 export function drawOutside(ctx, x, y, w, h) {
   if (patternCtx !== ctx) { pattern = wallPattern(ctx); patternCtx = ctx; }
   ctx.save();
-  ctx.fillStyle = pattern;
+  ctx.fillStyle = openEdge ? TABLE_COLOUR : pattern;
   ctx.fillRect(x, y, w, h);
   ctx.restore();
 }
