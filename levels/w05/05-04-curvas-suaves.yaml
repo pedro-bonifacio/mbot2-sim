@@ -1,0 +1,79 @@
+# World 5: first line follower, smooth curves only (the middle probes L1 and R1 are
+# enough). Each variant draws one of three tracks (layouts, smooth lines through
+# waypoints); checkpoints in order prove the robot followed the line. settle: 0 —
+# passes on reaching the end, even while the follower keeps going.
+id: "05-04"
+world: 5
+kind: core
+title: Curvas suaves
+objective: Segue a linha preta até ao fim, usando os dois sensores do meio (L1 e R1) - se um deles sair da linha, vira para o lado do outro. O percurso muda de variante para variante.
+concepts: [seguir a linha]
+assumes: [sensor de cor, se/senão, repetir para sempre]
+toolbox: beginner
+timeLimit: 60
+settle: 0
+
+variants:
+  params:
+    layout: { choices: [onda, gancho, serpente] }
+  seeds: [7, 1, 2]   # one per track: onda, gancho, serpente
+
+layouts:
+  onda:
+    spawn: { x: 22, y: 61, heading: 0 }
+    items:
+      - line: { smooth: true, points: [[20, 61], [45, 61], [75, 30], [105, 61], [135, 92], [165, 61], [182, 61]] }
+    zones:
+      - { id: c1, cx: 75, cy: 30, r: 10 }
+      - { id: c2, cx: 135, cy: 92, r: 10 }
+      - { id: fim, label: fim da linha, cx: 182, cy: 61, r: 10 }
+  gancho:
+    spawn: { x: 22, y: 100, heading: 0 }
+    items:
+      - line: { smooth: true, points: [[20, 100], [70, 100], [130, 95], [165, 65], [150, 30], [100, 25], [60, 35]] }
+    zones:
+      - { id: c1, cx: 130, cy: 95, r: 10 }
+      - { id: c2, cx: 150, cy: 30, r: 10 }
+      - { id: fim, label: fim da linha, cx: 60, cy: 35, r: 10 }
+  serpente:
+    spawn: { x: 22, y: 25, heading: 0 }
+    items:
+      - line: { smooth: true, points: [[20, 25], [60, 25], [85, 50], [60, 75], [85, 100], [130, 100], [160, 70], [180, 40]] }
+    zones:
+      - { id: c1, cx: 85, cy: 50, r: 10 }
+      - { id: c2, cx: 85, cy: 100, r: 10 }
+      - { id: fim, label: fim da linha, cx: 180, cy: 40, r: 10 }
+
+goals:
+  - sequence: { label: Seguir a linha até ao fim, steps: [{ zone: c1 }, { zone: c2 }, { zone: fim }] }
+  - noCollision
+
+solution: |
+  while (true) {
+    if (robotAPI.quadrgb("COLOUR", "L1") != "#000000") {
+      robotAPI.turn("RIGHT", 20);
+    } else if (robotAPI.quadrgb("COLOUR", "R1") != "#000000") {
+      robotAPI.turn("LEFT", 20);
+    } else {
+      robotAPI.drive("FOREWARD", 30);
+    }
+  }
+
+antiSolutions:
+  - name: sempre em frente
+    why: Sem olhar para a linha, sai dela na primeira curva.
+    code: |
+      robotAPI.drive("FOREWARD", 30);
+      while (true) {}
+  - name: lados trocados
+    why: Quando o sensor da esquerda sai da linha, vira para a esquerda - e afasta-se ainda mais.
+    code: |
+      while (true) {
+        if (robotAPI.quadrgb("COLOUR", "L1") != "#000000") {
+          robotAPI.turn("LEFT", 20);
+        } else if (robotAPI.quadrgb("COLOUR", "R1") != "#000000") {
+          robotAPI.turn("RIGHT", 20);
+        } else {
+          robotAPI.drive("FOREWARD", 30);
+        }
+      }

@@ -162,8 +162,8 @@ world). For now a Prova is `kind: challenge` with a title starting "Prova:". Tit
 | 05-01 | C | Parar na linha | stop on the black line, LEDs green (exists) | |
 | 05-02 | C | Da mesma cor | drive onto a patch (red/green/blue): LEDs the same colour | **built** |
 | 05-03 | C | Seguir a borda | follow a straight line's edge with one probe | |
-| 05-04 | C | Curvas suaves | follow a curvy line with two probes | layout choice |
-| 05-05 | C | Curvas de 90° | sharp corners need the outer probes | layout choice |
+| 05-04 | C | Curvas suaves | follow a curvy line with two probes | **built** |
+| 05-05 | C | Curvas de 90° | sharp corners need the outer probes | **built** |
 | 05-06 | C | Fim da linha | follow until the red patch, stop | |
 | 05-07 | C | Contar riscas | stop on the 3rd black stripe, random spacing (repeat 3: until black, until white) | |
 | 05-08 | C | Ficar no ringue | P3: bounce inside a black border for 30 s | **built** |
@@ -172,7 +172,7 @@ world). For now a Prova is `kind: challenge` with a title starting "Prova:". Tit
 | 05-13 | B | O segundo verde | stop on the 2nd green patch, random spacing, red patches in between (no variables: repeat 2) | |
 | 05-14 | B | O robô não pára! | find the bug: opens with a `repeat forever` whose stop never lasts (a real student program) | **built** |
 | 05-11 | D | Volta rápida | a line lap, ★★★ under N seconds | ★★★ |
-| 05-12 | P | Linha livre | P1: a random track, to the red end | layout choice |
+| 05-12 | P | Linha livre | P1: a random track, to the red end | **built** |
 
 ### World 6 — Decisões (AND/OR, nesting, junctions, mazes)
 
@@ -255,9 +255,8 @@ In build order (most levels unblocked first):
 
 1. ~~**Goal values from variants**~~ — done 2026-11-19 (text/colour parameters, cases,
    `when:`, numbers ± tolerance with `drivenCm` / `movingS`; decision 0017).
-2. **Layout choice:** a `choices` param that picks one of several hand-drawn item lists
-   (random line tracks: 05-04/05/12, 08-x, 09-04/08, 10-01). Cases + `when:` already
-   cover small layouts; whole tracks still need this.
+2. ~~**Layout choice**~~ — done 2026-11-19: `layouts:` picked by the `layout` parameter,
+   `line: { smooth: true }` (05-04, 05-05, 05-12 built; 08-x, 09-04/08, 10-01 can use it).
 3. **Generators:** a seeded **maze** (tape or walls, grid size, cell cm) and **box scatter**
    (count, size, minimum gap, keep a path open): 06-05/06/08/09/10, 09-06/07, 10-03.
 4. ~~**Event goals**~~ — done 2026-11-19: `tonePlayed`, `sequence`, `stayIn` (decision 0017).

@@ -53,7 +53,7 @@ map:
     - arc:   { cx: 100, cy: 61, r: 40, from: 0, to: 180, width: 2, colour: black }
     - { when: n >= 3, patch: { x: 80, y: 30, w: 3, h: 60, colour: c } }   # only when n ≥ 3; colour from a parameter
 
-spawn: { x: 30, y: 61.25, heading: 0 }
+spawn: { x: 30, y: 61.25, heading: 0 }   # optional when every layout has one
 
 zones:                     # referee-only areas: drawn as a blue overlay, invisible to sensors
   - { id: perto, label: perto da parede, x: wallX - 15, y: 1, w: 12, h: 120.5 }   # or cx, cy, r
@@ -77,6 +77,32 @@ antiSolutions:             # tempting but wrong: each must fail at least one see
     code: |
       robotAPI.drive_for("FOREWARD", 30, 80);
 ```
+
+### Layouts: one of several hand-drawn maps per variant
+
+For tracks that cannot be one shape with moving numbers (line-following courses), list
+named `layouts` and pick one with a text parameter called `layout`:
+
+```yaml
+variants:
+  params:
+    layout: { choices: [onda, gancho] }   # each seed picks one (choose seeds that cover all)
+  seeds: [7, 1]
+layouts:
+  onda:
+    spawn: { x: 22, y: 61, heading: 0 }   # replaces the level's spawn
+    items:                                # painted after map.items
+      - line: { smooth: true, points: [[20, 61], [45, 61], [75, 30], [105, 61]] }
+    zones:                                # join the level's zones (same id: the layout's wins)
+      - { id: fim, cx: 105, cy: 61, r: 10 }
+  gancho: { … }
+```
+
+Goals refer to zone ids every layout defines (`c1`, `c2`, `fim`). Layout items may use
+the other parameters too. `line: { smooth: true }` draws a smooth curve through the
+points (a track from a few waypoints); without it, straight segments with sharp corners.
+For "follow the line to the end" give checkpoints in a `sequence` and `settle: 0`: the
+run passes the moment the last step is seen, even though the follower keeps moving.
 
 ### Coordinates and units
 

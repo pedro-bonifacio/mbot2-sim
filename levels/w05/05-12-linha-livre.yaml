@@ -1,0 +1,118 @@
+# World 5 Prova (random course P1 "Linha livre"): a track with smooth curves AND sharp
+# corners, to the red end patch. Four hand-drawn tracks (layouts); checkpoints in
+# order prove the robot followed the line; it must stop with its front on the red.
+id: "05-12"
+world: 5
+kind: challenge
+title: "Prova: Linha livre"
+objective: Segue a linha preta - com curvas suaves e curvas apertadas - até ao quadrado vermelho e pára em cima dele, com a frente do robô (o anel amarelo). O percurso muda de variante para variante, como na prova com o robô a sério.
+concepts: [seguir a linha, sensores de fora, esperar até]
+assumes: [seguir a linha]
+toolbox: beginner
+timeLimit: 60
+
+variants:
+  params:
+    layout: { choices: [volta, zigue, cotovelo, laco] }
+  seeds: [7, 12, 1, 4]   # one per track: volta, zigue, cotovelo, laco
+
+layouts:
+  volta:
+    spawn: { x: 22, y: 100, heading: 0 }
+    items:
+      - line: { smooth: true, points: [[20, 100], [60, 100], [95, 82], [110, 50]] }
+      - line: { points: [[110, 50], [110, 25], [160, 25], [160, 88]] }
+      - patch: { x: 155, y: 85, w: 10, h: 10, colour: red }
+    zones:
+      - { id: c1, cx: 95, cy: 82, r: 10 }
+      - { id: c2, cx: 160, cy: 25, r: 10 }
+      - { id: fim, label: quadrado vermelho, x: 155, y: 85, w: 10, h: 10 }
+  zigue:
+    spawn: { x: 22, y: 25, heading: 0 }
+    items:
+      - line: { points: [[20, 25], [70, 25], [70, 70]] }
+      - line: { smooth: true, points: [[70, 70], [72, 88], [100, 100], [140, 92], [168, 62]] }
+      - patch: { x: 163, y: 52, w: 10, h: 10, colour: red }
+    zones:
+      - { id: c1, cx: 70, cy: 25, r: 10 }
+      - { id: c2, cx: 100, cy: 100, r: 10 }
+      - { id: fim, label: quadrado vermelho, x: 163, y: 52, w: 10, h: 10 }
+  cotovelo:
+    spawn: { x: 22, y: 61, heading: 0 }
+    items:
+      - line: { smooth: true, points: [[20, 61], [60, 61], [88, 58], [115, 38], [140, 35]] }
+      - line: { points: [[140, 35], [172, 35], [172, 92]] }
+      - patch: { x: 167, y: 90, w: 10, h: 10, colour: red }
+    zones:
+      - { id: c1, cx: 115, cy: 38, r: 10 }
+      - { id: c2, cx: 172, cy: 35, r: 10 }
+      - { id: fim, label: quadrado vermelho, x: 167, y: 90, w: 10, h: 10 }
+  laco:
+    spawn: { x: 22, y: 100, heading: 0 }
+    items:
+      - line: { points: [[20, 100], [150, 100], [150, 30], [60, 30], [60, 62]] }
+      - patch: { x: 55, y: 60, w: 10, h: 10, colour: red }
+    zones:
+      - { id: c1, cx: 150, cy: 100, r: 10 }
+      - { id: c2, cx: 60, cy: 30, r: 10 }
+      - { id: fim, label: quadrado vermelho, x: 55, y: 60, w: 10, h: 10 }
+
+goals:
+  - sequence: { label: Seguir a linha, steps: [{ zone: c1 }, { zone: c2 }] }
+  - robotStoppedIn: { zone: fim, probe: front }
+  - noCollision
+
+solution: |
+  while (!(robotAPI.quadrgb("COLOUR", "L1") == "#cc0000" || robotAPI.quadrgb("COLOUR", "R1") == "#cc0000")) {
+    if (robotAPI.quadrgb("COLOUR", "L2") == "#000000") {
+      robotAPI.drive_for("FOREWARD", 30, 4);
+      robotAPI.turn("LEFT", 20);
+      while (!(robotAPI.quadrgb("COLOUR", "R1") == "#000000")) {}
+    } else if (robotAPI.quadrgb("COLOUR", "R2") == "#000000") {
+      robotAPI.drive_for("FOREWARD", 30, 4);
+      robotAPI.turn("RIGHT", 20);
+      while (!(robotAPI.quadrgb("COLOUR", "L1") == "#000000")) {}
+    } else if (robotAPI.quadrgb("COLOUR", "L1") == "#ffffff") {
+      robotAPI.turn("RIGHT", 20);
+    } else if (robotAPI.quadrgb("COLOUR", "R1") == "#ffffff") {
+      robotAPI.turn("LEFT", 20);
+    } else {
+      robotAPI.drive("FOREWARD", 30);
+    }
+  }
+  robotAPI.drive_stop();
+
+antiSolutions:
+  - name: não pára no vermelho
+    why: Segue bem a linha mas nunca olha para o vermelho.
+    code: |
+      while (true) {
+        if (robotAPI.quadrgb("COLOUR", "L2") == "#000000") {
+          robotAPI.drive_for("FOREWARD", 30, 4);
+          robotAPI.turn("LEFT", 20);
+          while (!(robotAPI.quadrgb("COLOUR", "R1") == "#000000")) {}
+        } else if (robotAPI.quadrgb("COLOUR", "R2") == "#000000") {
+          robotAPI.drive_for("FOREWARD", 30, 4);
+          robotAPI.turn("RIGHT", 20);
+          while (!(robotAPI.quadrgb("COLOUR", "L1") == "#000000")) {}
+        } else if (robotAPI.quadrgb("COLOUR", "L1") == "#ffffff") {
+          robotAPI.turn("RIGHT", 20);
+        } else if (robotAPI.quadrgb("COLOUR", "R1") == "#ffffff") {
+          robotAPI.turn("LEFT", 20);
+        } else {
+          robotAPI.drive("FOREWARD", 30);
+        }
+      }
+  - name: só curvas suaves
+    why: O seguidor de 05-04 perde-se nas curvas apertadas.
+    code: |
+      while (!(robotAPI.quadrgb("COLOUR", "L1") == "#cc0000" || robotAPI.quadrgb("COLOUR", "R1") == "#cc0000")) {
+        if (robotAPI.quadrgb("COLOUR", "L1") == "#ffffff") {
+          robotAPI.turn("RIGHT", 20);
+        } else if (robotAPI.quadrgb("COLOUR", "R1") == "#ffffff") {
+          robotAPI.turn("LEFT", 20);
+        } else {
+          robotAPI.drive("FOREWARD", 30);
+        }
+      }
+      robotAPI.drive_stop();

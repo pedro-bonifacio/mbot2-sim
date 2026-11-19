@@ -16,9 +16,14 @@ Last reviewed: 2026-11-19 (sixth session)
   `sequence`, `stayIn`. Value goals don't give the answer away; a failed run says what
   was expected. Format: LEVEL_FORMAT.md.
 - **New levels:** all of **World 2** (02-01 … 02-07), 04-05, 05-02, 05-08, 07-01, 07-02.
+- **Layout choice:** `layouts:` (hand-drawn alternatives, one per variant) and smooth
+  lines through waypoints → line-following levels **05-04, 05-05, 05-12** (Prova P1).
+  Sim note: motors change speed instantly, so a follower that only uses the middle
+  probes wobbles in place at sharp corners; a real robot may coast round them.
 - **Teacher, looks only:** play World 2 and the five others; are the goal wordings clear
-  ("Mostrar a palavra certa no ecrã", "Por esta ordem: LEDs a verde → …")?
-- Next build steps: layout choice → generators (maze, box scatter) → ★★★ → keys in tests.
+  ("Mostrar a palavra certa no ecrã", "Por esta ordem: LEDs a verde → …")? Also the line
+  tracks of 05-04/05/12: do the blue checkpoint circles help or distract?
+- Next build steps: generators (maze, box scatter) → ★★★ → keys in tests → pushable boxes.
 
 **State before this session:** everything was on `main` **and pushed**; the site is live at https://mbot2.pbonifacio.dev
 (Cloudflare Pages deploys every push to `main`). `npm run check` passes.

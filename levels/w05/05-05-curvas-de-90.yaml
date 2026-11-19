@@ -1,0 +1,94 @@
+# World 5: line following round sharp corners. Each variant draws one of three
+# hand-drawn tracks (layouts); checkpoints at the corners, in order, prove the robot
+# followed the line. settle: 0 — passes the moment it reaches the end, even while
+# the follower keeps searching for the line.
+id: "05-05"
+world: 5
+kind: core
+title: Curvas de 90°
+objective: Segue a linha preta até ao fim. Tem curvas apertadas, para a esquerda e para a direita - os sensores de fora (L2 e R2) ajudam a ver para que lado é a curva. O percurso muda de variante para variante.
+concepts: [seguir a linha, sensores de fora]
+assumes: [sensor de cor, se/senão, repetir para sempre]
+toolbox: beginner
+timeLimit: 60
+settle: 0
+
+variants:
+  params:
+    layout: { choices: [esquerda, direita, escada] }
+  seeds: [7, 1, 2]   # one per track: esquerda, direita, escada
+
+layouts:
+  esquerda:
+    spawn: { x: 22, y: 95, heading: 0 }
+    items:
+      - line: { points: [[20, 95], [80, 95], [80, 30], [140, 30], [140, 90], [182, 90]] }
+    zones:
+      - { id: c1, cx: 80, cy: 30, r: 10 }
+      - { id: c2, cx: 140, cy: 90, r: 10 }
+      - { id: fim, label: fim da linha, cx: 182, cy: 90, r: 10 }
+  direita:
+    spawn: { x: 22, y: 28, heading: 0 }
+    items:
+      - line: { points: [[20, 28], [100, 28], [100, 95], [160, 95], [160, 40], [182, 40]] }
+    zones:
+      - { id: c1, cx: 100, cy: 95, r: 10 }
+      - { id: c2, cx: 160, cy: 40, r: 10 }
+      - { id: fim, label: fim da linha, cx: 182, cy: 40, r: 10 }
+  escada:
+    spawn: { x: 22, y: 25, heading: 0 }
+    items:
+      - line: { points: [[20, 25], [60, 25], [60, 60], [110, 60], [110, 95], [182, 95]] }
+    zones:
+      - { id: c1, cx: 60, cy: 60, r: 10 }
+      - { id: c2, cx: 110, cy: 95, r: 10 }
+      - { id: fim, label: fim da linha, cx: 182, cy: 95, r: 10 }
+
+goals:
+  - sequence: { label: Seguir a linha até ao fim, steps: [{ zone: c1 }, { zone: c2 }, { zone: fim }] }
+  - noCollision
+
+solution: |
+  while (true) {
+    if (robotAPI.quadrgb("COLOUR", "L2") == "#000000") {
+      robotAPI.drive_for("FOREWARD", 30, 4);
+      robotAPI.turn("LEFT", 20);
+      while (!(robotAPI.quadrgb("COLOUR", "R1") == "#000000")) {}
+    } else if (robotAPI.quadrgb("COLOUR", "R2") == "#000000") {
+      robotAPI.drive_for("FOREWARD", 30, 4);
+      robotAPI.turn("RIGHT", 20);
+      while (!(robotAPI.quadrgb("COLOUR", "L1") == "#000000")) {}
+    } else if (robotAPI.quadrgb("COLOUR", "L1") != "#000000") {
+      robotAPI.turn("RIGHT", 20);
+    } else if (robotAPI.quadrgb("COLOUR", "R1") != "#000000") {
+      robotAPI.turn("LEFT", 20);
+    } else {
+      robotAPI.drive("FOREWARD", 30);
+    }
+  }
+
+antiSolutions:
+  - name: só os sensores do meio
+    why: Nas curvas apertadas os dois sensores do meio saem da linha ao mesmo tempo e o robô não sabe para que lado virar.
+    code: |
+      while (true) {
+        if (robotAPI.quadrgb("COLOUR", "L1") != "#000000") {
+          robotAPI.turn("RIGHT", 20);
+        } else if (robotAPI.quadrgb("COLOUR", "R1") != "#000000") {
+          robotAPI.turn("LEFT", 20);
+        } else {
+          robotAPI.drive("FOREWARD", 30);
+        }
+      }
+  - name: percurso decorado
+    why: Anda e vira sempre da mesma maneira; só serve para um dos percursos.
+    code: |
+      robotAPI.drive_for("FOREWARD", 30, 58);
+      robotAPI.turn_for("LEFT", 30, 90);
+      robotAPI.drive_for("FOREWARD", 30, 65);
+      robotAPI.turn_for("RIGHT", 30, 90);
+      robotAPI.drive_for("FOREWARD", 30, 60);
+      robotAPI.turn_for("RIGHT", 30, 90);
+      robotAPI.drive_for("FOREWARD", 30, 60);
+      robotAPI.turn_for("LEFT", 30, 90);
+      robotAPI.drive_for("FOREWARD", 30, 42);

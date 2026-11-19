@@ -4,7 +4,7 @@
   "title": "mBot 2 simulator level",
   "description": "One level of the mBot 2 simulator. Reference: docs/LEVEL_FORMAT.md. Positions are in cm (x → right, y → down, origin top-left); a number field may also be an expression of variant parameters, e.g. \"wallX - 10\".",
   "type": "object",
-  "required": ["id", "world", "title", "objective", "spawn", "goals", "solution"],
+  "required": ["id", "world", "title", "objective", "goals", "solution"],
   "additionalProperties": false,
   "definitions": {
     "num": {
@@ -54,6 +54,86 @@
     "text": {
       "type": "string",
       "description": "text; {name} puts in a text parameter, {expression} a number, e.g. \"{word}\""
+    },
+    "mapItems": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "minProperties": 1,
+        "maxProperties": 2,
+        "properties": {
+          "wall": {"$ref": "#/definitions/shape"},
+          "box": {"$ref": "#/definitions/shape"},
+          "patch": {
+            "allOf": [
+              {"$ref": "#/definitions/shape"},
+              {
+                "type": "object",
+                "required": ["colour"],
+                "properties": {"colour": {"$ref": "#/definitions/colour"}}
+              }
+            ]
+          },
+          "line": {
+            "type": "object",
+            "required": ["points"],
+            "properties": {
+              "points": {
+                "type": "array",
+                "minItems": 2,
+                "items": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"$ref": "#/definitions/num"}}
+              },
+              "width": {"$ref": "#/definitions/num", "description": "cm (default 2)"}, "smooth": {"type": "boolean", "description": "a smooth curve through the points instead of straight segments"},
+              "colour": {"$ref": "#/definitions/colour"}
+            }
+          },
+          "arc": {
+            "type": "object",
+            "required": ["cx", "cy", "r"],
+            "properties": {
+              "cx": {"$ref": "#/definitions/num"},
+              "cy": {"$ref": "#/definitions/num"},
+              "r": {"$ref": "#/definitions/num"},
+              "from": {"$ref": "#/definitions/num", "description": "degrees clockwise from east"},
+              "to": {"$ref": "#/definitions/num"},
+              "width": {"$ref": "#/definitions/num"},
+              "colour": {"$ref": "#/definitions/colour"}
+            }
+          },
+          "when": {
+            "$ref": "#/definitions/num",
+            "description": "leave this out of the variant when the expression is 0, e.g. \"stripes >= 4\""
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "zones": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          {"$ref": "#/definitions/shape"},
+          {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+              "id": {"type": "string"},
+              "label": {"type": "string", "description": "PT-PT name used in messages"},
+              "when": {"$ref": "#/definitions/when"}
+            }
+          }
+        ]
+      }
+    },
+    "spawn": {
+      "type": "object",
+      "required": ["x", "y"],
+      "additionalProperties": false,
+      "properties": {
+        "x": {"$ref": "#/definitions/num"},
+        "y": {"$ref": "#/definitions/num"},
+        "heading": {"$ref": "#/definitions/num", "description": "degrees clockwise from east: 0 →, 90 ↓, 180 ←, -90 ↑"}
+      }
     }
   },
   "properties": {
@@ -140,88 +220,11 @@
           "properties": {"w": {"$ref": "#/definitions/num"}, "h": {"$ref": "#/definitions/num"}}
         },
         "border": {"type": "boolean", "description": "1 cm wall around the arena (default true)"},
-        "items": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "minProperties": 1,
-            "maxProperties": 2,
-            "properties": {
-              "wall": {"$ref": "#/definitions/shape"},
-              "box": {"$ref": "#/definitions/shape"},
-              "patch": {
-                "allOf": [
-                  {"$ref": "#/definitions/shape"},
-                  {
-                    "type": "object",
-                    "required": ["colour"],
-                    "properties": {"colour": {"$ref": "#/definitions/colour"}}
-                  }
-                ]
-              },
-              "line": {
-                "type": "object",
-                "required": ["points"],
-                "properties": {
-                  "points": {
-                    "type": "array",
-                    "minItems": 2,
-                    "items": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"$ref": "#/definitions/num"}}
-                  },
-                  "width": {"$ref": "#/definitions/num", "description": "cm (default 2)"},
-                  "colour": {"$ref": "#/definitions/colour"}
-                }
-              },
-              "arc": {
-                "type": "object",
-                "required": ["cx", "cy", "r"],
-                "properties": {
-                  "cx": {"$ref": "#/definitions/num"},
-                  "cy": {"$ref": "#/definitions/num"},
-                  "r": {"$ref": "#/definitions/num"},
-                  "from": {"$ref": "#/definitions/num", "description": "degrees clockwise from east"},
-                  "to": {"$ref": "#/definitions/num"},
-                  "width": {"$ref": "#/definitions/num"},
-                  "colour": {"$ref": "#/definitions/colour"}
-                }
-              },
-              "when": {
-                "$ref": "#/definitions/num",
-                "description": "leave this out of the variant when the expression is 0, e.g. \"stripes >= 4\""
-              }
-            },
-            "additionalProperties": false
-          }
-        }
+        "items": {"$ref": "#/definitions/mapItems"}
       }
     },
-    "spawn": {
-      "type": "object",
-      "required": ["x", "y"],
-      "additionalProperties": false,
-      "properties": {
-        "x": {"$ref": "#/definitions/num"},
-        "y": {"$ref": "#/definitions/num"},
-        "heading": {"$ref": "#/definitions/num", "description": "degrees clockwise from east: 0 →, 90 ↓, 180 ←, -90 ↑"}
-      }
-    },
-    "zones": {
-      "type": "array",
-      "items": {
-        "allOf": [
-          {"$ref": "#/definitions/shape"},
-          {
-            "type": "object",
-            "required": ["id"],
-            "properties": {
-              "id": {"type": "string"},
-              "label": {"type": "string", "description": "PT-PT name used in messages"},
-              "when": {"$ref": "#/definitions/when"}
-            }
-          }
-        ]
-      }
-    },
+    "spawn": {"$ref": "#/definitions/spawn"},
+    "zones": {"$ref": "#/definitions/zones"},
     "goals": {
       "type": "array",
       "minItems": 1,
@@ -265,7 +268,8 @@
                 "additionalProperties": false,
                 "description": "any time: a tone was played",
                 "properties": {
-                  "frequency": {"$ref": "#/definitions/num", "description": "Hz; omit for any tone"}, "duration": {"$ref": "#/definitions/num", "description": "ms (± 1); omit for any length"},
+                  "frequency": {"$ref": "#/definitions/num", "description": "Hz; omit for any tone"},
+                  "duration": {"$ref": "#/definitions/num", "description": "ms (± 1); omit for any length"},
                   "tolerance": {"$ref": "#/definitions/num", "description": "± Hz (default 1)"},
                   "label": {"type": "string"}
                 }
@@ -322,6 +326,19 @@
         "properties": {"name": {"type": "string"}, "why": {"type": "string"}, "code": {"$ref": "#/definitions/program"}}
       },
       "description": "tempting but wrong programs; each must fail at least one seed"
+    },
+    "layouts": {
+      "type": "object",
+      "description": "hand-drawn alternatives, one per variant, picked by the text parameter `layout` (e.g. layout: { choices: [oval, gancho] }). Each adds items and zones and may set the spawn.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {"$ref": "#/definitions/mapItems"},
+          "zones": {"$ref": "#/definitions/zones"},
+          "spawn": {"$ref": "#/definitions/spawn"}
+        }
+      }
     }
   }
 }

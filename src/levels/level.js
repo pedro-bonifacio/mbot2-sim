@@ -56,6 +56,30 @@ export function testSeeds(level) {
 
 const round = (x) => Math.round(x * 1e6) / 1e6;
 
+/**
+ * `line: { smooth: true }`: a curve through every point (centripetal Catmull-Rom),
+ * as a polyline of ~1 cm steps — so a track is drawn from a few waypoints.
+ */
+export function smoothPath(pts, stepCm = 1) {
+  if (pts.length < 3) return pts;
+  const P = [pts[0], ...pts, pts[pts.length - 1]];
+  const out = [pts[0]];
+  for (let i = 1; i + 2 < P.length; i++) {
+    const [p0, p1, p2, p3] = [P[i - 1], P[i], P[i + 1], P[i + 2]];
+    const t = (a, b) => Math.max(1e-6, Math.hypot(b[0] - a[0], b[1] - a[1]) ** 0.5);
+    const t1 = t(p0, p1), t2 = t1 + t(p1, p2), t3 = t2 + t(p2, p3);
+    const lerp = (a, b, ta, tb, u) => (tb === ta ? a : [0, 1].map((k) => ((tb - u) * a[k] + (u - ta) * b[k]) / (tb - ta)));
+    const n = Math.max(1, Math.ceil(Math.hypot(p2[0] - p1[0], p2[1] - p1[1]) / stepCm));
+    for (let k = 1; k <= n; k++) {
+      const u = t1 + (t2 - t1) * k / n;
+      const a1 = lerp(p0, p1, 0, t1, u), a2 = lerp(p1, p2, t1, t2, u), a3 = lerp(p2, p3, t2, t3, u);
+      const b1 = lerp(a1, a2, 0, t2, u), b2 = lerp(a2, a3, t1, t3, u);
+      out.push(lerp(b1, b2, t1, t2, u).map(round));
+    }
+  }
+  return out;
+}
+
 /** Prepares `level` for variant `seed`. Throws with a readable message on bad data. */
 export function prepareLevel(level, seed = testSeeds(level)[0]) {
   const params = variantParams(level, seed);
@@ -75,6 +99,19 @@ export function prepareLevel(level, seed = testSeeds(level)[0]) {
   // `when: <expression>` on a map item or zone: left out of this variant when it is 0.
   const included = (entry, path) => entry.when === undefined || num(entry.when, `${path}.when`) !== 0;
 
+  // Layout choice: a level with `layouts` (named, hand-drawn alternatives) picks one
+  // per variant with its text parameter `layout`. The layout's items paint after
+  // map.items, its zones join the level's (same id: the layout's wins), its spawn
+  // replaces the level's.
+  let layout = null;
+  if (level.layouts) {
+    const name = params.layout;
+    if (typeof name !== 'string' || !level.layouts[name]) {
+      throw new Error(`${level.id}: variants.params.layout must pick one of the layouts (${Object.keys(level.layouts).join(', ')}), got ${JSON.stringify(name)}`);
+    }
+    layout = { name, ...level.layouts[name] };
+  }
+
   const map = level.map || {};
   const size = { w: num(map.size?.w ?? DEFAULT_SIZE.w, 'map.size.w'), h: num(map.size?.h ?? DEFAULT_SIZE.h, 'map.size.h') };
   const items = [];
@@ -84,18 +121,23 @@ export function prepareLevel(level, seed = testSeeds(level)[0]) {
       items.push({ type: 'rect', x, y, w, h, angle: 0, rgb: WALL_RGB, wall: true, border: true });
     }
   }
-  (map.items || []).forEach((entry, i) => {
+  const itemList = [
+    ...(map.items || []).map((entry, i) => [entry, `map.items[${i}]`]),
+    ...(layout?.items || []).map((entry, i) => [entry, `layouts.${layout.name}.items[${i}]`]),
+  ];
+  itemList.forEach(([entry, at]) => {
     const [kind, d] = Object.entries(entry).find(([k]) => k !== 'when') || [];
-    const p = `map.items[${i}].${kind}`;
-    if (!included(entry, `map.items[${i}]`)) return;
+    const p = `${at}.${kind}`;
+    if (!included(entry, at)) return;
     const shape = (o) => (o.r !== undefined
       ? { type: 'circle', cx: num(o.cx, `${p}.cx`), cy: num(o.cy, `${p}.cy`), r: num(o.r, `${p}.r`) }
       : { type: 'rect', x: num(o.x, `${p}.x`), y: num(o.y, `${p}.y`), w: num(o.w, `${p}.w`), h: num(o.h, `${p}.h`), angle: num(o.angle ?? 0, `${p}.angle`) });
     if (kind === 'wall' || kind === 'box') items.push({ ...shape(d), rgb: WALL_RGB, wall: true });
     else if (kind === 'patch') items.push({ ...shape(d), rgb: colour(d.colour, `${p}.colour`) });
     else if (kind === 'line') {
+      const pts = d.points.map((pt, j) => [num(pt[0], `${p}.points[${j}][0]`), num(pt[1], `${p}.points[${j}][1]`)]);
       items.push({ type: 'line', width: num(d.width ?? 2, `${p}.width`), rgb: colour(d.colour ?? 'black', `${p}.colour`),
-        points: d.points.map((pt, j) => [num(pt[0], `${p}.points[${j}][0]`), num(pt[1], `${p}.points[${j}][1]`)]) });
+        points: d.smooth ? smoothPath(pts) : pts });
     } else if (kind === 'arc') {
       items.push({ type: 'arc', cx: num(d.cx, `${p}.cx`), cy: num(d.cy, `${p}.cy`), r: num(d.r, `${p}.r`),
         from: num(d.from ?? 0, `${p}.from`), to: num(d.to ?? 360, `${p}.to`),
@@ -103,15 +145,18 @@ export function prepareLevel(level, seed = testSeeds(level)[0]) {
     } else throw new Error(`${level.id}: ${p}: unknown map item "${kind}" (wall, box, patch, line, arc)`);
   });
 
-  if (!level.spawn) throw new Error(`${level.id}: spawn is required`);
+  const [sp, spAt] = layout?.spawn ? [layout.spawn, `layouts.${layout.name}.spawn`] : [level.spawn, 'spawn'];
+  if (!sp) throw new Error(`${level.id}: spawn is required (in the level or in every layout)`);
   const spawn = {
-    x: num(level.spawn.x, 'spawn.x'), y: num(level.spawn.y, 'spawn.y'),
-    theta: num(level.spawn.heading ?? 0, 'spawn.heading') * Math.PI / 180,
+    x: num(sp.x, `${spAt}.x`), y: num(sp.y, `${spAt}.y`),
+    theta: num(sp.heading ?? 0, `${spAt}.heading`) * Math.PI / 180,
   };
 
   const zones = {};
-  (level.zones || []).forEach((z, i) => {
-    const p = `zones[${i}]`;
+  [
+    ...(level.zones || []).map((z, i) => [z, `zones[${i}]`]),
+    ...(layout?.zones || []).map((z, i) => [z, `layouts.${layout.name}.zones[${i}]`]),
+  ].forEach(([z, p]) => {
     if (!z.id) throw new Error(`${level.id}: ${p}: a zone needs an id`);
     if (!included(z, p)) return;
     zones[z.id] = z.r !== undefined
@@ -166,7 +211,7 @@ export function prepareLevel(level, seed = testSeeds(level)[0]) {
   if (!goals.length) throw new Error(`${level.id}: at least one goal is required`);
 
   return {
-    id: level.id, title: level.title, objective: level.objective, seed, params,
+    id: level.id, title: level.title, objective: level.objective, seed, params, layout: layout?.name,
     timeLimitS: num(level.timeLimit ?? DEFAULT_TIME_LIMIT_S, 'timeLimit'),
     settleS: seconds(level.settle, 'settle'), stallS: seconds(level.stall, 'stall'),
     size, items, spawn, zones, goals,

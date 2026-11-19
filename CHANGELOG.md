@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### Added
+- **Line-following levels** 05-04 Curvas suaves, 05-05 Curvas de 90° and the World 5 test 05-12 Linha livre: each variant is a different track (smooth curves, sharp corners), so a memorised route never works on all of them.
 - **World 2 "Luz, Som e Ecrã"** (02-01 … 02-07: LEDs, a beep, your name, a traffic light, a countdown, a delivery, a tune), and **04-05 Perto ou longe**, **05-02 Da mesma cor**, **05-08 Ficar no ringue**, **07-01 Contador**, **07-02 Fita métrica**.
 - Level goals can depend on the variant (the right word, colour or number, e.g. "how many stripes"), check sounds and things done in order (a traffic light needs waits between colours), and ask the robot to stay inside an area until the time runs out. A failed run says what was expected on that variant (decision 0017).
 - **Class accounts**: students log in ("👤 Entrar") with a username like `7b-12` and the password from their slip; stars and programs then follow them to any computer, saved automatically (⚠ shown when offline, sent when the connection returns). Not logged in, everything works as before. The teacher creates a class from a CSV (`number`, `names`) with `node turmas.mjs create 7B` on the shared drive (one folder per class in `turmas/`); names never reach the server (decision 0016). Progress made without an account, or from a progress file, never enters an account.
